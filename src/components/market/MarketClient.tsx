@@ -44,7 +44,7 @@ export function MarketClient({ traders }: MarketClientProps) {
         onTraderChange={handleTraderChange}
       />
 
-      <Panel title="Trader Stock" className="min-h-0 overflow-hidden p-2">
+      <Panel title="Trader Stock" className="min-h-0 overflow-y-auto p-2">
         {traderItems.length > 0 ? (
           <MarketItemList
             items={traderItems}
