@@ -52,7 +52,7 @@ export function StashClient({ slots }: StashClientProps) {
         onCategoryChange={handleCategoryChange}
       />
 
-      <Panel title="Inventory Grid" className="min-h-0 overflow-hidden p-2">
+      <Panel title="Inventory Grid" className="min-h-0 overflow-y-auto p-2">
         {filteredSlots.length > 0 ? (
           <StashInventoryGrid
             slots={filteredSlots}
