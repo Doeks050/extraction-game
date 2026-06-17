@@ -1,14 +1,11 @@
 import { GameShell } from "../../components/shell/GameShell";
-import { Panel } from "../../components/ui/Panel";
+import { TaskClient } from "../../components/tasks/TaskClient";
+import { taskBoard } from "../../data/tasks/taskBoard";
 
 export default function TasksPage() {
   return (
     <GameShell title="Tasks" eyebrow="Contracts">
-      <Panel title="Tasks">
-        <p className="text-sm text-zinc-400">
-          Missions, objectives and rewards come later.
-        </p>
-      </Panel>
+      <TaskClient tasks={taskBoard} />
     </GameShell>
   );
 }
