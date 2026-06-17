@@ -1,7 +1,6 @@
 import { GameShell } from "../../components/shell/GameShell";
-import { StashCategorySummary } from "../../components/stash/StashCategorySummary";
-import { StashItemGrid } from "../../components/stash/StashItemGrid";
-import { Panel } from "../../components/ui/Panel";
+import { StashClient } from "../../components/stash/StashClient";
+import { StashStatsPanel } from "../../components/stash/StashStatsPanel";
 import { starterStash } from "../../data/items/stash";
 import {
   formatCredits,
@@ -18,40 +17,15 @@ export default function StashPage() {
 
   return (
     <GameShell title="Stash" eyebrow="Storage">
-      <div className="grid h-full grid-rows-[auto_auto_1fr] gap-2">
-        <Panel className="p-2">
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.16em] text-zinc-500">
-                Slots
-              </p>
-              <p className="mt-1 text-sm font-black text-zinc-100">
-                {usedSlots}/{maxSlots}
-              </p>
-            </div>
+      <div className="grid h-full grid-rows-[auto_1fr] gap-2">
+        <StashStatsPanel
+          usedSlots={usedSlots}
+          maxSlots={maxSlots}
+          totalValue={formatCredits(totalValue)}
+          totalWeight={formatWeight(totalWeight)}
+        />
 
-            <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.16em] text-zinc-500">
-                Value
-              </p>
-              <p className="mt-1 text-sm font-black text-orange-400">
-                {formatCredits(totalValue)}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.16em] text-zinc-500">
-                Weight
-              </p>
-              <p className="mt-1 text-sm font-black text-zinc-100">
-                {formatWeight(totalWeight)}
-              </p>
-            </div>
-          </div>
-        </Panel>
-
-        <StashCategorySummary slots={starterStash} />
-        <StashItemGrid slots={starterStash} />
+        <StashClient slots={starterStash} />
       </div>
     </GameShell>
   );
