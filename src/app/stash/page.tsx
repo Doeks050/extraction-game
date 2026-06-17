@@ -1,7 +1,7 @@
 import { GameShell } from "../../components/shell/GameShell";
 import { StashClient } from "../../components/stash/StashClient";
 import { StashStatsPanel } from "../../components/stash/StashStatsPanel";
-import { starterStash } from "../../data/items/stash";
+import { gameState } from "../../data/gameState";
 import {
   formatCredits,
   formatWeight,
@@ -10,9 +10,9 @@ import {
 } from "../../lib/items";
 
 export default function StashPage() {
-  const totalValue = getInventoryValue(starterStash);
-  const totalWeight = getInventoryWeight(starterStash);
-  const usedSlots = starterStash.length;
+  const totalValue = getInventoryValue(gameState.stash);
+  const totalWeight = getInventoryWeight(gameState.stash);
+  const usedSlots = gameState.stash.length;
   const maxSlots = 40;
 
   return (
@@ -25,7 +25,7 @@ export default function StashPage() {
           totalWeight={formatWeight(totalWeight)}
         />
 
-        <StashClient slots={starterStash} />
+        <StashClient slots={gameState.stash} />
       </div>
     </GameShell>
   );
