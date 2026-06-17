@@ -1,0 +1,32 @@
+import type { HideoutModule } from "../types/game";
+
+export const hideoutModules: HideoutModule[] = [
+  {
+    id: "grow_room",
+    name: "Grow Room",
+    level: 1,
+    status: "idle",
+    detail: "No crop",
+  },
+  {
+    id: "workshop",
+    name: "Workshop",
+    level: 1,
+    status: "ready",
+    detail: "Crafting ready",
+  },
+  {
+    id: "generator",
+    name: "Generator",
+    level: 1,
+    status: "stable",
+    detail: "Power stable",
+  },
+  {
+    id: "storage",
+    name: "Storage",
+    level: 1,
+    status: "active",
+    detail: "24 / 40 slots",
+  },
+];
