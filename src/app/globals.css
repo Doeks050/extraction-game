@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050505;
+  --foreground: #f4f4f5;
+  --panel: #111111;
+  --panel-soft: #181818;
+  --border: #2a2a2a;
+  --muted: #8b8b8b;
+  --accent: #ff8a1f;
+  --accent-soft: rgba(255, 138, 31, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-screen {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.grid-bg {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at top, rgba(255, 138, 31, 0.13), transparent 22rem),
+    #050505;
+  background-size:
+    18px 18px,
+    18px 18px,
+    auto,
+    auto;
+}
