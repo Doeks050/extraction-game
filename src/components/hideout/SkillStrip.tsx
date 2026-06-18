@@ -1,8 +1,8 @@
-import type { PlayerSkill } from "../../types/game";
+import type { OperatorSkill } from "../../types/game";
 import { Panel } from "../ui/Panel";
 
 type SkillStripProps = {
-  skills: PlayerSkill[];
+  skills: OperatorSkill[];
 };
 
 export function SkillStrip({ skills }: SkillStripProps) {
