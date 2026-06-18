@@ -11,6 +11,7 @@ import { gameState as defaultGameState } from "../../data/gameState";
 import {
   clearSavedGameState,
   cloneGameState,
+  normalizeSavedGameState,
   readSavedGameState,
   type SaveStatus,
   writeSavedGameState,
@@ -36,11 +37,10 @@ export function GameStateProvider({ children }: GameStateProviderProps) {
 
   useEffect(() => {
     const savedState = readSavedGameState();
+    const normalizedState = normalizeSavedGameState(savedState, defaultGameState);
 
-    if (savedState) {
-      setInternalState(savedState);
-    }
-
+    setInternalState(normalizedState);
+    writeSavedGameState(normalizedState);
     setSaveStatus("ready");
   }, []);
 
