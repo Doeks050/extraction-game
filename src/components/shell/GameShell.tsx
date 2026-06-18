@@ -1,3 +1,4 @@
+import { SaveStatusPill } from "../state/SaveStatusPill";
 import { BottomNav } from "./BottomNav";
 
 type GameShellProps = {
@@ -6,7 +7,11 @@ type GameShellProps = {
   children: React.ReactNode;
 };
 
-export function GameShell({ title, eyebrow = "Operator OS", children }: GameShellProps) {
+export function GameShell({
+  title,
+  eyebrow = "Operator OS",
+  children,
+}: GameShellProps) {
   return (
     <main className="game-screen grid-bg flex items-center justify-center text-zinc-100">
       <div className="flex h-full w-full max-w-md flex-col border-x border-zinc-900 bg-black/72">
@@ -18,9 +23,7 @@ export function GameShell({ title, eyebrow = "Operator OS", children }: GameShel
             <h1 className="text-xl font-black uppercase leading-none tracking-tight text-zinc-100">
               {title}
             </h1>
-            <div className="border border-orange-500/50 bg-orange-500/10 px-2 py-1 text-[9px] font-black uppercase tracking-[0.16em] text-orange-300">
-              Online
-            </div>
+            <SaveStatusPill />
           </div>
         </header>
 
