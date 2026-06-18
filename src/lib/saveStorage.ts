@@ -60,23 +60,24 @@ export function normalizeSavedGameState(
     return cloneGameState(defaultState);
   }
 
+  const clonedDefaultState = cloneGameState(defaultState);
+  const savedOperator = savedState.operator;
+
   return {
-    ...cloneGameState(defaultState),
+    ...clonedDefaultState,
     ...savedState,
     operator: {
-      ...cloneGameState(defaultState).operator,
-      ...savedState.operator,
-      xp: savedState.operator?.xp ?? defaultState.operator.xp,
-      credits: savedState.operator?.credits ?? defaultState.operator.credits,
-      operatorSkills:
-        savedState.operator?.operatorSkills ?? defaultState.operator.operatorSkills,
+      ...clonedDefaultState.operator,
+      ...(savedOperator ?? {}),
+      xp: savedOperator?.xp ?? defaultState.operator.xp,
+      credits: savedOperator?.credits ?? defaultState.operator.credits,
+      operatorSkills: savedOperator?.operatorSkills ?? defaultState.operator.operatorSkills,
       weaponClassSkills:
-        savedState.operator?.weaponClassSkills ??
-        defaultState.operator.weaponClassSkills,
+        savedOperator?.weaponClassSkills ?? defaultState.operator.weaponClassSkills,
       weaponMasteries:
-        savedState.operator?.weaponMasteries ?? defaultState.operator.weaponMasteries,
-      lastRaid: savedState.operator?.lastRaid ?? defaultState.operator.lastRaid,
-      activeTask: savedState.operator?.activeTask ?? defaultState.operator.activeTask,
+        savedOperator?.weaponMasteries ?? defaultState.operator.weaponMasteries,
+      lastRaid: savedOperator?.lastRaid ?? defaultState.operator.lastRaid,
+      activeTask: savedOperator?.activeTask ?? defaultState.operator.activeTask,
     },
     hideoutModules: savedState.hideoutModules ?? defaultState.hideoutModules,
     stash: savedState.stash ?? defaultState.stash,
