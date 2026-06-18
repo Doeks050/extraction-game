@@ -1,11 +1,10 @@
 import { GameShell } from "../../components/shell/GameShell";
-import { TaskClient } from "../../components/tasks/TaskClient";
-import { gameState } from "../../data/gameState";
+import { TaskPageClient } from "../../components/tasks/TaskPageClient";
 
 export default function TasksPage() {
   return (
     <GameShell title="Tasks" eyebrow="Contracts">
-      <TaskClient tasks={gameState.tasks} />
+      <TaskPageClient />
     </GameShell>
   );
 }
