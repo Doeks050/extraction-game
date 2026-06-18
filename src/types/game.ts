@@ -1,10 +1,26 @@
-export type PlayerSkill = {
+export type SkillProgress = {
   id: string;
   name: string;
   shortName: string;
   level: number;
   xp: number;
   nextXp: number;
+  description: string;
+};
+
+export type OperatorSkill = SkillProgress;
+export type PlayerSkill = OperatorSkill;
+
+export type WeaponClassSkill = SkillProgress;
+
+export type WeaponMastery = {
+  id: string;
+  weaponId: string;
+  weaponName: string;
+  xp: number;
+  maxXp: number;
+  isMastered: boolean;
+  description: string;
 };
 
 export type LastRaidResult = {
@@ -24,13 +40,14 @@ export type ActiveTask = {
 };
 
 export type OperatorProfile = {
-  name: string;
   level: number;
   rank: string;
   xp: number;
   nextXp: number;
   credits: number;
-  skills: PlayerSkill[];
+  operatorSkills: OperatorSkill[];
+  weaponClassSkills: WeaponClassSkill[];
+  weaponMasteries: WeaponMastery[];
   lastRaid: LastRaidResult;
   activeTask: ActiveTask;
 };
