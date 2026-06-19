@@ -1,6 +1,7 @@
 import type { OperatorContainer } from "../../types/game";
 import type { LoadoutSlot } from "../../types/loadout";
 import { getItemById } from "../../lib/items";
+import { ItemImage } from "../items/ItemImage";
 import { Panel } from "../ui/Panel";
 
 type LoadoutEquipmentPanelProps = {
@@ -14,6 +15,7 @@ type EquipmentRow = {
   itemName: string;
   meta: string;
   marker: string;
+  image?: string;
   rightText?: string;
 };
 
@@ -27,6 +29,7 @@ function buildSlotRow(slot: LoadoutSlot): EquipmentRow {
     itemName: item?.name ?? "Empty Slot",
     meta: item?.tags.join(" · ") ?? "Tap to select from stash",
     marker: item ? item.name.slice(0, 2) : "--",
+    image: item?.image,
     rightText: showQuantity ? `x${slot.quantity}` : undefined,
   };
 }
@@ -53,9 +56,13 @@ export function LoadoutEquipmentPanel({ slots, containers }: LoadoutEquipmentPan
             key={row.id}
             className="grid min-h-0 grid-cols-[3rem_1fr_auto] items-center gap-2 border border-zinc-800 bg-black/55 px-2"
           >
-            <div className="flex h-11 w-12 items-center justify-center border border-zinc-900 bg-zinc-950 text-sm font-black uppercase text-zinc-500">
-              {row.marker}
-            </div>
+            <ItemImage
+              src={row.image}
+              alt={row.itemName}
+              fallback={row.marker}
+              className="flex h-11 w-12 items-center justify-center border border-zinc-900 bg-zinc-950 text-sm"
+              imageClassName="p-0.5 opacity-95"
+            />
 
             <div className="min-w-0">
               <p className="text-[10px] font-black uppercase leading-4 tracking-[0.16em] text-orange-400">
