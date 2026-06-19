@@ -14,12 +14,21 @@ type StashInventoryGridProps = {
   slots: HydratedInventorySlot[];
 };
 
+function getVisualGridSize(slot: HydratedInventorySlot) {
+  const { width, height } = slot.item.gridSize;
+
+  if (slot.item.category === "weapon" && slot.item.tags.includes("rifle")) {
+    return { width: 3, height: 2 };
+  }
+
+  return { width, height };
+}
+
 export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
   return (
     <div className="grid auto-rows-[3.75rem] grid-cols-6 gap-1.5">
       {slots.map((slot) => {
-        const { width, height } = slot.item.gridSize;
-        const isLarge = width > 1 || height > 1;
+        const { width, height } = getVisualGridSize(slot);
         const showQuantity = slot.quantity > 1;
 
         return (
@@ -37,30 +46,27 @@ export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
-            <div className="relative grid h-full grid-rows-[1fr_auto] gap-0.5">
-              <ItemImage
-                src={slot.item.image}
-                alt={slot.item.name}
-                fallback={slot.item.name.slice(0, 2)}
-                className="min-h-0 w-full"
-                imageClassName={isLarge ? "p-1 opacity-95" : "p-0.5 opacity-95"}
-              />
+            <ItemImage
+              src={slot.item.image}
+              alt={slot.item.name}
+              fallback={slot.item.name.slice(0, 2)}
+              className="absolute inset-1 flex items-center justify-center"
+              imageClassName="p-1 opacity-95"
+            />
 
-              <div className="min-h-0 border-t border-zinc-800/80 pt-0.5">
-                <p
-                  className={[
-                    "truncate font-black uppercase leading-3 text-zinc-100",
-                    isLarge ? "text-[9px]" : "text-[7px]",
-                  ].join(" ")}
-                >
-                  {slot.item.name}
-                </p>
+            <div className="absolute right-1.5 top-1.5 max-w-[75%] bg-black/70 px-1 py-0.5 text-right">
+              <p className="truncate text-[8px] font-black uppercase leading-3 text-zinc-100">
+                {slot.item.name}
+              </p>
+            </div>
 
-                <div className="flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
-                  <span className="text-orange-400">{showQuantity ? `x${slot.quantity}` : ""}</span>
-                  <span className="truncate text-zinc-600">{formatCredits(slot.totalValue)}</span>
-                </div>
-              </div>
+            <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
+              <span className="bg-black/70 px-1 text-orange-400">
+                {showQuantity ? `x${slot.quantity}` : ""}
+              </span>
+              <span className="truncate bg-black/70 px-1 text-zinc-500">
+                {formatCredits(slot.totalValue)}
+              </span>
             </div>
           </button>
         );
