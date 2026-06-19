@@ -10,7 +10,7 @@ export const currentLoadout: CurrentLoadout = {
     },
     {
       id: "sidearm",
-      label: "Sidearm",
+      label: "Side Arm",
       itemId: "wpn_glock19x",
       quantity: 1,
     },
@@ -22,7 +22,7 @@ export const currentLoadout: CurrentLoadout = {
     },
     {
       id: "helmet",
-      label: "Helmet",
+      label: "Head Gear",
       itemId: "helmet_fast_mt",
       quantity: 1,
     },
