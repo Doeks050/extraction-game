@@ -1,6 +1,6 @@
 import type { GameState } from "../types/state";
 
-export const SAVE_STORAGE_KEY = "extraction-game-save-v2";
+export const SAVE_STORAGE_KEY = "extraction-game-save-v3";
 
 export type SaveStatus = "loading" | "ready" | "error";
 
