@@ -1,6 +1,6 @@
 import type { GameState } from "../types/state";
 
-export const SAVE_STORAGE_KEY = "extraction-game-save-v3";
+export const SAVE_STORAGE_KEY = "extraction-game-save-v4";
 
 export type SaveStatus = "loading" | "ready" | "error";
 
@@ -71,6 +71,7 @@ export function normalizeSavedGameState(
       ...(savedOperator ?? {}),
       xp: savedOperator?.xp ?? defaultState.operator.xp,
       credits: savedOperator?.credits ?? defaultState.operator.credits,
+      containers: savedOperator?.containers ?? defaultState.operator.containers,
       operatorSkills: savedOperator?.operatorSkills ?? defaultState.operator.operatorSkills,
       weaponClassSkills:
         savedOperator?.weaponClassSkills ?? defaultState.operator.weaponClassSkills,
