@@ -1,21 +1,15 @@
 import type { GameState } from "../types/state";
 
-export const SAVE_STORAGE_KEY = "extraction-game-save-v4";
+export const SAVE_STORAGE_KEY = "extraction-game-save-v5";
 
 export type SaveStatus = "loading" | "ready" | "error";
 
 export function readSavedGameState(): Partial<GameState> | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
+  if (typeof window === "undefined") return null;
 
   try {
     const rawValue = window.localStorage.getItem(SAVE_STORAGE_KEY);
-
-    if (!rawValue) {
-      return null;
-    }
-
+    if (!rawValue) return null;
     return JSON.parse(rawValue) as Partial<GameState>;
   } catch {
     return null;
@@ -23,9 +17,7 @@ export function readSavedGameState(): Partial<GameState> | null {
 }
 
 export function writeSavedGameState(state: GameState): boolean {
-  if (typeof window === "undefined") {
-    return false;
-  }
+  if (typeof window === "undefined") return false;
 
   try {
     window.localStorage.setItem(SAVE_STORAGE_KEY, JSON.stringify(state));
@@ -36,9 +28,7 @@ export function writeSavedGameState(state: GameState): boolean {
 }
 
 export function clearSavedGameState(): boolean {
-  if (typeof window === "undefined") {
-    return false;
-  }
+  if (typeof window === "undefined") return false;
 
   try {
     window.localStorage.removeItem(SAVE_STORAGE_KEY);
@@ -56,9 +46,7 @@ export function normalizeSavedGameState(
   savedState: Partial<GameState> | null,
   defaultState: GameState,
 ): GameState {
-  if (!savedState) {
-    return cloneGameState(defaultState);
-  }
+  if (!savedState) return cloneGameState(defaultState);
 
   const clonedDefaultState = cloneGameState(defaultState);
   const savedOperator = savedState.operator;
@@ -73,10 +61,8 @@ export function normalizeSavedGameState(
       credits: savedOperator?.credits ?? defaultState.operator.credits,
       containers: savedOperator?.containers ?? defaultState.operator.containers,
       operatorSkills: savedOperator?.operatorSkills ?? defaultState.operator.operatorSkills,
-      weaponClassSkills:
-        savedOperator?.weaponClassSkills ?? defaultState.operator.weaponClassSkills,
-      weaponMasteries:
-        savedOperator?.weaponMasteries ?? defaultState.operator.weaponMasteries,
+      weaponClassSkills: savedOperator?.weaponClassSkills ?? defaultState.operator.weaponClassSkills,
+      weaponMasteries: savedOperator?.weaponMasteries ?? defaultState.operator.weaponMasteries,
       lastRaid: savedOperator?.lastRaid ?? defaultState.operator.lastRaid,
       activeTask: savedOperator?.activeTask ?? defaultState.operator.activeTask,
     },
