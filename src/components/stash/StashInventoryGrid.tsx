@@ -57,10 +57,10 @@ export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
               fallback={slot.item.name.slice(0, 2)}
               className={
                 isRifle
-                  ? "absolute inset-x-3 bottom-5 top-5 flex items-center justify-center"
+                  ? "absolute inset-x-2 bottom-3 top-4 flex items-center justify-center"
                   : "absolute inset-2 flex items-center justify-center"
               }
-              imageClassName={isRifle ? "p-0 opacity-95 scale-125" : "p-1 opacity-95"}
+              imageClassName={isRifle ? "p-0 opacity-95" : "p-1 opacity-95"}
             />
 
             <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
