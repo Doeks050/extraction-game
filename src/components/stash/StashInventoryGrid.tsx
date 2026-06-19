@@ -14,10 +14,14 @@ type StashInventoryGridProps = {
   slots: HydratedInventorySlot[];
 };
 
+function isRifleSlot(slot: HydratedInventorySlot) {
+  return slot.item.category === "weapon" && slot.item.tags.includes("rifle");
+}
+
 function getVisualGridSize(slot: HydratedInventorySlot) {
   const { width, height } = slot.item.gridSize;
 
-  if (slot.item.category === "weapon" && slot.item.tags.includes("rifle")) {
+  if (isRifleSlot(slot)) {
     return { width: 4, height: 2 };
   }
 
@@ -30,6 +34,7 @@ export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
       {slots.map((slot) => {
         const { width, height } = getVisualGridSize(slot);
         const showQuantity = slot.quantity > 1;
+        const isRifle = isRifleSlot(slot);
 
         return (
           <button
@@ -50,8 +55,12 @@ export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
               src={slot.item.image}
               alt={slot.item.name}
               fallback={slot.item.name.slice(0, 2)}
-              className="absolute inset-2 flex items-center justify-center"
-              imageClassName="p-1 opacity-95"
+              className={
+                isRifle
+                  ? "absolute inset-x-2 bottom-4 top-5 flex items-center justify-center"
+                  : "absolute inset-2 flex items-center justify-center"
+              }
+              imageClassName={isRifle ? "p-0 opacity-95 scale-125" : "p-1 opacity-95"}
             />
 
             <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
