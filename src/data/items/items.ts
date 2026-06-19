@@ -10,6 +10,7 @@ export const gameItems: GameItem[] = [
     value: 28500,
     maxStack: 1,
     gridSize: { width: 3, height: 1 },
+    image: "/items/weapons/m4a1.png",
     description: "Reliable 5.56 rifle platform for mid-range raids.",
     tags: ["rifle", "5.56x45"],
     stats: { damage: 42, ergonomics: 58, recoilControl: 44, durability: 96 },
