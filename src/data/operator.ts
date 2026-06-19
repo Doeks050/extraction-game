@@ -6,6 +6,22 @@ export const operatorProfile: OperatorProfile = {
   xp: 0,
   nextXp: 100,
   credits: 0,
+  containers: [
+    {
+      id: "normal_pouch",
+      name: "Normal Pouch",
+      level: 1,
+      isStandard: true,
+      description: "Standard operator pouch. Used first before expensive chest gear is available.",
+    },
+    {
+      id: "medical_pouch",
+      name: "Medical Pouch",
+      level: 1,
+      isStandard: true,
+      description: "Standard medical pouch for raid medical items.",
+    },
+  ],
   operatorSkills: [
     {
       id: "combat",
