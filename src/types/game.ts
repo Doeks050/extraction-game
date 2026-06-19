@@ -23,6 +23,14 @@ export type WeaponMastery = {
   description: string;
 };
 
+export type OperatorContainer = {
+  id: "normal_pouch" | "medical_pouch";
+  name: string;
+  level: number;
+  isStandard: boolean;
+  description: string;
+};
+
 export type LastRaidResult = {
   location: string;
   outcome: "extracted" | "dead" | "missing";
@@ -45,6 +53,7 @@ export type OperatorProfile = {
   xp: number;
   nextXp: number;
   credits: number;
+  containers: OperatorContainer[];
   operatorSkills: OperatorSkill[];
   weaponClassSkills: WeaponClassSkill[];
   weaponMasteries: WeaponMastery[];
