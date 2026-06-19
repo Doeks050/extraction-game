@@ -22,7 +22,7 @@ function getVisualGridSize(slot: HydratedInventorySlot) {
   const { width, height } = slot.item.gridSize;
 
   if (isRifleSlot(slot)) {
-    return { width: 4, height: 2 };
+    return { width: 5, height: 2 };
   }
 
   return { width, height };
@@ -57,7 +57,7 @@ export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
               fallback={slot.item.name.slice(0, 2)}
               className={
                 isRifle
-                  ? "absolute inset-x-2 bottom-4 top-5 flex items-center justify-center"
+                  ? "absolute inset-x-3 bottom-5 top-5 flex items-center justify-center"
                   : "absolute inset-2 flex items-center justify-center"
               }
               imageClassName={isRifle ? "p-0 opacity-95 scale-125" : "p-1 opacity-95"}
