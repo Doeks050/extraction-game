@@ -10,10 +10,13 @@ const visibleCategoryIds: Array<ItemCategory | "all"> = [
   "all",
   "weapon",
   "ammo",
-  "armor",
+  "magazine",
+  "attachment",
+  "chest_gear",
+  "helmet",
+  "backpack",
   "medical",
-  "crafting",
-  "upgrade_part",
+  "hideout_material",
   "valuable",
 ];
 
