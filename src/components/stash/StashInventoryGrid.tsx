@@ -12,6 +12,7 @@ const rarityClassNames = {
 
 type StashInventoryGridProps = {
   slots: HydratedInventorySlot[];
+  onSelectSlot?: (slot: HydratedInventorySlot) => void;
 };
 
 function isRifleSlot(slot: HydratedInventorySlot) {
@@ -28,18 +29,20 @@ function getVisualGridSize(slot: HydratedInventorySlot) {
   return { width, height };
 }
 
-export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
+export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridProps) {
   return (
     <div className="grid auto-rows-[3.75rem] grid-cols-6 gap-1.5">
       {slots.map((slot) => {
         const { width, height } = getVisualGridSize(slot);
         const showQuantity = slot.quantity > 1;
         const isRifle = isRifleSlot(slot);
+        const isClickable = Boolean(onSelectSlot);
 
         return (
           <button
             key={slot.slotId}
             type="button"
+            onClick={() => onSelectSlot?.(slot)}
             style={{
               gridColumn: `span ${width} / span ${width}`,
               gridRow: `span ${height} / span ${height}`,
@@ -47,6 +50,7 @@ export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
             className={[
               "relative overflow-hidden border bg-black/60 p-1 text-left active:scale-[0.98]",
               rarityClassNames[slot.item.rarity],
+              isClickable ? "cursor-pointer" : "cursor-default",
             ].join(" ")}
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
