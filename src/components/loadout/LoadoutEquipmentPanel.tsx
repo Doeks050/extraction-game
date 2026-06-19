@@ -19,6 +19,7 @@ type EquipmentRow = {
 
 function buildSlotRow(slot: LoadoutSlot): EquipmentRow {
   const item = slot.itemId ? getItemById(slot.itemId) : undefined;
+  const showQuantity = slot.quantity && slot.quantity > 1;
 
   return {
     id: slot.id,
@@ -26,7 +27,7 @@ function buildSlotRow(slot: LoadoutSlot): EquipmentRow {
     itemName: item?.name ?? "Empty Slot",
     meta: item?.tags.join(" · ") ?? "Tap to select from stash",
     marker: item ? item.name.slice(0, 2) : "--",
-    rightText: slot.quantity ? `x${slot.quantity}` : undefined,
+    rightText: showQuantity ? `x${slot.quantity}` : undefined,
   };
 }
 
