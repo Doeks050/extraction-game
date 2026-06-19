@@ -25,14 +25,19 @@ export function StashClient({ slots }: StashClientProps) {
   }
 
   return (
-    <Panel title={selectedWeaponSlot ? "Weapon Detail" : "Inventory Grid"} className="min-h-0 overflow-y-auto p-2">
+    <Panel
+      title={selectedWeaponSlot ? "Weapon Detail" : "Inventory Grid"}
+      className="min-h-0 overflow-hidden p-2"
+    >
       {selectedWeaponSlot ? (
         <WeaponDetailPanel
           slot={selectedWeaponSlot}
           onBack={() => setSelectedWeaponSlot(null)}
         />
       ) : hydratedSlots.length > 0 ? (
-        <StashInventoryGrid slots={hydratedSlots} onSelectSlot={handleSelectSlot} />
+        <div className="h-full overflow-y-auto">
+          <StashInventoryGrid slots={hydratedSlots} onSelectSlot={handleSelectSlot} />
+        </div>
       ) : (
         <p className="text-xs font-bold uppercase text-zinc-500">No items in stash</p>
       )}
