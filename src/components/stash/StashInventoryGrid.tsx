@@ -1,3 +1,4 @@
+import { ItemImage } from "../items/ItemImage";
 import type { HydratedInventorySlot } from "../../lib/items";
 import { formatCredits } from "../../lib/items";
 
@@ -46,9 +47,13 @@ export function StashInventoryGrid({
 
             <div className="relative flex h-full flex-col justify-between">
               <div>
-                <div className="flex h-6 items-center justify-center text-[13px] font-black uppercase text-zinc-500">
-                  {slot.item.name.slice(0, 2)}
-                </div>
+                <ItemImage
+                  src={slot.item.image}
+                  alt={slot.item.name}
+                  fallback={slot.item.name.slice(0, 2)}
+                  className={isLarge ? "h-12" : "h-6"}
+                  imageClassName="opacity-95"
+                />
 
                 <p
                   className={[
