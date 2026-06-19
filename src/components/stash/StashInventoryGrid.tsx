@@ -18,7 +18,7 @@ function getVisualGridSize(slot: HydratedInventorySlot) {
   const { width, height } = slot.item.gridSize;
 
   if (slot.item.category === "weapon" && slot.item.tags.includes("rifle")) {
-    return { width: 3, height: 2 };
+    return { width: 4, height: 2 };
   }
 
   return { width, height };
@@ -50,12 +50,12 @@ export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
               src={slot.item.image}
               alt={slot.item.name}
               fallback={slot.item.name.slice(0, 2)}
-              className="absolute inset-1 flex items-center justify-center"
+              className="absolute inset-2 flex items-center justify-center"
               imageClassName="p-1 opacity-95"
             />
 
-            <div className="absolute right-1.5 top-1.5 max-w-[75%] bg-black/70 px-1 py-0.5 text-right">
-              <p className="truncate text-[8px] font-black uppercase leading-3 text-zinc-100">
+            <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
+              <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
                 {slot.item.name}
               </p>
             </div>
