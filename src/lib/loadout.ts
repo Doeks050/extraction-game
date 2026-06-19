@@ -25,9 +25,9 @@ export function calculateLoadoutStats(loadout: CurrentLoadout): LoadoutStatSumma
     return total + entry.item.weightKg * entry.quantity;
   }, 0);
 
-  const armorItems = loadout.equipment
+  const protectionItems = loadout.equipment
     .map((slot) => (slot.itemId ? getItemById(slot.itemId) : undefined))
-    .filter((item) => item?.category === "armor");
+    .filter((item) => item?.category === "chest_gear" || item?.category === "helmet");
 
   const weaponItems = loadout.equipment
     .map((slot) => (slot.itemId ? getItemById(slot.itemId) : undefined))
@@ -37,7 +37,7 @@ export function calculateLoadoutStats(loadout: CurrentLoadout): LoadoutStatSumma
     .map((slot) => (slot.itemId ? getItemById(slot.itemId) : undefined))
     .filter((item) => item?.category === "medical");
 
-  const protection = armorItems.reduce((total, item) => {
+  const protection = protectionItems.reduce((total, item) => {
     return total + (item?.stats?.armorClass ?? 0) * 25;
   }, 0);
 
@@ -46,7 +46,7 @@ export function calculateLoadoutStats(loadout: CurrentLoadout): LoadoutStatSumma
   }, 0);
 
   const hasWeapon = weaponItems.length > 0;
-  const hasArmor = armorItems.length > 0;
+  const hasArmor = protectionItems.length > 0;
   const hasMedical = medicalItems.length > 0;
   const hasAmmo = loadout.ammoReserve.length > 0;
 
