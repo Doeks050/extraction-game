@@ -14,6 +14,11 @@ export type ItemCategory =
 
 export type ItemRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 
+export type ItemGridSize = {
+  width: number;
+  height: number;
+};
+
 export type ItemStatBlock = {
   damage?: number;
   penetration?: number;
@@ -33,6 +38,7 @@ export type GameItem = {
   weightKg: number;
   value: number;
   maxStack: number;
+  gridSize: ItemGridSize;
   description: string;
   tags: string[];
   image?: string;
