@@ -9,90 +9,96 @@ type WeaponDetailPanelProps = {
 
 export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_auto_1fr] gap-2">
+    <div className="grid h-full min-h-0 grid-rows-[auto_1.15fr_auto_1fr] gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
           onClick={onBack}
-          className="border border-zinc-800 bg-black/60 px-3 py-2 text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300 active:border-orange-500 active:text-orange-300"
+          className="h-8 border border-zinc-800 bg-black/60 px-3 text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300 active:border-orange-500 active:text-orange-300"
         >
           Back
         </button>
 
         <div className="min-w-0 text-right">
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
+          <p className="text-[8px] font-black uppercase tracking-[0.18em] text-orange-400">
             Weapon Detail
           </p>
-          <p className="truncate text-base font-black uppercase text-zinc-100">
+          <p className="truncate text-sm font-black uppercase leading-4 text-zinc-100">
             {slot.item.name}
           </p>
         </div>
       </div>
 
-      <div className="relative h-36 overflow-hidden border border-zinc-800 bg-black/60">
+      <div className="relative min-h-0 overflow-hidden border border-zinc-800 bg-black/60">
         <div className="absolute inset-1 border border-zinc-900 bg-zinc-950/80" />
         {slot.item.image ? (
-          <img
-            src={slot.item.image}
-            alt={slot.item.name}
-            draggable={false}
-            className="relative h-full w-full object-contain p-3 opacity-95"
-          />
+          <div className="absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden">
+            <img
+              src={slot.item.image}
+              alt={slot.item.name}
+              draggable={false}
+              className="h-auto w-full max-w-none object-contain opacity-95"
+            />
+          </div>
         ) : (
           <div className="relative flex h-full w-full items-center justify-center text-3xl font-black uppercase text-zinc-600">
             {slot.item.name.slice(0, 2)}
           </div>
         )}
+
+        <div className="absolute left-1.5 top-1.5 bg-black/70 px-1.5 py-0.5">
+          <p className="text-[9px] font-black uppercase leading-3 text-zinc-100">
+            {slot.item.name}
+          </p>
+        </div>
       </div>
 
-      <div className="grid min-h-0 grid-rows-[auto_1fr] gap-2">
-        <div className="grid grid-cols-3 gap-1.5">
-          <div className="border border-zinc-800 bg-black/55 p-2">
-            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-zinc-600">
-              Value
-            </p>
-            <p className="text-xs font-black uppercase text-orange-400">
-              {formatCredits(slot.item.value)}
-            </p>
-          </div>
-          <div className="border border-zinc-800 bg-black/55 p-2">
-            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-zinc-600">
-              Weight
-            </p>
-            <p className="text-xs font-black uppercase text-zinc-100">
-              {formatWeight(slot.item.weightKg)}
-            </p>
-          </div>
-          <div className="border border-zinc-800 bg-black/55 p-2">
-            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-zinc-600">
-              Size
-            </p>
-            <p className="text-xs font-black uppercase text-zinc-100">
-              {slot.item.gridSize.width}x{slot.item.gridSize.height}
-            </p>
-          </div>
-        </div>
-
-        <div className="min-h-0 overflow-y-auto border border-zinc-800 bg-black/45 p-2">
-          <p className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">
-            Attachment Slots
+      <div className="grid grid-cols-3 gap-1.5">
+        <div className="border border-zinc-800 bg-black/55 px-2 py-1.5">
+          <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
+            Value
           </p>
+          <p className="text-[11px] font-black uppercase leading-4 text-orange-400">
+            {formatCredits(slot.item.value)}
+          </p>
+        </div>
+        <div className="border border-zinc-800 bg-black/55 px-2 py-1.5">
+          <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
+            Weight
+          </p>
+          <p className="text-[11px] font-black uppercase leading-4 text-zinc-100">
+            {formatWeight(slot.item.weightKg)}
+          </p>
+        </div>
+        <div className="border border-zinc-800 bg-black/55 px-2 py-1.5">
+          <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
+            Size
+          </p>
+          <p className="text-[11px] font-black uppercase leading-4 text-zinc-100">
+            {slot.item.gridSize.width}x{slot.item.gridSize.height}
+          </p>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-2 gap-1.5">
-            {defaultWeaponAttachmentSlots.map((attachmentSlot) => (
-              <div
-                key={attachmentSlot.id}
-                className="border border-zinc-800 bg-zinc-950/80 p-2"
-              >
-                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-orange-400">
-                  {attachmentSlot.label}
-                </p>
-                <p className="mt-1 truncate text-[9px] font-bold uppercase text-zinc-500">
-                  Empty Slot
-                </p>
-              </div>
-            ))}
-          </div>
+      <div className="min-h-0 border border-zinc-800 bg-black/45 p-2">
+        <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.18em] text-zinc-500">
+          Attachment Slots
+        </p>
+
+        <div className="grid h-[calc(100%-1rem)] grid-cols-2 grid-rows-4 gap-1.5">
+          {defaultWeaponAttachmentSlots.map((attachmentSlot) => (
+            <div
+              key={attachmentSlot.id}
+              className="min-h-0 border border-zinc-800 bg-zinc-950/80 px-2 py-1.5"
+            >
+              <p className="truncate text-[9px] font-black uppercase leading-3 tracking-[0.12em] text-orange-400">
+                {attachmentSlot.label}
+              </p>
+              <p className="truncate text-[8px] font-bold uppercase leading-3 text-zinc-500">
+                Empty Slot
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
