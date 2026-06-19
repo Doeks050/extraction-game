@@ -1,10 +1,8 @@
 export type LoadoutSlotId =
   | "primary"
-  | "secondary"
   | "sidearm"
-  | "armor"
+  | "chest_gear"
   | "helmet"
-  | "rig"
   | "backpack";
 
 export type QuickSlotId = "quick_1" | "quick_2" | "quick_3" | "quick_4";
