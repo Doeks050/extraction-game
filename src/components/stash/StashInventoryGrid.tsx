@@ -12,27 +12,20 @@ const rarityClassNames = {
 
 type StashInventoryGridProps = {
   slots: HydratedInventorySlot[];
-  selectedSlotId: string;
-  onSelectSlot: (slotId: string) => void;
 };
 
-export function StashInventoryGrid({
-  slots,
-  selectedSlotId,
-  onSelectSlot,
-}: StashInventoryGridProps) {
+export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
   return (
-    <div className="grid auto-rows-[3.5rem] grid-cols-6 gap-1.5">
+    <div className="grid auto-rows-[3.75rem] grid-cols-6 gap-1.5">
       {slots.map((slot) => {
-        const isSelected = selectedSlotId === slot.slotId;
         const { width, height } = slot.item.gridSize;
         const isLarge = width > 1 || height > 1;
+        const showQuantity = slot.quantity > 1;
 
         return (
           <button
             key={slot.slotId}
             type="button"
-            onClick={() => onSelectSlot(slot.slotId)}
             style={{
               gridColumn: `span ${width} / span ${width}`,
               gridRow: `span ${height} / span ${height}`,
@@ -40,34 +33,33 @@ export function StashInventoryGrid({
             className={[
               "relative overflow-hidden border bg-black/60 p-1 text-left active:scale-[0.98]",
               rarityClassNames[slot.item.rarity],
-              isSelected ? "ring-1 ring-orange-400" : "",
             ].join(" ")}
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
-            <div className="relative flex h-full flex-col justify-between">
-              <div>
-                <ItemImage
-                  src={slot.item.image}
-                  alt={slot.item.name}
-                  fallback={slot.item.name.slice(0, 2)}
-                  className={isLarge ? "h-12" : "h-6"}
-                  imageClassName="opacity-95"
-                />
+            <div className="relative grid h-full grid-rows-[1fr_auto] gap-0.5">
+              <ItemImage
+                src={slot.item.image}
+                alt={slot.item.name}
+                fallback={slot.item.name.slice(0, 2)}
+                className="min-h-0 w-full"
+                imageClassName={isLarge ? "p-1 opacity-95" : "p-0.5 opacity-95"}
+              />
 
+              <div className="min-h-0 border-t border-zinc-800/80 pt-0.5">
                 <p
                   className={[
-                    "mt-0.5 font-black uppercase leading-tight text-zinc-200",
-                    isLarge ? "line-clamp-2 text-[9px]" : "line-clamp-1 text-[7px]",
+                    "truncate font-black uppercase leading-3 text-zinc-100",
+                    isLarge ? "text-[9px]" : "text-[7px]",
                   ].join(" ")}
                 >
                   {slot.item.name}
                 </p>
-              </div>
 
-              <div className="flex items-center justify-between gap-1 text-[8px] font-black uppercase">
-                <span className="text-orange-400">x{slot.quantity}</span>
-                <span className="truncate text-zinc-600">{formatCredits(slot.totalValue)}</span>
+                <div className="flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
+                  <span className="text-orange-400">{showQuantity ? `x${slot.quantity}` : ""}</span>
+                  <span className="truncate text-zinc-600">{formatCredits(slot.totalValue)}</span>
+                </div>
               </div>
             </div>
           </button>
