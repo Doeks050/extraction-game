@@ -1,16 +1,16 @@
 export type ItemCategory =
   | "weapon"
   | "ammo"
-  | "armor"
-  | "medical"
-  | "food"
+  | "magazine"
   | "attachment"
-  | "crafting"
+  | "chest_gear"
+  | "helmet"
+  | "backpack"
+  | "medical"
   | "valuable"
+  | "hideout_material"
   | "quest"
-  | "key"
-  | "seed"
-  | "upgrade_part";
+  | "key";
 
 export type ItemRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 
