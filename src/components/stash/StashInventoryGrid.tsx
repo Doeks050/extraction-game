@@ -21,32 +21,49 @@ export function StashInventoryGrid({
   onSelectSlot,
 }: StashInventoryGridProps) {
   return (
-    <div className="grid grid-cols-4 gap-1.5">
+    <div className="grid auto-rows-[3.5rem] grid-cols-6 gap-1.5">
       {slots.map((slot) => {
         const isSelected = selectedSlotId === slot.slotId;
+        const { width, height } = slot.item.gridSize;
+        const isLarge = width > 1 || height > 1;
 
         return (
           <button
             key={slot.slotId}
             type="button"
             onClick={() => onSelectSlot(slot.slotId)}
+            style={{
+              gridColumn: `span ${width} / span ${width}`,
+              gridRow: `span ${height} / span ${height}`,
+            }}
             className={[
-              "relative h-20 border bg-black/60 p-1 text-left active:scale-[0.98]",
+              "relative overflow-hidden border bg-black/60 p-1 text-left active:scale-[0.98]",
               rarityClassNames[slot.item.rarity],
               isSelected ? "ring-1 ring-orange-400" : "",
             ].join(" ")}
           >
-            <div className="flex h-8 items-center justify-center border border-zinc-900 bg-zinc-950 text-[16px] font-black uppercase text-zinc-500">
-              {slot.item.name.slice(0, 2)}
-            </div>
+            <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
-            <p className="mt-1 line-clamp-2 text-[8px] font-black uppercase leading-tight text-zinc-200">
-              {slot.item.name}
-            </p>
+            <div className="relative flex h-full flex-col justify-between">
+              <div>
+                <div className="flex h-6 items-center justify-center text-[13px] font-black uppercase text-zinc-500">
+                  {slot.item.name.slice(0, 2)}
+                </div>
 
-            <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between gap-1 text-[8px] font-black uppercase">
-              <span className="text-orange-400">x{slot.quantity}</span>
-              <span className="text-zinc-600">{formatCredits(slot.totalValue)}</span>
+                <p
+                  className={[
+                    "mt-0.5 font-black uppercase leading-tight text-zinc-200",
+                    isLarge ? "line-clamp-2 text-[9px]" : "line-clamp-1 text-[7px]",
+                  ].join(" ")}
+                >
+                  {slot.item.name}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between gap-1 text-[8px] font-black uppercase">
+                <span className="text-orange-400">x{slot.quantity}</span>
+                <span className="truncate text-zinc-600">{formatCredits(slot.totalValue)}</span>
+              </div>
             </div>
           </button>
         );
