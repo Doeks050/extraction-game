@@ -51,17 +51,30 @@ export function StashInventoryGrid({ slots }: StashInventoryGridProps) {
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
-            <ItemImage
-              src={slot.item.image}
-              alt={slot.item.name}
-              fallback={slot.item.name.slice(0, 2)}
-              className={
-                isRifle
-                  ? "absolute inset-x-2 bottom-3 top-4 flex items-center justify-center"
-                  : "absolute inset-2 flex items-center justify-center"
-              }
-              imageClassName={isRifle ? "p-0 opacity-95" : "p-1 opacity-95"}
-            />
+            {isRifle ? (
+              <div className="absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden">
+                {slot.item.image ? (
+                  <img
+                    src={slot.item.image}
+                    alt={slot.item.name}
+                    draggable={false}
+                    className="h-auto w-full max-w-none object-contain opacity-95"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-center text-sm font-black uppercase text-zinc-500">
+                    {slot.item.name.slice(0, 2)}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <ItemImage
+                src={slot.item.image}
+                alt={slot.item.name}
+                fallback={slot.item.name.slice(0, 2)}
+                className="absolute inset-2 flex items-center justify-center"
+                imageClassName="p-1 opacity-95"
+              />
+            )}
 
             <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
               <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
