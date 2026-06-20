@@ -19,7 +19,6 @@ export const weapons: GameItem[] = [
       recoilControl: 61,
       fireRate: 78,
       effectiveRange: 68,
-      durability: 96,
     },
   },
   {
@@ -39,7 +38,6 @@ export const weapons: GameItem[] = [
       recoilControl: 54,
       fireRate: 48,
       effectiveRange: 32,
-      durability: 94,
     },
   },
 ];
