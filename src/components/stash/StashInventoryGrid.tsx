@@ -34,7 +34,7 @@ function getWeaponImageClassName(slot: HydratedInventorySlot) {
   const weaponClass = getWeaponClassFromTags(slot.item.tags);
 
   if (weaponClass?.id === "pistol") {
-    return "h-auto w-[78%] max-w-none object-contain opacity-95";
+    return "h-full w-auto max-w-full object-contain opacity-95";
   }
 
   return "h-auto w-full max-w-none object-contain opacity-95";
@@ -44,7 +44,7 @@ function getWeaponImageBoxClassName(slot: HydratedInventorySlot) {
   const weaponClass = getWeaponClassFromTags(slot.item.tags);
 
   if (weaponClass?.id === "pistol") {
-    return "absolute inset-x-1.5 bottom-3 top-4 flex items-center justify-center overflow-hidden";
+    return "absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden";
   }
 
   return "absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden";
