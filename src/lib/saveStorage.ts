@@ -1,4 +1,6 @@
+import { getItemById } from "./items";
 import type { GameState } from "../types/state";
+import type { InventorySlot } from "../types/items";
 
 export const SAVE_STORAGE_KEY = "extraction-game-save-v5";
 
@@ -42,6 +44,21 @@ export function cloneGameState(state: GameState): GameState {
   return JSON.parse(JSON.stringify(state)) as GameState;
 }
 
+function normalizeInventorySlots(slots: InventorySlot[]) {
+  return slots.map((slot) => {
+    const item = getItemById(slot.itemId);
+
+    if (item?.category !== "weapon") {
+      return slot;
+    }
+
+    return {
+      ...slot,
+      currentDurability: slot.currentDurability ?? 100,
+    };
+  });
+}
+
 export function normalizeSavedGameState(
   savedState: Partial<GameState> | null,
   defaultState: GameState,
@@ -67,7 +84,7 @@ export function normalizeSavedGameState(
       activeTask: savedOperator?.activeTask ?? defaultState.operator.activeTask,
     },
     hideoutModules: savedState.hideoutModules ?? defaultState.hideoutModules,
-    stash: savedState.stash ?? defaultState.stash,
+    stash: normalizeInventorySlots(savedState.stash ?? defaultState.stash),
     loadout: savedState.loadout ?? defaultState.loadout,
     tasks: savedState.tasks ?? defaultState.tasks,
   };
