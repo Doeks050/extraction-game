@@ -12,7 +12,7 @@ export const weapons: GameItem[] = [
     gridSize: { width: 3, height: 1 },
     image: "/items/weapons/m4a1.png",
     description: "Reliable 5.56 rifle platform for mid-range raids.",
-    tags: ["rifle", "5.56x45"],
+    tags: ["assault_rifle", "rifle", "5.56x45"],
     stats: {
       accuracy: 72,
       handling: 64,
