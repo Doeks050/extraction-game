@@ -1,4 +1,4 @@
-import { getWeaponVisualGridSize } from "../../data/weapons/weaponClasses";
+import { getWeaponClassFromTags, getWeaponVisualGridSize } from "../../data/weapons/weaponClasses";
 import { ItemImage } from "../items/ItemImage";
 import type { HydratedInventorySlot } from "../../lib/items";
 import { formatCredits } from "../../lib/items";
@@ -30,6 +30,26 @@ function getVisualGridSize(slot: HydratedInventorySlot) {
   return slot.item.gridSize;
 }
 
+function getWeaponImageClassName(slot: HydratedInventorySlot) {
+  const weaponClass = getWeaponClassFromTags(slot.item.tags);
+
+  if (weaponClass?.id === "pistol") {
+    return "h-auto w-[78%] max-w-none object-contain opacity-95";
+  }
+
+  return "h-auto w-full max-w-none object-contain opacity-95";
+}
+
+function getWeaponImageBoxClassName(slot: HydratedInventorySlot) {
+  const weaponClass = getWeaponClassFromTags(slot.item.tags);
+
+  if (weaponClass?.id === "pistol") {
+    return "absolute inset-x-1.5 bottom-3 top-4 flex items-center justify-center overflow-hidden";
+  }
+
+  return "absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden";
+}
+
 export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridProps) {
   return (
     <div className="grid auto-rows-[3.75rem] grid-cols-6 gap-1.5">
@@ -57,13 +77,13 @@ export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridPr
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
             {isWeapon ? (
-              <div className="absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden">
+              <div className={getWeaponImageBoxClassName(slot)}>
                 {slot.item.image ? (
                   <img
                     src={slot.item.image}
                     alt={slot.item.name}
                     draggable={false}
-                    className="h-auto w-full max-w-none object-contain opacity-95"
+                    className={getWeaponImageClassName(slot)}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-center text-sm font-black uppercase text-zinc-500">
