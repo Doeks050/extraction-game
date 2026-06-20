@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getWeaponClassFromTags } from "../../data/weapons/weaponClasses";
 import { defaultWeaponAttachmentSlots } from "../../data/weapons/attachmentSlots";
 import type { HydratedInventorySlot } from "../../lib/items";
 import { formatCredits, formatWeight } from "../../lib/items";
@@ -21,6 +22,26 @@ function getAmmoType(slot: HydratedInventorySlot) {
 
 function clampStat(value: number) {
   return Math.max(0, Math.min(100, value));
+}
+
+function getWeaponImageClassName(slot: HydratedInventorySlot) {
+  const weaponClass = getWeaponClassFromTags(slot.item.tags);
+
+  if (weaponClass?.id === "pistol") {
+    return "h-auto w-[78%] max-w-none object-contain opacity-95";
+  }
+
+  return "h-auto w-full max-w-none object-contain opacity-95";
+}
+
+function getWeaponImageBoxClassName(slot: HydratedInventorySlot) {
+  const weaponClass = getWeaponClassFromTags(slot.item.tags);
+
+  if (weaponClass?.id === "pistol") {
+    return "absolute inset-x-4 bottom-6 top-4 flex items-center justify-center overflow-hidden";
+  }
+
+  return "absolute inset-x-2 bottom-6 top-4 flex items-center justify-center overflow-hidden";
 }
 
 function StatBar({ label, value }: StatBarProps) {
@@ -82,12 +103,12 @@ export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
       <div className="relative min-h-0 overflow-hidden border border-zinc-800 bg-black/60">
         <div className="absolute inset-1 border border-zinc-900 bg-zinc-950/80" />
         {slot.item.image ? (
-          <div className="absolute inset-x-2 bottom-6 top-4 flex items-center justify-center overflow-hidden">
+          <div className={getWeaponImageBoxClassName(slot)}>
             <img
               src={slot.item.image}
               alt={slot.item.name}
               draggable={false}
-              className="h-auto w-full max-w-none object-contain opacity-95"
+              className={getWeaponImageClassName(slot)}
             />
           </div>
         ) : (
