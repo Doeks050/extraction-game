@@ -11,7 +11,7 @@ export const currentLoadout: CurrentLoadout = {
     {
       id: "sidearm",
       label: "Side Arm",
-      itemId: "wpn_glock19x",
+      itemId: "wpn_glock17",
       quantity: 1,
     },
     {
