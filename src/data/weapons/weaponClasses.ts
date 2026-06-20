@@ -49,7 +49,7 @@ export const weaponClassConfigs: Record<WeaponClassId, WeaponClassConfig> = {
   pistol: {
     id: "pistol",
     label: "Pistol",
-    visualGridSize: { width: 1, height: 2 },
+    visualGridSize: { width: 2, height: 1 },
     attachmentSlotIds: ["optic", "muzzle", "barrel", "magazine", "grip", "light_laser"],
   },
   sniper: {
