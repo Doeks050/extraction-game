@@ -13,7 +13,14 @@ export const weapons: GameItem[] = [
     image: "/items/weapons/m4a1.png",
     description: "Reliable 5.56 rifle platform for mid-range raids.",
     tags: ["rifle", "5.56x45"],
-    stats: { damage: 42, ergonomics: 58, recoilControl: 44, durability: 96 },
+    stats: {
+      accuracy: 72,
+      handling: 64,
+      recoilControl: 61,
+      fireRate: 78,
+      effectiveRange: 68,
+      durability: 96,
+    },
   },
   {
     id: "wpn_glock19x",
@@ -26,6 +33,13 @@ export const weapons: GameItem[] = [
     gridSize: { width: 2, height: 1 },
     description: "Compact sidearm chambered in 9x19mm.",
     tags: ["pistol", "9x19"],
-    stats: { damage: 24, ergonomics: 74, recoilControl: 62, durability: 94 },
+    stats: {
+      accuracy: 58,
+      handling: 82,
+      recoilControl: 54,
+      fireRate: 48,
+      effectiveRange: 32,
+      durability: 94,
+    },
   },
 ];
