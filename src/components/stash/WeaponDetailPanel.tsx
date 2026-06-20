@@ -11,9 +11,15 @@ function getAmmoType(slot: HydratedInventorySlot) {
   return slot.item.tags.find((tag) => tag.includes("x")) ?? "Unknown";
 }
 
+function getShortSlotLabel(label: string) {
+  if (label === "Magazine") return "Mag";
+  if (label === "Light / Laser") return "Laser";
+  return label;
+}
+
 export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_1.2fr_auto_1fr] gap-1.5">
+    <div className="grid h-full min-h-0 grid-rows-[auto_1.25fr_auto_0.8fr] gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
@@ -84,21 +90,21 @@ export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
         </div>
       </div>
 
-      <div className="min-h-0 border border-zinc-800 bg-black/45 p-1.5">
-        <p className="mb-1 text-[8px] font-black uppercase tracking-[0.18em] text-zinc-500">
+      <div className="grid min-h-0 grid-rows-[auto_1fr] border border-zinc-800 bg-black/45 p-1.5">
+        <p className="text-[8px] font-black uppercase leading-3 tracking-[0.18em] text-zinc-500">
           Attachment Slots
         </p>
 
-        <div className="grid h-[calc(100%-0.875rem)] grid-cols-2 grid-rows-4 gap-1">
+        <div className="grid min-h-0 grid-cols-4 grid-rows-2 gap-1 pt-1">
           {defaultWeaponAttachmentSlots.map((attachmentSlot) => (
             <div
               key={attachmentSlot.id}
-              className="min-h-0 border border-zinc-800 bg-zinc-950/80 px-1.5 py-1"
+              className="flex min-h-0 flex-col justify-center border border-zinc-800 bg-zinc-950/80 px-1 py-1 text-center"
             >
-              <p className="truncate text-[8px] font-black uppercase leading-[10px] tracking-[0.1em] text-orange-400">
-                {attachmentSlot.label}
+              <p className="truncate text-[7px] font-black uppercase leading-[9px] tracking-[0.08em] text-orange-400">
+                {getShortSlotLabel(attachmentSlot.label)}
               </p>
-              <p className="truncate text-[7px] font-bold uppercase leading-[10px] text-zinc-500">
+              <p className="truncate text-[6px] font-bold uppercase leading-[8px] text-zinc-500">
                 Empty
               </p>
             </div>
