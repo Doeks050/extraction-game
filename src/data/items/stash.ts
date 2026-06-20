@@ -1,8 +1,8 @@
 import type { InventorySlot } from "../../types/items";
 
 export const starterStash: InventorySlot[] = [
-  { slotId: "stash_001", itemId: "wpn_m4a1", quantity: 1 },
-  { slotId: "stash_002", itemId: "wpn_glock19x", quantity: 1 },
+  { slotId: "stash_001", itemId: "wpn_m4a1", quantity: 1, currentDurability: 100 },
+  { slotId: "stash_002", itemId: "wpn_glock19x", quantity: 1, currentDurability: 100 },
   { slotId: "stash_003", itemId: "ammo_556_m855a1", quantity: 60 },
   { slotId: "stash_004", itemId: "ammo_9x19_fmj", quantity: 60 },
   { slotId: "stash_005", itemId: "mag_ar_30", quantity: 2 },
