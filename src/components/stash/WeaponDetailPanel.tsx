@@ -44,7 +44,7 @@ function StatBar({ label, value }: StatBarProps) {
 export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const stats = slot.item.stats ?? {};
-  const durability = clampStat(stats.durability ?? 0);
+  const durability = clampStat(slot.currentDurability ?? 100);
 
   const weaponStats = [
     { label: "Accuracy", value: stats.accuracy ?? 0 },
@@ -108,7 +108,7 @@ export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
               Durability
             </p>
             <p className="text-[7px] font-black uppercase leading-3 text-orange-400">
-              {durability}
+              {durability}%
             </p>
           </div>
           <div className="h-1.5 overflow-hidden bg-zinc-900">
