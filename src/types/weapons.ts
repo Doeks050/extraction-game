@@ -1,6 +1,7 @@
 export type WeaponAttachmentSlotId =
   | "optic"
   | "muzzle"
+  | "barrel"
   | "magazine"
   | "grip"
   | "stock"
