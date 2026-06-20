@@ -11,15 +11,9 @@ function getAmmoType(slot: HydratedInventorySlot) {
   return slot.item.tags.find((tag) => tag.includes("x")) ?? "Unknown";
 }
 
-function getShortSlotLabel(label: string) {
-  if (label === "Magazine") return "Mag";
-  if (label === "Light / Laser") return "Laser";
-  return label;
-}
-
 export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_1.35fr_auto_0.72fr] gap-1">
+    <div className="grid h-full min-h-0 grid-rows-[auto_1.22fr_auto_1fr] gap-1">
       <div className="flex h-7 items-center justify-between gap-2">
         <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
           Weapon Detail
@@ -86,16 +80,16 @@ export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
       </div>
 
       <div className="min-h-0 border border-zinc-800 bg-black/45 p-1">
-        <div className="grid h-full min-h-0 grid-cols-4 grid-rows-2 gap-1">
+        <div className="grid h-full min-h-0 grid-cols-2 grid-rows-4 gap-1">
           {defaultWeaponAttachmentSlots.map((attachmentSlot) => (
             <div
               key={attachmentSlot.id}
-              className="grid min-h-0 grid-rows-[1fr_1fr] items-center border border-zinc-800 bg-zinc-950/80 px-1 text-center"
+              className="grid min-h-0 grid-cols-[1fr_auto] items-center border border-zinc-800 bg-zinc-950/80 px-2"
             >
-              <p className="truncate self-end text-[7px] font-black uppercase leading-[9px] tracking-[0.08em] text-orange-400">
-                {getShortSlotLabel(attachmentSlot.label)}
+              <p className="truncate text-[8px] font-black uppercase leading-3 tracking-[0.1em] text-orange-400">
+                {attachmentSlot.label}
               </p>
-              <p className="truncate self-start text-[6px] font-bold uppercase leading-[8px] text-zinc-500">
+              <p className="pl-2 text-[7px] font-bold uppercase leading-3 text-zinc-500">
                 Empty
               </p>
             </div>
