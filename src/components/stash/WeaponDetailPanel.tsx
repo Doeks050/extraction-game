@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { getWeaponClassFromTags } from "../../data/weapons/weaponClasses";
-import { defaultWeaponAttachmentSlots } from "../../data/weapons/attachmentSlots";
+import { defaultWeaponAttachmentSlots, getWeaponAttachmentSlotsByIds } from "../../data/weapons/attachmentSlots";
 import type { HydratedInventorySlot } from "../../lib/items";
 import { formatCredits, formatWeight } from "../../lib/items";
 
@@ -28,7 +28,7 @@ function getWeaponImageClassName(slot: HydratedInventorySlot) {
   const weaponClass = getWeaponClassFromTags(slot.item.tags);
 
   if (weaponClass?.id === "pistol") {
-    return "h-[112%] w-auto max-w-[112%] object-contain opacity-95";
+    return "h-[120%] w-auto max-w-[120%] object-contain opacity-95";
   }
 
   return "h-auto w-full max-w-none object-contain opacity-95";
@@ -66,6 +66,11 @@ export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const stats = slot.item.stats ?? {};
   const durability = clampStat(slot.currentDurability ?? 100);
+  const weaponClass = getWeaponClassFromTags(slot.item.tags);
+  const attachmentSlots = weaponClass
+    ? getWeaponAttachmentSlotsByIds(weaponClass.attachmentSlotIds)
+    : defaultWeaponAttachmentSlots;
+  const attachmentGridRows = attachmentSlots.length <= 6 ? "grid-rows-3" : "grid-rows-4";
 
   const weaponStats = [
     { label: "Accuracy", value: stats.accuracy ?? 0 },
@@ -166,8 +171,8 @@ export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
       </div>
 
       <div className="min-h-0 border border-zinc-800 bg-black/45 p-1">
-        <div className="grid h-full min-h-0 grid-cols-2 grid-rows-4 gap-1">
-          {defaultWeaponAttachmentSlots.map((attachmentSlot) => (
+        <div className={`grid h-full min-h-0 grid-cols-2 ${attachmentGridRows} gap-1`}>
+          {attachmentSlots.map((attachmentSlot) => (
             <div
               key={attachmentSlot.id}
               className="grid min-h-0 grid-cols-[1fr_auto] items-center border border-zinc-800 bg-zinc-950/80 px-2"
