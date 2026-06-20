@@ -7,9 +7,13 @@ type WeaponDetailPanelProps = {
   onBack: () => void;
 };
 
+function getAmmoType(slot: HydratedInventorySlot) {
+  return slot.item.tags.find((tag) => tag.includes("x")) ?? "Unknown";
+}
+
 export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_1.15fr_auto_1fr] gap-1.5">
+    <div className="grid h-full min-h-0 grid-rows-[auto_1.2fr_auto_1fr] gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
@@ -54,48 +58,48 @@ export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
       </div>
 
       <div className="grid grid-cols-3 gap-1.5">
-        <div className="border border-zinc-800 bg-black/55 px-2 py-1.5">
+        <div className="border border-zinc-800 bg-black/55 px-2 py-1">
           <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
             Value
           </p>
-          <p className="text-[11px] font-black uppercase leading-4 text-orange-400">
+          <p className="text-[10px] font-black uppercase leading-3 text-orange-400">
             {formatCredits(slot.item.value)}
           </p>
         </div>
-        <div className="border border-zinc-800 bg-black/55 px-2 py-1.5">
+        <div className="border border-zinc-800 bg-black/55 px-2 py-1">
           <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
             Weight
           </p>
-          <p className="text-[11px] font-black uppercase leading-4 text-zinc-100">
+          <p className="text-[10px] font-black uppercase leading-3 text-zinc-100">
             {formatWeight(slot.item.weightKg)}
           </p>
         </div>
-        <div className="border border-zinc-800 bg-black/55 px-2 py-1.5">
+        <div className="border border-zinc-800 bg-black/55 px-2 py-1">
           <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
-            Size
+            Ammo
           </p>
-          <p className="text-[11px] font-black uppercase leading-4 text-zinc-100">
-            {slot.item.gridSize.width}x{slot.item.gridSize.height}
+          <p className="truncate text-[10px] font-black uppercase leading-3 text-zinc-100">
+            {getAmmoType(slot)}
           </p>
         </div>
       </div>
 
-      <div className="min-h-0 border border-zinc-800 bg-black/45 p-2">
-        <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.18em] text-zinc-500">
+      <div className="min-h-0 border border-zinc-800 bg-black/45 p-1.5">
+        <p className="mb-1 text-[8px] font-black uppercase tracking-[0.18em] text-zinc-500">
           Attachment Slots
         </p>
 
-        <div className="grid h-[calc(100%-1rem)] grid-cols-2 grid-rows-4 gap-1.5">
+        <div className="grid h-[calc(100%-0.875rem)] grid-cols-2 grid-rows-4 gap-1">
           {defaultWeaponAttachmentSlots.map((attachmentSlot) => (
             <div
               key={attachmentSlot.id}
-              className="min-h-0 border border-zinc-800 bg-zinc-950/80 px-2 py-1.5"
+              className="min-h-0 border border-zinc-800 bg-zinc-950/80 px-1.5 py-1"
             >
-              <p className="truncate text-[9px] font-black uppercase leading-3 tracking-[0.12em] text-orange-400">
+              <p className="truncate text-[8px] font-black uppercase leading-[10px] tracking-[0.1em] text-orange-400">
                 {attachmentSlot.label}
               </p>
-              <p className="truncate text-[8px] font-bold uppercase leading-3 text-zinc-500">
-                Empty Slot
+              <p className="truncate text-[7px] font-bold uppercase leading-[10px] text-zinc-500">
+                Empty
               </p>
             </div>
           ))}
