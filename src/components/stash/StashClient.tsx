@@ -26,7 +26,7 @@ export function StashClient({ slots }: StashClientProps) {
 
   return (
     <Panel
-      title={selectedWeaponSlot ? "Weapon Detail" : "Inventory Grid"}
+      title={selectedWeaponSlot ? undefined : "Inventory Grid"}
       className="min-h-0 overflow-hidden p-2"
     >
       {selectedWeaponSlot ? (
