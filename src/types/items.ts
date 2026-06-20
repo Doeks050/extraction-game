@@ -28,6 +28,10 @@ export type ItemStatBlock = {
   durability?: number;
   ergonomics?: number;
   recoilControl?: number;
+  accuracy?: number;
+  handling?: number;
+  fireRate?: number;
+  effectiveRange?: number;
 };
 
 export type GameItem = {
