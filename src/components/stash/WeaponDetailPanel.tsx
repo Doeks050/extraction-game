@@ -16,8 +16,20 @@ type StatBarProps = {
   value: number;
 };
 
+const ammoTagNames = [
+  "9x18",
+  "7.62x25",
+  "9x19",
+  ".45 ACP",
+  "5.7x28",
+  ".50 AE",
+  ".357 Magnum",
+  ".500 Magnum",
+  "5.56x45",
+];
+
 function getAmmoType(slot: HydratedInventorySlot) {
-  return slot.item.tags.find((tag) => tag.includes("x")) ?? "Unknown";
+  return slot.item.tags.find((tag) => ammoTagNames.includes(tag)) ?? "Unknown";
 }
 
 function clampStat(value: number) {
