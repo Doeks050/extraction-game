@@ -172,9 +172,9 @@ export const operatorProfile: OperatorProfile = {
       description: "Specific recoil, accuracy and handling familiarity.",
     },
     {
-      id: "mastery_glock19x",
-      weaponId: "wpn_glock19x",
-      weaponName: "Glock 19X",
+      id: "mastery_glock17",
+      weaponId: "wpn_glock17",
+      weaponName: "Glock 17",
       xp: 0,
       maxXp: 100,
       isMastered: false,
