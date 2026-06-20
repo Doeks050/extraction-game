@@ -9,4 +9,5 @@ export const defaultWeaponAttachmentSlots: WeaponAttachmentSlot[] = [
   { id: "stock", label: "Stock" },
   { id: "handguard", label: "Handguard" },
   { id: "light_laser", label: "Light / Laser" },
+  { id: "bipod", label: "Bipod" },
 ];
