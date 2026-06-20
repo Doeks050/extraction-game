@@ -25,7 +25,6 @@ export type ItemStatBlock = {
   armorClass?: number;
   capacity?: number;
   healing?: number;
-  durability?: number;
   ergonomics?: number;
   recoilControl?: number;
   accuracy?: number;
@@ -53,6 +52,7 @@ export type InventorySlot = {
   slotId: string;
   itemId: string;
   quantity: number;
+  currentDurability?: number;
 };
 
 export type ItemCategoryDefinition = {
