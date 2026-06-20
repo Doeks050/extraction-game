@@ -1,3 +1,4 @@
+import { getWeaponVisualGridSize } from "../../data/weapons/weaponClasses";
 import { ItemImage } from "../items/ItemImage";
 import type { HydratedInventorySlot } from "../../lib/items";
 import { formatCredits } from "../../lib/items";
@@ -15,18 +16,18 @@ type StashInventoryGridProps = {
   onSelectSlot?: (slot: HydratedInventorySlot) => void;
 };
 
-function isRifleSlot(slot: HydratedInventorySlot) {
-  return slot.item.category === "weapon" && slot.item.tags.includes("rifle");
+function isWeaponSlot(slot: HydratedInventorySlot) {
+  return slot.item.category === "weapon";
 }
 
 function getVisualGridSize(slot: HydratedInventorySlot) {
-  const { width, height } = slot.item.gridSize;
+  const weaponVisualSize = getWeaponVisualGridSize(slot.item.tags);
 
-  if (isRifleSlot(slot)) {
-    return { width: 5, height: 2 };
+  if (weaponVisualSize) {
+    return weaponVisualSize;
   }
 
-  return { width, height };
+  return slot.item.gridSize;
 }
 
 export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridProps) {
@@ -35,7 +36,7 @@ export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridPr
       {slots.map((slot) => {
         const { width, height } = getVisualGridSize(slot);
         const showQuantity = slot.quantity > 1;
-        const isRifle = isRifleSlot(slot);
+        const isWeapon = isWeaponSlot(slot);
         const isClickable = Boolean(onSelectSlot);
 
         return (
@@ -55,7 +56,7 @@ export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridPr
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
-            {isRifle ? (
+            {isWeapon ? (
               <div className="absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden">
                 {slot.item.image ? (
                   <img
