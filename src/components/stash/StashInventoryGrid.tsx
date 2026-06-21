@@ -11,6 +11,18 @@ const rarityClassNames = {
   legendary: "border-orange-400/70 text-orange-300",
 };
 
+const caliberTags = [
+  "9x18",
+  "7.62x25",
+  "9x19",
+  ".45 ACP",
+  "5.7x28",
+  ".50 AE",
+  ".357 Magnum",
+  ".500 Magnum",
+  "5.56x45",
+];
+
 type StashInventoryGridProps = {
   slots: HydratedInventorySlot[];
   onSelectSlot?: (slot: HydratedInventorySlot) => void;
@@ -18,6 +30,10 @@ type StashInventoryGridProps = {
 
 function isWeaponSlot(slot: HydratedInventorySlot) {
   return slot.item.category === "weapon";
+}
+
+function getWeaponCaliber(slot: HydratedInventorySlot) {
+  return slot.item.tags.find((tag) => caliberTags.includes(tag)) ?? "Unknown";
 }
 
 function getVisualGridSize(slot: HydratedInventorySlot) {
@@ -116,7 +132,7 @@ export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridPr
                 {showQuantity ? `x${slot.quantity}` : ""}
               </span>
               <span className="truncate bg-black/70 px-1 text-zinc-500">
-                {formatCredits(slot.totalValue)}
+                {isWeapon ? getWeaponCaliber(slot) : formatCredits(slot.totalValue)}
               </span>
             </div>
           </button>
