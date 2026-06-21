@@ -3,7 +3,7 @@ import { StashPageClient } from "../../components/stash/StashPageClient";
 
 export default function StashPage() {
   return (
-    <GameShell title="Stash" eyebrow="Storage">
+    <GameShell title="Stash" eyebrow="" showSaveStatus={false} compactHeader>
       <StashPageClient />
     </GameShell>
   );
