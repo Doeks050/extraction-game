@@ -1,19 +1,12 @@
 "use client";
 
-import {
-  formatCredits,
-  formatWeight,
-  getInventoryValue,
-  getInventoryWeight,
-} from "../../lib/items";
+import { formatCredits } from "../../lib/items";
 import { useGameState } from "../state/GameStateProvider";
 import { StashClient } from "./StashClient";
 import { StashStatsPanel } from "./StashStatsPanel";
 
 export function StashPageClient() {
   const { state } = useGameState();
-  const totalValue = getInventoryValue(state.stash);
-  const totalWeight = getInventoryWeight(state.stash);
   const usedSlots = state.stash.length;
   const maxSlots = 40;
 
@@ -22,8 +15,7 @@ export function StashPageClient() {
       <StashStatsPanel
         usedSlots={usedSlots}
         maxSlots={maxSlots}
-        totalValue={formatCredits(totalValue)}
-        totalWeight={formatWeight(totalWeight)}
+        credits={formatCredits(state.operator.credits)}
       />
 
       <StashClient slots={state.stash} />
