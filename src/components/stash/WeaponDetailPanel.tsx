@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getWeaponCaliberFromTags } from "../../data/weapons/calibers";
 import { getWeaponClassFromTags } from "../../data/weapons/weaponClasses";
 import { defaultWeaponAttachmentSlots, getWeaponAttachmentSlotsByIds } from "../../data/weapons/attachmentSlots";
 import type { HydratedInventorySlot } from "../../lib/items";
@@ -15,22 +16,6 @@ type StatBarProps = {
   label: string;
   value: number;
 };
-
-const ammoTagNames = [
-  "9x18",
-  "7.62x25",
-  "9x19",
-  ".45 ACP",
-  "5.7x28",
-  ".50 AE",
-  ".357 Magnum",
-  ".500 Magnum",
-  "5.56x45",
-];
-
-function getAmmoType(slot: HydratedInventorySlot) {
-  return slot.item.tags.find((tag) => ammoTagNames.includes(tag)) ?? "Unknown";
-}
 
 function clampStat(value: number) {
   return Math.max(0, Math.min(100, value));
@@ -177,7 +162,7 @@ export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
             Ammo
           </p>
           <p className="truncate text-[10px] font-black uppercase leading-3 text-zinc-100">
-            {getAmmoType(slot)}
+            {getWeaponCaliberFromTags(slot.item.tags)}
           </p>
         </div>
       </div>
