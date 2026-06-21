@@ -3,7 +3,6 @@ import type { GameItem } from "../types/items";
 const weaponClassFolders: Record<string, string> = {
   pistol: "pistols",
   assault_rifle: "assault-rifles",
-  battle_rifle: "battle-rifles",
   smg: "smgs",
   shotgun: "shotguns",
   dmr: "dmrs",
