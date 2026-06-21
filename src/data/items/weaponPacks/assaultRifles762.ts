@@ -63,7 +63,7 @@ export const assaultRifles762: GameItem[] = [
   },
   {
     id: "wpn_hk_g3_dmr",
-    name: "HK G3 DMR",
+    name: "HK G3",
     category: "weapon",
     rarity: "common",
     weightKg: 4.7,
