@@ -37,7 +37,11 @@ function getWeaponImageClassName(slot: HydratedInventorySlot) {
     return "h-[120%] w-auto max-w-[120%] object-contain opacity-95";
   }
 
-  return "h-auto w-full max-w-none object-contain opacity-95";
+  if (weaponClass?.id === "assault_rifle") {
+    return "h-full w-full max-h-full max-w-full object-contain opacity-95";
+  }
+
+  return "h-full w-full max-h-full max-w-full object-contain opacity-95";
 }
 
 function getWeaponImageBoxClassName(slot: HydratedInventorySlot) {
