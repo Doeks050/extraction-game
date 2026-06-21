@@ -140,4 +140,10 @@ for file in hk-417.png desert-tech-mdr-762.png scar-h.png hk-g3-dmr.png; do
   move_asset "$WEAPONS/$file" "$WEAPONS/assault-rifles/7.62x51/$file"
 done
 
+for file in \
+  aero-precision-m5.png c20.png cmmg-endeavor-mk3.png g28.png keltec-rfb.png m1a.png \
+  m1a-socom.png m14.png m14-ebr.png m110.png noveske-n6.png sr-25.png; do
+  move_asset "$WEAPONS/$file" "$WEAPONS/dmrs/7.62x51/$file"
+done
+
 echo "Item asset folders created and current weapon images moved."
