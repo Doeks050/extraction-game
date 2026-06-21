@@ -42,6 +42,10 @@ function getWeaponImageClassName(slot: HydratedInventorySlot) {
     return "h-[200%] w-[200%] max-h-none max-w-none object-contain opacity-95";
   }
 
+  if (weaponClass?.id === "dmr") {
+    return "h-[185%] w-[185%] max-h-none max-w-none object-contain opacity-95";
+  }
+
   return "h-full w-full max-h-full max-w-full object-contain opacity-95";
 }
 
