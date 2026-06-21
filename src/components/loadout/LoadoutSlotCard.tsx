@@ -7,7 +7,6 @@ type LoadoutSlotCardProps = {
 
 export function LoadoutSlotCard({ slot }: LoadoutSlotCardProps) {
   const item = slot.itemId ? getItemById(slot.itemId) : undefined;
-  const durability = item?.stats?.durability;
 
   return (
     <div className="grid grid-cols-[2.5rem_1fr_auto] gap-2 border border-zinc-800 bg-black/55 px-2 py-1.5">
@@ -30,9 +29,6 @@ export function LoadoutSlotCard({ slot }: LoadoutSlotCardProps) {
       <div className="text-right">
         <p className="text-[8px] font-black uppercase text-orange-400">
           {slot.quantity ? `x${slot.quantity}` : ""}
-        </p>
-        <p className="mt-2 text-[7px] font-bold uppercase text-zinc-600">
-          {durability ? `${durability}%` : ""}
         </p>
       </div>
     </div>
