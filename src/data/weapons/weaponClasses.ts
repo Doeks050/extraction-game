@@ -16,6 +16,21 @@ export const weaponClassConfigs: Record<WeaponClassId, WeaponClassConfig> = {
       "light_laser",
     ],
   },
+  dmr: {
+    id: "dmr",
+    label: "DMR",
+    visualGridSize: { width: 5, height: 2 },
+    attachmentSlotIds: [
+      "optic",
+      "muzzle",
+      "barrel",
+      "magazine",
+      "grip",
+      "stock",
+      "handguard",
+      "bipod",
+    ],
+  },
   smg: {
     id: "smg",
     label: "SMG",
