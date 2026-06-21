@@ -1,5 +1,6 @@
 export type WeaponClassId =
   | "assault_rifle"
+  | "dmr"
   | "smg"
   | "pistol"
   | "sniper"
