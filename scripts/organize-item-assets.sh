@@ -19,9 +19,6 @@ mkdir -p \
   "$WEAPONS/assault-rifles/7.62x51" \
   "$WEAPONS/assault-rifles/6.8x51" \
   "$WEAPONS/assault-rifles/9x39" \
-  "$WEAPONS/battle-rifles/7.62x51" \
-  "$WEAPONS/battle-rifles/6.5-creedmoor" \
-  "$WEAPONS/battle-rifles/6.8x51" \
   "$WEAPONS/smgs/9x19" \
   "$WEAPONS/smgs/45-acp" \
   "$WEAPONS/smgs/4.6x30" \
