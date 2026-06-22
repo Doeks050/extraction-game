@@ -74,4 +74,6 @@ export type HideoutModule = {
   level: number;
   status: HideoutModuleStatus;
   detail: string;
+  installationEndsAt?: number;
+  installationTargetLevel?: number;
 };
