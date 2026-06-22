@@ -338,6 +338,7 @@ export function StashInventoryGrid({
             }
           : slot;
         const size = getSlotGridSize(displaySlot, displaySlot.item);
+        const isSingleSlot = size.width === 1 && size.height === 1;
         const isWeapon = slot.item.category === "weapon";
         const translateX = isDragging ? dragState.currentX - dragState.startX : 0;
         const translateY = isDragging ? dragState.currentY - dragState.startY : 0;
@@ -346,6 +347,7 @@ export function StashInventoryGrid({
           <button
             key={slot.slotId}
             type="button"
+            title={slot.item.name}
             onPointerDown={(event) => handlePointerDown(event, slot)}
             onPointerMove={handlePointerMove}
             onPointerUp={finishPointerInteraction}
@@ -396,25 +398,42 @@ export function StashInventoryGrid({
                 src={slot.item.image}
                 alt={slot.item.name}
                 fallback={slot.item.name.slice(0, 2)}
-                className="absolute inset-2 flex items-center justify-center"
-                imageClassName={displaySlot.isRotated ? "rotate-90 p-1 opacity-95" : "p-1 opacity-95"}
+                className={
+                  isSingleSlot
+                    ? "absolute inset-0.5 flex items-center justify-center"
+                    : "absolute inset-2 flex items-center justify-center"
+                }
+                imageClassName={[
+                  displaySlot.isRotated ? "rotate-90" : "",
+                  isSingleSlot ? "p-0.5 opacity-100" : "p-1 opacity-95",
+                ].join(" ")}
               />
             )}
 
-            <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
-              <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
-                {slot.item.name}
-              </p>
-            </div>
+            {!isSingleSlot ? (
+              <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
+                <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
+                  {slot.item.name}
+                </p>
+              </div>
+            ) : null}
 
-            <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
-              <span className="bg-black/70 px-1 text-orange-400">
-                {slot.quantity > 1 ? `x${slot.quantity}` : ""}
-              </span>
-              <span className="truncate bg-black/70 px-1 text-zinc-500">
-                {isWeapon ? getWeaponCaliberFromTags(slot.item.tags) : formatCredits(slot.totalValue)}
-              </span>
-            </div>
+            {isSingleSlot ? (
+              slot.quantity > 1 ? (
+                <span className="absolute bottom-1 right-1 bg-black/85 px-1 text-[8px] font-black text-orange-400">
+                  x{slot.quantity}
+                </span>
+              ) : null
+            ) : (
+              <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
+                <span className="bg-black/70 px-1 text-orange-400">
+                  {slot.quantity > 1 ? `x${slot.quantity}` : ""}
+                </span>
+                <span className="truncate bg-black/70 px-1 text-zinc-500">
+                  {isWeapon ? getWeaponCaliberFromTags(slot.item.tags) : formatCredits(slot.totalValue)}
+                </span>
+              </div>
+            )}
           </button>
         );
       })}
