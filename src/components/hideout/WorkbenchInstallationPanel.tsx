@@ -65,7 +65,8 @@ export function WorkbenchInstallationPanel({ module, stash, onInstall }: Props) 
     <Panel title="Install Workbench" className="p-2">
       <div className="grid grid-cols-4 gap-1.5">
         {requirements.map((entry) => {
-          const complete = entry.owned >= entry.quantity;
+          const complete = isInstalling || entry.owned >= entry.quantity;
+          const displayedOwned = isInstalling ? entry.quantity : entry.owned;
 
           return (
             <div
@@ -84,10 +85,12 @@ export function WorkbenchInstallationPanel({ module, stash, onInstall }: Props) 
               <p className="mt-1 truncate text-center text-[7px] font-black uppercase text-zinc-300">
                 {entry.item.name}
               </p>
-              <p className={`text-center text-[9px] font-black ${
-                complete ? "text-emerald-400" : "text-red-400"
-              }`}>
-                {entry.owned}/{entry.quantity}
+              <p
+                className={`text-center text-[9px] font-black ${
+                  complete ? "text-emerald-400" : "text-red-400"
+                }`}
+              >
+                {displayedOwned}/{entry.quantity}
               </p>
             </div>
           );
