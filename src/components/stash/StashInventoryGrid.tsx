@@ -6,7 +6,7 @@ import { getWeaponClassFromTags } from "../../data/weapons/weaponClasses";
 import { formatCredits } from "../../lib/items";
 import type { HydratedInventorySlot } from "../../lib/items";
 import {
-  canPlaceStashSlot,
+  canPlaceStashSlotWithRotation,
   getSlotGridSize,
   getStashGridRowCount,
   STASH_GRID_COLUMNS,
@@ -31,10 +31,9 @@ type DragState = {
   startY: number;
   currentX: number;
   currentY: number;
-  anchorColumn: number;
-  anchorRow: number;
   targetColumn: number;
   targetRow: number;
+  isRotated: boolean;
   isValid: boolean;
 };
 
@@ -52,8 +51,12 @@ type PressState = {
 type StashInventoryGridProps = {
   slots: HydratedInventorySlot[];
   onSelectSlot: (slot: HydratedInventorySlot) => void;
-  onMoveSlot: (slotId: string, column: number, row: number) => void;
-  onRotateSlot: (slotId: string) => boolean;
+  onMoveSlot: (
+    slotId: string,
+    column: number,
+    row: number,
+    isRotated: boolean,
+  ) => void;
 };
 
 function getWeaponImageClassName(slot: HydratedInventorySlot) {
@@ -79,16 +82,13 @@ export function StashInventoryGrid({
   slots,
   onSelectSlot,
   onMoveSlot,
-  onRotateSlot,
 }: StashInventoryGridProps) {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressStateRef = useRef<PressState | null>(null);
   const dragStateRef = useRef<DragState | null>(null);
   const suppressClickRef = useRef(false);
-  const rotateErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
-  const [rotateErrorSlotId, setRotateErrorSlotId] = useState<string | null>(null);
   const rowCount = getStashGridRowCount(slots);
 
   function clearHoldTimer() {
@@ -116,29 +116,75 @@ export function StashInventoryGrid({
     };
   }
 
-  function buildDragState(press: PressState, clientX: number, clientY: number): DragState | null {
+  function buildDragState(
+    press: PressState,
+    clientX: number,
+    clientY: number,
+  ): DragState | null {
     const metrics = getGridMetrics();
+    const slot = slots.find((candidate) => candidate.slotId === press.slotId);
 
-    if (!metrics) {
+    if (!metrics || !slot) {
       return null;
     }
 
     const rawColumn = Math.floor((clientX - metrics.rect.left) / metrics.columnPitch);
     const rawRow = Math.floor((clientY - metrics.rect.top) / metrics.rowPitch);
-    const targetColumn = Math.max(0, rawColumn - press.anchorColumn);
-    const targetRow = Math.max(0, rawRow - press.anchorRow);
+    const currentRotation = Boolean(slot.isRotated);
+    const currentSize = getSlotGridSize(slot, slot.item);
+    const currentAnchorColumn = Math.min(press.anchorColumn, currentSize.width - 1);
+    const currentAnchorRow = Math.min(press.anchorRow, currentSize.height - 1);
+    const currentColumn = Math.max(0, rawColumn - currentAnchorColumn);
+    const currentRow = Math.max(0, rawRow - currentAnchorRow);
+    const currentFits = canPlaceStashSlotWithRotation(
+      slots,
+      slot.slotId,
+      currentColumn,
+      currentRow,
+      currentRotation,
+    );
+
+    if (currentFits) {
+      return {
+        slotId: slot.slotId,
+        startX: press.startX,
+        startY: press.startY,
+        currentX: clientX,
+        currentY: clientY,
+        targetColumn: currentColumn,
+        targetRow: currentRow,
+        isRotated: currentRotation,
+        isValid: true,
+      };
+    }
+
+    const rotatedSlot = {
+      ...slot,
+      isRotated: !currentRotation,
+    };
+    const rotatedSize = getSlotGridSize(rotatedSlot, rotatedSlot.item);
+    const rotatedAnchorColumn = Math.min(press.anchorColumn, rotatedSize.width - 1);
+    const rotatedAnchorRow = Math.min(press.anchorRow, rotatedSize.height - 1);
+    const rotatedColumn = Math.max(0, rawColumn - rotatedAnchorColumn);
+    const rotatedRow = Math.max(0, rawRow - rotatedAnchorRow);
+    const rotatedFits = canPlaceStashSlotWithRotation(
+      slots,
+      slot.slotId,
+      rotatedColumn,
+      rotatedRow,
+      !currentRotation,
+    );
 
     return {
-      slotId: press.slotId,
+      slotId: slot.slotId,
       startX: press.startX,
       startY: press.startY,
       currentX: clientX,
       currentY: clientY,
-      anchorColumn: press.anchorColumn,
-      anchorRow: press.anchorRow,
-      targetColumn,
-      targetRow,
-      isValid: canPlaceStashSlot(slots, press.slotId, targetColumn, targetRow),
+      targetColumn: rotatedFits ? rotatedColumn : currentColumn,
+      targetRow: rotatedFits ? rotatedRow : currentRow,
+      isRotated: rotatedFits ? !currentRotation : currentRotation,
+      isValid: rotatedFits,
     };
   }
 
@@ -220,7 +266,12 @@ export function StashInventoryGrid({
     const activeDrag = dragStateRef.current;
 
     if (activeDrag?.isValid) {
-      onMoveSlot(activeDrag.slotId, activeDrag.targetColumn, activeDrag.targetRow);
+      onMoveSlot(
+        activeDrag.slotId,
+        activeDrag.targetColumn,
+        activeDrag.targetRow,
+        activeDrag.isRotated,
+      );
     }
 
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -231,29 +282,18 @@ export function StashInventoryGrid({
     publishDragState(null);
   }
 
-  function handleRotate(slotId: string) {
-    const didRotate = onRotateSlot(slotId);
-
-    if (didRotate) {
-      setRotateErrorSlotId(null);
-      return;
-    }
-
-    setRotateErrorSlotId(slotId);
-
-    if (rotateErrorTimerRef.current) {
-      clearTimeout(rotateErrorTimerRef.current);
-    }
-
-    rotateErrorTimerRef.current = setTimeout(() => {
-      setRotateErrorSlotId(null);
-    }, 1200);
-  }
-
   const draggedSlot = dragState
     ? slots.find((slot) => slot.slotId === dragState.slotId)
     : undefined;
-  const draggedSize = draggedSlot ? getSlotGridSize(draggedSlot, draggedSlot.item) : null;
+  const previewSlot = draggedSlot && dragState
+    ? {
+        ...draggedSlot,
+        isRotated: dragState.isRotated,
+      }
+    : undefined;
+  const previewSize = previewSlot
+    ? getSlotGridSize(previewSlot, previewSlot.item)
+    : null;
 
   return (
     <div
@@ -272,15 +312,15 @@ export function StashInventoryGrid({
         />
       ))}
 
-      {dragState && draggedSize ? (
+      {dragState && previewSize ? (
         <div
           className={[
             "pointer-events-none z-20 border-2 bg-black/35",
             dragState.isValid ? "border-emerald-400" : "border-red-500",
           ].join(" ")}
           style={{
-            gridColumn: `${dragState.targetColumn + 1} / span ${draggedSize.width}`,
-            gridRow: `${dragState.targetRow + 1} / span ${draggedSize.height}`,
+            gridColumn: `${dragState.targetColumn + 1} / span ${previewSize.width}`,
+            gridRow: `${dragState.targetRow + 1} / span ${previewSize.height}`,
           }}
         />
       ) : null}
@@ -290,17 +330,41 @@ export function StashInventoryGrid({
           return null;
         }
 
-        const size = getSlotGridSize(slot, slot.item);
-        const isWeapon = slot.item.category === "weapon";
         const isDragging = dragState?.slotId === slot.slotId;
+        const displaySlot = isDragging && dragState
+          ? {
+              ...slot,
+              isRotated: dragState.isRotated,
+            }
+          : slot;
+        const size = getSlotGridSize(displaySlot, displaySlot.item);
+        const isWeapon = slot.item.category === "weapon";
         const translateX = isDragging ? dragState.currentX - dragState.startX : 0;
         const translateY = isDragging ? dragState.currentY - dragState.startY : 0;
-        const hasRotateError = rotateErrorSlotId === slot.slotId;
 
         return (
-          <div
+          <button
             key={slot.slotId}
-            className="relative z-10"
+            type="button"
+            onPointerDown={(event) => handlePointerDown(event, slot)}
+            onPointerMove={handlePointerMove}
+            onPointerUp={finishPointerInteraction}
+            onPointerCancel={finishPointerInteraction}
+            onClick={() => {
+              if (suppressClickRef.current) {
+                suppressClickRef.current = false;
+                return;
+              }
+
+              onSelectSlot(slot);
+            }}
+            className={[
+              "relative z-10 overflow-hidden border bg-black/80 p-1 text-left active:scale-[0.99]",
+              rarityClassNames[slot.item.rarity],
+              isDragging
+                ? `${dragState.isValid ? "border-emerald-400" : "border-red-500"} z-30 opacity-90 shadow-2xl`
+                : "",
+            ].join(" ")}
             style={{
               gridColumn: `${slot.gridPosition.column + 1} / span ${size.width}`,
               gridRow: `${slot.gridPosition.row + 1} / span ${size.height}`,
@@ -308,90 +372,50 @@ export function StashInventoryGrid({
                 ? `translate3d(${translateX}px, ${translateY}px, 0)`
                 : undefined,
               willChange: isDragging ? "transform" : undefined,
-              zIndex: isDragging ? 30 : 10,
             }}
           >
-            <button
-              type="button"
-              onPointerDown={(event) => handlePointerDown(event, slot)}
-              onPointerMove={handlePointerMove}
-              onPointerUp={finishPointerInteraction}
-              onPointerCancel={finishPointerInteraction}
-              onClick={() => {
-                if (suppressClickRef.current) {
-                  suppressClickRef.current = false;
-                  return;
-                }
+            <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
-                onSelectSlot(slot);
-              }}
-              className={[
-                "relative h-full w-full overflow-hidden border bg-black/80 p-1 text-left active:scale-[0.99]",
-                rarityClassNames[slot.item.rarity],
-                isDragging
-                  ? `${dragState.isValid ? "border-emerald-400" : "border-red-500"} opacity-90 shadow-2xl`
-                  : "",
-                hasRotateError ? "border-red-500 ring-2 ring-inset ring-red-500" : "",
-              ].join(" ")}
-            >
-              <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
-
-              {isWeapon ? (
-                <div className="absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden">
-                  {slot.item.image ? (
-                    <img
-                      src={slot.item.image}
-                      alt={slot.item.name}
-                      draggable={false}
-                      className={getWeaponImageClassName(slot)}
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-sm font-black uppercase text-zinc-500">
-                      {slot.item.name.slice(0, 2)}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <ItemImage
-                  src={slot.item.image}
-                  alt={slot.item.name}
-                  fallback={slot.item.name.slice(0, 2)}
-                  className="absolute inset-2 flex items-center justify-center"
-                  imageClassName={slot.isRotated ? "rotate-90 p-1 opacity-95" : "p-1 opacity-95"}
-                />
-              )}
-
-              <div className="absolute left-1.5 top-1.5 max-w-[62%] bg-black/70 px-1.5 py-0.5 text-left">
-                <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
-                  {slot.item.name}
-                </p>
+            {isWeapon ? (
+              <div className="absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden">
+                {slot.item.image ? (
+                  <img
+                    src={slot.item.image}
+                    alt={slot.item.name}
+                    draggable={false}
+                    className={getWeaponImageClassName(displaySlot)}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm font-black uppercase text-zinc-500">
+                    {slot.item.name.slice(0, 2)}
+                  </div>
+                )}
               </div>
+            ) : (
+              <ItemImage
+                src={slot.item.image}
+                alt={slot.item.name}
+                fallback={slot.item.name.slice(0, 2)}
+                className="absolute inset-2 flex items-center justify-center"
+                imageClassName={displaySlot.isRotated ? "rotate-90 p-1 opacity-95" : "p-1 opacity-95"}
+              />
+            )}
 
-              <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
-                <span className="bg-black/70 px-1 text-orange-400">
-                  {slot.quantity > 1 ? `x${slot.quantity}` : ""}
-                </span>
-                <span className="truncate bg-black/70 px-1 text-zinc-500">
-                  {isWeapon ? getWeaponCaliberFromTags(slot.item.tags) : formatCredits(slot.totalValue)}
-                </span>
-              </div>
-            </button>
+            <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
+              <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
+                {slot.item.name}
+              </p>
+            </div>
 
-            {!isDragging ? (
-              <button
-                type="button"
-                aria-label={`Rotate ${slot.item.name}`}
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleRotate(slot.slotId);
-                }}
-                className="absolute right-1.5 top-1.5 z-40 flex h-6 w-6 items-center justify-center border border-zinc-700 bg-black/90 text-sm font-black text-orange-400 active:border-orange-400 active:bg-orange-400 active:text-black"
-              >
-                ↻
-              </button>
-            ) : null}
-          </div>
+            <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
+              <span className="bg-black/70 px-1 text-orange-400">
+                {slot.quantity > 1 ? `x${slot.quantity}` : ""}
+              </span>
+              <span className="truncate bg-black/70 px-1 text-zinc-500">
+                {isWeapon ? getWeaponCaliberFromTags(slot.item.tags) : formatCredits(slot.totalValue)}
+              </span>
+            </div>
+          </button>
         );
       })}
     </div>
