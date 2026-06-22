@@ -10,8 +10,6 @@ import { formatCredits, formatWeight } from "../../lib/items";
 type WeaponDetailPanelProps = {
   slot: HydratedInventorySlot;
   onBack: () => void;
-  onRotate?: () => void;
-  rotateError?: boolean;
 };
 
 type StatBarProps = {
@@ -61,12 +59,7 @@ function StatBar({ label, value }: StatBarProps) {
   );
 }
 
-export function WeaponDetailPanel({
-  slot,
-  onBack,
-  onRotate,
-  rotateError = false,
-}: WeaponDetailPanelProps) {
+export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const stats = slot.item.stats ?? {};
   const durability = clampStat(slot.currentDurability ?? 100);
@@ -85,22 +78,13 @@ export function WeaponDetailPanel({
   ];
 
   return (
-    <div className="relative grid h-full min-h-0 grid-rows-[auto_auto_1.22fr_auto_1fr] gap-1">
+    <div className="relative grid h-full min-h-0 grid-rows-[auto_1.22fr_auto_1fr] gap-1">
       <div className="flex h-7 items-center justify-between gap-2">
         <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
           Weapon Detail
         </p>
 
         <div className="flex items-center gap-1">
-          {onRotate ? (
-            <button
-              type="button"
-              onClick={onRotate}
-              className="h-7 border border-zinc-800 bg-black/60 px-3 text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300 active:border-orange-500 active:text-orange-300"
-            >
-              Rotate
-            </button>
-          ) : null}
           <button
             type="button"
             onClick={() => setIsStatsOpen(true)}
@@ -117,12 +101,6 @@ export function WeaponDetailPanel({
           </button>
         </div>
       </div>
-
-      {rotateError ? (
-        <p className="border border-red-900 bg-red-950/40 px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-red-300">
-          Not enough free space to rotate
-        </p>
-      ) : null}
 
       <div className="relative min-h-0 overflow-hidden border border-zinc-800 bg-black/60">
         <div className="absolute inset-1 border border-zinc-900 bg-zinc-950/80" />
