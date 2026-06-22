@@ -76,4 +76,6 @@ export type HideoutModule = {
   detail: string;
   installationEndsAt?: number;
   installationTargetLevel?: number;
+  craftingRecipeId?: string;
+  craftingEndsAt?: number;
 };
