@@ -1,8 +1,5 @@
 import { notFound } from "next/navigation";
-import { HideoutModuleHeader } from "../../../components/hideout/HideoutModuleHeader";
-import { HideoutModuleNavigation } from "../../../components/hideout/HideoutModuleNavigation";
-import { HideoutModuleProductionPanel } from "../../../components/hideout/HideoutModuleProductionPanel";
-import { HideoutModuleUpgradePanel } from "../../../components/hideout/HideoutModuleUpgradePanel";
+import { HideoutModulePageClient } from "../../../components/hideout/HideoutModulePageClient";
 import { GameShell } from "../../../components/shell/GameShell";
 import { hideoutModules } from "../../../data/hideoutModules";
 import { getHideoutModuleById } from "../../../lib/hideout";
@@ -23,20 +20,15 @@ export default async function HideoutModulePage({
   params,
 }: HideoutModulePageProps) {
   const { moduleId } = await params;
-  const module = getHideoutModuleById(moduleId);
+  const moduleDefinition = getHideoutModuleById(moduleId);
 
-  if (!module) {
+  if (!moduleDefinition) {
     notFound();
   }
 
   return (
-    <GameShell title={module.name} eyebrow="Hideout Module">
-      <div className="grid h-full grid-rows-[auto_auto_auto_1fr] gap-2 overflow-y-auto">
-        <HideoutModuleHeader module={module} />
-        <HideoutModuleProductionPanel module={module} />
-        <HideoutModuleUpgradePanel module={module} />
-        <HideoutModuleNavigation />
-      </div>
+    <GameShell title={moduleDefinition.name} eyebrow="Hideout Module">
+      <HideoutModulePageClient moduleId={moduleId} />
     </GameShell>
   );
 }
