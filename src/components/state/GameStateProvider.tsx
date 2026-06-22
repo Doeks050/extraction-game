@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { gameState as defaultGameState } from "../../data/gameState";
+import { resolveCompletedHideoutInstallations } from "../../lib/hideoutInstallation";
 import {
   clearSavedGameState,
   cloneGameState,
@@ -38,10 +39,36 @@ export function GameStateProvider({ children }: GameStateProviderProps) {
   useEffect(() => {
     const savedState = readSavedGameState();
     const normalizedState = normalizeSavedGameState(savedState, defaultGameState);
+    const resolvedState = resolveCompletedHideoutInstallations(
+      normalizedState,
+      Date.now(),
+    );
 
-    setInternalState(normalizedState);
-    writeSavedGameState(normalizedState);
+    setInternalState(resolvedState);
+    writeSavedGameState(resolvedState);
     setSaveStatus("ready");
+  }, []);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setInternalState((currentState) => {
+        const nextState = resolveCompletedHideoutInstallations(
+          currentState,
+          Date.now(),
+        );
+
+        if (nextState === currentState) {
+          return currentState;
+        }
+
+        const didSave = writeSavedGameState(nextState);
+        setSaveStatus(didSave ? "ready" : "error");
+
+        return nextState;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
   }, []);
 
   function setState(nextState: GameState) {
