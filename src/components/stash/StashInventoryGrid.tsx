@@ -15,6 +15,8 @@ const rarityClassNames = {
 type StashInventoryGridProps = {
   slots: HydratedInventorySlot[];
   onSelectSlot?: (slot: HydratedInventorySlot) => void;
+  isMoveMode?: boolean;
+  selectedMoveSlotId?: string | null;
 };
 
 function isWeaponSlot(slot: HydratedInventorySlot) {
@@ -59,7 +61,12 @@ function getWeaponImageBoxClassName(slot: HydratedInventorySlot) {
   return "absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden";
 }
 
-export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridProps) {
+export function StashInventoryGrid({
+  slots,
+  onSelectSlot,
+  isMoveMode = false,
+  selectedMoveSlotId = null,
+}: StashInventoryGridProps) {
   return (
     <div className="grid auto-rows-[3.75rem] grid-cols-6 gap-1.5">
       {slots.map((slot) => {
@@ -67,6 +74,7 @@ export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridPr
         const showQuantity = slot.quantity > 1;
         const isWeapon = isWeaponSlot(slot);
         const isClickable = Boolean(onSelectSlot);
+        const isSelectedForMove = selectedMoveSlotId === slot.slotId;
 
         return (
           <button
@@ -81,9 +89,19 @@ export function StashInventoryGrid({ slots, onSelectSlot }: StashInventoryGridPr
               "relative overflow-hidden border bg-black/60 p-1 text-left active:scale-[0.98]",
               rarityClassNames[slot.item.rarity],
               isClickable ? "cursor-pointer" : "cursor-default",
+              isMoveMode ? "transition-colors" : "",
+              isSelectedForMove
+                ? "border-orange-400 ring-2 ring-inset ring-orange-400"
+                : "",
             ].join(" ")}
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
+
+            {isSelectedForMove ? (
+              <div className="absolute right-1.5 top-1.5 z-10 bg-orange-400 px-1.5 py-0.5 text-[7px] font-black uppercase text-black">
+                Moving
+              </div>
+            ) : null}
 
             {isWeapon ? (
               <div className={getWeaponImageBoxClassName(slot)}>
