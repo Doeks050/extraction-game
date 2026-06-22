@@ -1,8 +1,20 @@
+"use client";
+
+import { useRef, useState } from "react";
 import { getWeaponCaliberFromTags } from "../../data/weapons/calibers";
-import { getWeaponClassFromTags, getWeaponVisualGridSize } from "../../data/weapons/weaponClasses";
-import { ItemImage } from "../items/ItemImage";
-import type { HydratedInventorySlot } from "../../lib/items";
+import { getWeaponClassFromTags } from "../../data/weapons/weaponClasses";
 import { formatCredits } from "../../lib/items";
+import type { HydratedInventorySlot } from "../../lib/items";
+import {
+  canPlaceStashSlot,
+  getSlotGridSize,
+  getStashGridRowCount,
+  STASH_GRID_COLUMNS,
+} from "../../lib/stashGrid";
+import { ItemImage } from "../items/ItemImage";
+
+const HOLD_DELAY_MS = 260;
+const CELL_HEIGHT_PX = 60;
 
 const rarityClassNames = {
   common: "border-zinc-700 text-zinc-300",
@@ -12,26 +24,18 @@ const rarityClassNames = {
   legendary: "border-orange-400/70 text-orange-300",
 };
 
-type StashInventoryGridProps = {
-  slots: HydratedInventorySlot[];
-  onSelectSlot?: (slot: HydratedInventorySlot) => void;
-  isMoveMode?: boolean;
-  selectedMoveSlotId?: string | null;
+type DragPreview = {
+  slotId: string;
+  column: number;
+  row: number;
+  isValid: boolean;
 };
 
-function isWeaponSlot(slot: HydratedInventorySlot) {
-  return slot.item.category === "weapon";
-}
-
-function getVisualGridSize(slot: HydratedInventorySlot) {
-  const weaponVisualSize = getWeaponVisualGridSize(slot.item.tags);
-
-  if (weaponVisualSize) {
-    return weaponVisualSize;
-  }
-
-  return slot.item.gridSize;
-}
+type StashInventoryGridProps = {
+  slots: HydratedInventorySlot[];
+  onSelectSlot: (slot: HydratedInventorySlot) => void;
+  onMoveSlot: (slotId: string, column: number, row: number) => void;
+};
 
 function getWeaponImageClassName(slot: HydratedInventorySlot) {
   const weaponClass = getWeaponClassFromTags(slot.item.tags);
@@ -51,60 +55,143 @@ function getWeaponImageClassName(slot: HydratedInventorySlot) {
   return "h-full w-full max-h-full max-w-full object-contain opacity-95";
 }
 
-function getWeaponImageBoxClassName(slot: HydratedInventorySlot) {
-  const weaponClass = getWeaponClassFromTags(slot.item.tags);
+export function StashInventoryGrid({ slots, onSelectSlot, onMoveSlot }: StashInventoryGridProps) {
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draggedSlotIdRef = useRef<string | null>(null);
+  const suppressClickRef = useRef(false);
+  const [dragPreview, setDragPreview] = useState<DragPreview | null>(null);
+  const rowCount = getStashGridRowCount(slots);
 
-  if (weaponClass?.id === "pistol") {
-    return "absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden";
+  function clearHoldTimer() {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
   }
 
-  return "absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden";
-}
+  function getPointerCell(clientX: number, clientY: number) {
+    const grid = gridRef.current;
 
-export function StashInventoryGrid({
-  slots,
-  onSelectSlot,
-  isMoveMode = false,
-  selectedMoveSlotId = null,
-}: StashInventoryGridProps) {
+    if (!grid) {
+      return null;
+    }
+
+    const rect = grid.getBoundingClientRect();
+    const columnWidth = rect.width / STASH_GRID_COLUMNS;
+
+    return {
+      column: Math.max(0, Math.min(STASH_GRID_COLUMNS - 1, Math.floor((clientX - rect.left) / columnWidth))),
+      row: Math.max(0, Math.floor((clientY - rect.top) / CELL_HEIGHT_PX)),
+    };
+  }
+
+  function updateDragPreview(slotId: string, clientX: number, clientY: number) {
+    const cell = getPointerCell(clientX, clientY);
+
+    if (!cell) {
+      return;
+    }
+
+    setDragPreview({
+      slotId,
+      column: cell.column,
+      row: cell.row,
+      isValid: canPlaceStashSlot(slots, slotId, cell.column, cell.row),
+    });
+  }
+
+  function handlePointerDown(event: React.PointerEvent<HTMLButtonElement>, slotId: string) {
+    clearHoldTimer();
+    suppressClickRef.current = false;
+
+    holdTimerRef.current = setTimeout(() => {
+      draggedSlotIdRef.current = slotId;
+      suppressClickRef.current = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      updateDragPreview(slotId, event.clientX, event.clientY);
+    }, HOLD_DELAY_MS);
+  }
+
+  function handlePointerMove(event: React.PointerEvent<HTMLButtonElement>) {
+    const slotId = draggedSlotIdRef.current;
+
+    if (!slotId) {
+      return;
+    }
+
+    event.preventDefault();
+    updateDragPreview(slotId, event.clientX, event.clientY);
+  }
+
+  function finishPointerInteraction() {
+    clearHoldTimer();
+
+    if (dragPreview?.isValid) {
+      onMoveSlot(dragPreview.slotId, dragPreview.column, dragPreview.row);
+    }
+
+    draggedSlotIdRef.current = null;
+    setDragPreview(null);
+  }
+
   return (
-    <div className="grid auto-rows-[3.75rem] grid-cols-6 gap-1.5">
+    <div
+      ref={gridRef}
+      className="relative grid touch-none grid-cols-6 gap-1.5"
+      style={{ gridTemplateRows: `repeat(${rowCount}, ${CELL_HEIGHT_PX}px)` }}
+    >
+      {Array.from({ length: rowCount * STASH_GRID_COLUMNS }, (_, index) => (
+        <div
+          key={`cell-${index}`}
+          className="border border-zinc-900 bg-black/25"
+          style={{
+            gridColumnStart: (index % STASH_GRID_COLUMNS) + 1,
+            gridRowStart: Math.floor(index / STASH_GRID_COLUMNS) + 1,
+          }}
+        />
+      ))}
+
       {slots.map((slot) => {
-        const { width, height } = getVisualGridSize(slot);
-        const showQuantity = slot.quantity > 1;
-        const isWeapon = isWeaponSlot(slot);
-        const isClickable = Boolean(onSelectSlot);
-        const isSelectedForMove = selectedMoveSlotId === slot.slotId;
+        if (!slot.gridPosition) {
+          return null;
+        }
+
+        const size = getSlotGridSize(slot, slot.item);
+        const isWeapon = slot.item.category === "weapon";
+        const isDragging = dragPreview?.slotId === slot.slotId;
+        const displayPosition = isDragging ? dragPreview : slot.gridPosition;
 
         return (
           <button
             key={slot.slotId}
             type="button"
-            onClick={() => onSelectSlot?.(slot)}
-            style={{
-              gridColumn: `span ${width} / span ${width}`,
-              gridRow: `span ${height} / span ${height}`,
+            onPointerDown={(event) => handlePointerDown(event, slot.slotId)}
+            onPointerMove={handlePointerMove}
+            onPointerUp={finishPointerInteraction}
+            onPointerCancel={finishPointerInteraction}
+            onClick={() => {
+              if (suppressClickRef.current) {
+                suppressClickRef.current = false;
+                return;
+              }
+
+              onSelectSlot(slot);
             }}
             className={[
-              "relative overflow-hidden border bg-black/60 p-1 text-left active:scale-[0.98]",
+              "relative z-10 overflow-hidden border bg-black/80 p-1 text-left active:scale-[0.99]",
               rarityClassNames[slot.item.rarity],
-              isClickable ? "cursor-pointer" : "cursor-default",
-              isMoveMode ? "transition-colors" : "",
-              isSelectedForMove
-                ? "border-orange-400 ring-2 ring-inset ring-orange-400"
-                : "",
+              isDragging ? (dragPreview?.isValid ? "border-emerald-400 opacity-80" : "border-red-500 opacity-80") : "",
             ].join(" ")}
+            style={{
+              gridColumn: `${displayPosition.column + 1} / span ${size.width}`,
+              gridRow: `${displayPosition.row + 1} / span ${size.height}`,
+            }}
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
-            {isSelectedForMove ? (
-              <div className="absolute right-1.5 top-1.5 z-10 bg-orange-400 px-1.5 py-0.5 text-[7px] font-black uppercase text-black">
-                Moving
-              </div>
-            ) : null}
-
             {isWeapon ? (
-              <div className={getWeaponImageBoxClassName(slot)}>
+              <div className="absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden">
                 {slot.item.image ? (
                   <img
                     src={slot.item.image}
@@ -113,7 +200,7 @@ export function StashInventoryGrid({
                     className={getWeaponImageClassName(slot)}
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-center text-sm font-black uppercase text-zinc-500">
+                  <div className="flex h-full w-full items-center justify-center text-sm font-black uppercase text-zinc-500">
                     {slot.item.name.slice(0, 2)}
                   </div>
                 )}
@@ -136,7 +223,7 @@ export function StashInventoryGrid({
 
             <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
               <span className="bg-black/70 px-1 text-orange-400">
-                {showQuantity ? `x${slot.quantity}` : ""}
+                {slot.quantity > 1 ? `x${slot.quantity}` : ""}
               </span>
               <span className="truncate bg-black/70 px-1 text-zinc-500">
                 {isWeapon ? getWeaponCaliberFromTags(slot.item.tags) : formatCredits(slot.totalValue)}
