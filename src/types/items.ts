@@ -48,11 +48,18 @@ export type GameItem = {
   stats?: ItemStatBlock;
 };
 
+export type InventoryGridPosition = {
+  column: number;
+  row: number;
+};
+
 export type InventorySlot = {
   slotId: string;
   itemId: string;
   quantity: number;
   currentDurability?: number;
+  gridPosition?: InventoryGridPosition;
+  isRotated?: boolean;
 };
 
 export type ItemCategoryDefinition = {
