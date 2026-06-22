@@ -17,6 +17,7 @@ import {
   type SaveStatus,
   writeSavedGameState,
 } from "../../lib/saveStorage";
+import { resolveCompletedWorkbenchCrafts } from "../../lib/workbenchCrafting";
 import type { GameState } from "../../types/state";
 
 type GameStateContextValue = {
@@ -32,6 +33,11 @@ type GameStateProviderProps = {
   children: React.ReactNode;
 };
 
+function resolveTimedState(state: GameState, now: number) {
+  const installationState = resolveCompletedHideoutInstallations(state, now);
+  return resolveCompletedWorkbenchCrafts(installationState, now);
+}
+
 export function GameStateProvider({ children }: GameStateProviderProps) {
   const [state, setInternalState] = useState(() => cloneGameState(defaultGameState));
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("loading");
@@ -39,10 +45,7 @@ export function GameStateProvider({ children }: GameStateProviderProps) {
   useEffect(() => {
     const savedState = readSavedGameState();
     const normalizedState = normalizeSavedGameState(savedState, defaultGameState);
-    const resolvedState = resolveCompletedHideoutInstallations(
-      normalizedState,
-      Date.now(),
-    );
+    const resolvedState = resolveTimedState(normalizedState, Date.now());
 
     setInternalState(resolvedState);
     writeSavedGameState(resolvedState);
@@ -52,10 +55,7 @@ export function GameStateProvider({ children }: GameStateProviderProps) {
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       setInternalState((currentState) => {
-        const nextState = resolveCompletedHideoutInstallations(
-          currentState,
-          Date.now(),
-        );
+        const nextState = resolveTimedState(currentState, Date.now());
 
         if (nextState === currentState) {
           return currentState;
