@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo } from "react";
 import { formatCredits } from "../../lib/items";
-import { canPlaceStashSlot, layoutStashSlots } from "../../lib/stashGrid";
+import {
+  canPlaceStashSlot,
+  canRotateStashSlot,
+  layoutStashSlots,
+} from "../../lib/stashGrid";
 import { useGameState } from "../state/GameStateProvider";
 import { StashClient } from "./StashClient";
 import { StashStatsPanel } from "./StashStatsPanel";
@@ -52,6 +56,26 @@ export function StashPageClient() {
     });
   }
 
+  function handleRotateSlot(slotId: string) {
+    if (!canRotateStashSlot(positionedStash, slotId)) {
+      return false;
+    }
+
+    setState({
+      ...state,
+      stash: positionedStash.map((slot) =>
+        slot.slotId === slotId
+          ? {
+              ...slot,
+              isRotated: !slot.isRotated,
+            }
+          : slot,
+      ),
+    });
+
+    return true;
+  }
+
   return (
     <div className="grid h-full grid-rows-[auto_1fr] gap-2">
       <StashStatsPanel
@@ -60,7 +84,11 @@ export function StashPageClient() {
         credits={formatCredits(state.operator.credits)}
       />
 
-      <StashClient slots={positionedStash} onMoveSlot={handleMoveSlot} />
+      <StashClient
+        slots={positionedStash}
+        onMoveSlot={handleMoveSlot}
+        onRotateSlot={handleRotateSlot}
+      />
     </div>
   );
 }
