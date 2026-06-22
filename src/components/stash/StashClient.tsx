@@ -18,43 +18,14 @@ type StashClientProps = {
 export function StashClient({ slots, onMoveSlot, onRotateSlot }: StashClientProps) {
   const hydratedSlots = useMemo(() => hydrateInventory(slots), [slots]);
   const [selectedSlot, setSelectedSlot] = useState<HydratedInventorySlot | null>(null);
-  const [rotateError, setRotateError] = useState(false);
-
-  function handleRotateSelectedSlot() {
-    if (!selectedSlot) {
-      return;
-    }
-
-    const didRotate = onRotateSlot(selectedSlot.slotId);
-    setRotateError(!didRotate);
-
-    if (didRotate) {
-      setSelectedSlot(null);
-    }
-  }
-
-  function handleBack() {
-    setRotateError(false);
-    setSelectedSlot(null);
-  }
 
   return (
     <Panel className="min-h-0 overflow-hidden p-2">
       {selectedSlot ? (
         selectedSlot.item.category === "weapon" ? (
-          <WeaponDetailPanel
-            slot={selectedSlot}
-            onBack={handleBack}
-            onRotate={handleRotateSelectedSlot}
-            rotateError={rotateError}
-          />
+          <WeaponDetailPanel slot={selectedSlot} onBack={() => setSelectedSlot(null)} />
         ) : (
-          <StashItemDetailPanel
-            slot={selectedSlot}
-            onBack={handleBack}
-            onRotate={handleRotateSelectedSlot}
-            rotateError={rotateError}
-          />
+          <StashItemDetailPanel slot={selectedSlot} onBack={() => setSelectedSlot(null)} />
         )
       ) : hydratedSlots.length > 0 ? (
         <div className="grid h-full min-h-0 grid-rows-[auto_1fr] gap-2">
@@ -63,18 +34,16 @@ export function StashClient({ slots, onMoveSlot, onRotateSlot }: StashClientProp
               Inventory Grid
             </p>
             <p className="mt-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-zinc-600">
-              Tap for info · Hold and drag to move
+              Tap for info · Hold and drag to move · Use corner button to rotate
             </p>
           </div>
 
           <div className="min-h-0 overflow-y-auto">
             <StashInventoryGrid
               slots={hydratedSlots}
-              onSelectSlot={(slot) => {
-                setRotateError(false);
-                setSelectedSlot(slot);
-              }}
+              onSelectSlot={setSelectedSlot}
               onMoveSlot={onMoveSlot}
+              onRotateSlot={onRotateSlot}
             />
           </div>
         </div>
