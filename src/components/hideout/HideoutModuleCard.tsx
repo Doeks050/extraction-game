@@ -1,18 +1,37 @@
 import Link from "next/link";
+import { workbenchLevelOneRequirements } from "../../data/hideout/workbenchRequirements";
 import {
   getHideoutModuleProgress,
   getHideoutModuleRoute,
   hideoutStatusLabels,
 } from "../../lib/hideout";
+import { getItemById } from "../../lib/items";
 import type { HideoutModule } from "../../types/game";
+import { ItemImage } from "../items/ItemImage";
 import { Panel } from "../ui/Panel";
 
 type HideoutModuleCardProps = {
   module: HideoutModule;
 };
 
+function getItemFallback(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2);
+}
+
 export function HideoutModuleCard({ module }: HideoutModuleCardProps) {
   const progress = getHideoutModuleProgress(module);
+  const requirements =
+    module.id === "workshop" && module.level === 0
+      ? workbenchLevelOneRequirements.flatMap((requirement) => {
+          const item = getItemById(requirement.itemId);
+
+          return item ? [{ ...requirement, item }] : [];
+        })
+      : [];
 
   return (
     <Link href={getHideoutModuleRoute(module)} className="block active:scale-[0.98]">
@@ -31,6 +50,29 @@ export function HideoutModuleCard({ module }: HideoutModuleCardProps) {
             Lv {module.level}
           </p>
         </div>
+
+        {requirements.length > 0 ? (
+          <div className="mt-2 grid grid-cols-4 gap-1">
+            {requirements.map((requirement) => (
+              <div
+                key={requirement.itemId}
+                title={`${requirement.item.name} x${requirement.quantity}`}
+                className="relative h-9 overflow-hidden border border-zinc-800 bg-black/55"
+              >
+                <ItemImage
+                  src={requirement.item.image}
+                  alt={requirement.item.name}
+                  fallback={getItemFallback(requirement.item.name)}
+                  className="h-full w-full"
+                  imageClassName="p-1 opacity-90"
+                />
+                <span className="absolute bottom-0 right-0 border-l border-t border-zinc-800 bg-black/90 px-1 text-[7px] font-black text-orange-300">
+                  x{requirement.quantity}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         <div className="mt-2 flex items-center justify-between gap-2">
           <div className="h-1.5 flex-1 border border-zinc-800 bg-black">
