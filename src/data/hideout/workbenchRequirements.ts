@@ -3,6 +3,8 @@ export type HideoutItemRequirement = {
   quantity: number;
 };
 
+export const WORKBENCH_LEVEL_ONE_DURATION_SECONDS = 30;
+
 export const workbenchLevelOneRequirements: HideoutItemRequirement[] = [
   { itemId: "part_bolt_pack", quantity: 2 },
   { itemId: "part_screw_pack", quantity: 2 },
