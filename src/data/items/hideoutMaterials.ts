@@ -89,6 +89,18 @@ export const hideoutMaterials: GameItem[] = [
     tags: ["material", "construction", "repair"],
   },
   {
+    id: "part_scrap_metal",
+    name: "Scrap Metal",
+    category: "hideout_material",
+    rarity: "common",
+    weightKg: 0.8,
+    value: 1800,
+    maxStack: 1,
+    gridSize: { width: 1, height: 1 },
+    description: "Processed metal scrap used as a basic component in hideout construction and crafting.",
+    tags: ["material", "construction", "metal"],
+  },
+  {
     id: "tool_toolbox",
     name: "Toolbox",
     category: "hideout_material",
