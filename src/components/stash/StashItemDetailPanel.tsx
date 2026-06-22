@@ -5,6 +5,8 @@ import { Panel } from "../ui/Panel";
 type StashItemDetailPanelProps = {
   slot?: HydratedInventorySlot;
   onBack?: () => void;
+  onRotate?: () => void;
+  rotateError?: boolean;
 };
 
 function getStatText(slot: HydratedInventorySlot) {
@@ -21,7 +23,12 @@ function getStatText(slot: HydratedInventorySlot) {
     .join(" · ");
 }
 
-export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps) {
+export function StashItemDetailPanel({
+  slot,
+  onBack,
+  onRotate,
+  rotateError = false,
+}: StashItemDetailPanelProps) {
   if (!slot) {
     return (
       <Panel title="Item Detail" className="p-2">
@@ -38,16 +45,33 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
         <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
           Item Detail
         </p>
-        {onBack ? (
-          <button
-            type="button"
-            onClick={onBack}
-            className="h-7 border border-zinc-800 bg-black/60 px-3 text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300 active:border-orange-500 active:text-orange-300"
-          >
-            Back
-          </button>
-        ) : null}
+        <div className="flex items-center gap-1">
+          {onRotate ? (
+            <button
+              type="button"
+              onClick={onRotate}
+              className="h-7 border border-zinc-800 bg-black/60 px-3 text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300 active:border-orange-500 active:text-orange-300"
+            >
+              Rotate
+            </button>
+          ) : null}
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="h-7 border border-zinc-800 bg-black/60 px-3 text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300 active:border-orange-500 active:text-orange-300"
+            >
+              Back
+            </button>
+          ) : null}
+        </div>
       </div>
+
+      {rotateError ? (
+        <p className="border border-red-900 bg-red-950/40 px-2 py-1 text-[8px] font-black uppercase tracking-[0.12em] text-red-300">
+          Not enough free space to rotate
+        </p>
+      ) : null}
 
       <Panel className="p-2">
         <div className="grid grid-cols-[3rem_1fr] gap-2">
