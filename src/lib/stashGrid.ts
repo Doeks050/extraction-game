@@ -85,6 +85,30 @@ export function canPlaceStashSlot(
   });
 }
 
+export function canRotateStashSlot(slots: InventorySlot[], slotId: string) {
+  const slot = slots.find((candidate) => candidate.slotId === slotId);
+
+  if (!slot?.gridPosition) {
+    return false;
+  }
+
+  const rotatedSlots = slots.map((candidate) =>
+    candidate.slotId === slotId
+      ? {
+          ...candidate,
+          isRotated: !candidate.isRotated,
+        }
+      : candidate,
+  );
+
+  return canPlaceStashSlot(
+    rotatedSlots,
+    slotId,
+    slot.gridPosition.column,
+    slot.gridPosition.row,
+  );
+}
+
 export function layoutStashSlots(slots: InventorySlot[]) {
   const positionedSlots: InventorySlot[] = [];
 
@@ -98,7 +122,12 @@ export function layoutStashSlots(slots: InventorySlot[]) {
 
     if (
       slot.gridPosition &&
-      canPlaceStashSlot([...positionedSlots, slot], slot.slotId, slot.gridPosition.column, slot.gridPosition.row)
+      canPlaceStashSlot(
+        [...positionedSlots, slot],
+        slot.slotId,
+        slot.gridPosition.column,
+        slot.gridPosition.row,
+      )
     ) {
       positionedSlots.push(slot);
       continue;
