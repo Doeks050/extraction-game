@@ -1,11 +1,13 @@
 "use client";
 
 import { startWorkbenchLevelOneInstallation } from "../../lib/hideoutInstallation";
+import { startWorkbenchCraft } from "../../lib/workbenchCrafting";
 import { useGameState } from "../state/GameStateProvider";
 import { HideoutModuleHeader } from "./HideoutModuleHeader";
 import { HideoutModuleNavigation } from "./HideoutModuleNavigation";
 import { HideoutModuleProductionPanel } from "./HideoutModuleProductionPanel";
 import { HideoutModuleUpgradePanel } from "./HideoutModuleUpgradePanel";
+import { WorkbenchCraftingPanel } from "./WorkbenchCraftingPanel";
 import { WorkbenchInstallationPanel } from "./WorkbenchInstallationPanel";
 
 type HideoutModulePageClientProps = {
@@ -28,10 +30,19 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
     }
   }
 
-  const isUninstalledWorkbench = module.id === "workshop" && module.level === 0;
+  function handleCraft(recipeId: string) {
+    const nextState = startWorkbenchCraft(state, recipeId, Date.now());
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  const isWorkbench = module.id === "workshop";
+  const isUninstalledWorkbench = isWorkbench && module.level === 0;
 
   return (
-    <div className="grid h-full grid-rows-[auto_auto_auto_1fr] gap-2 overflow-y-auto">
+    <div className="grid h-full content-start gap-2 overflow-y-auto">
       <HideoutModuleHeader module={module} />
 
       {isUninstalledWorkbench ? (
@@ -40,6 +51,15 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
           stash={state.stash}
           onInstall={handleInstallWorkbench}
         />
+      ) : isWorkbench ? (
+        <>
+          <WorkbenchCraftingPanel
+            module={module}
+            stash={state.stash}
+            onCraft={handleCraft}
+          />
+          <HideoutModuleUpgradePanel module={module} />
+        </>
       ) : (
         <>
           <HideoutModuleProductionPanel module={module} />
