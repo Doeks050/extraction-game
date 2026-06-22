@@ -11,11 +11,15 @@ import { WeaponDetailPanel } from "./WeaponDetailPanel";
 
 type StashClientProps = {
   slots: InventorySlot[];
-  onMoveSlot: (slotId: string, column: number, row: number) => void;
-  onRotateSlot: (slotId: string) => boolean;
+  onMoveSlot: (
+    slotId: string,
+    column: number,
+    row: number,
+    isRotated: boolean,
+  ) => void;
 };
 
-export function StashClient({ slots, onMoveSlot, onRotateSlot }: StashClientProps) {
+export function StashClient({ slots, onMoveSlot }: StashClientProps) {
   const hydratedSlots = useMemo(() => hydrateInventory(slots), [slots]);
   const [selectedSlot, setSelectedSlot] = useState<HydratedInventorySlot | null>(null);
 
@@ -34,7 +38,7 @@ export function StashClient({ slots, onMoveSlot, onRotateSlot }: StashClientProp
               Inventory Grid
             </p>
             <p className="mt-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-zinc-600">
-              Tap for info · Hold and drag to move · Use corner button to rotate
+              Tap for info · Hold and drag to move · Rotation is automatic
             </p>
           </div>
 
@@ -43,7 +47,6 @@ export function StashClient({ slots, onMoveSlot, onRotateSlot }: StashClientProp
               slots={hydratedSlots}
               onSelectSlot={setSelectedSlot}
               onMoveSlot={onMoveSlot}
-              onRotateSlot={onRotateSlot}
             />
           </div>
         </div>
