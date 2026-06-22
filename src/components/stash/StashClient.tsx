@@ -12,11 +12,31 @@ import { WeaponDetailPanel } from "./WeaponDetailPanel";
 type StashClientProps = {
   slots: InventorySlot[];
   onMoveSlot: (slotId: string, column: number, row: number) => void;
+  onRotateSlot: (slotId: string) => boolean;
 };
 
-export function StashClient({ slots, onMoveSlot }: StashClientProps) {
+export function StashClient({ slots, onMoveSlot, onRotateSlot }: StashClientProps) {
   const hydratedSlots = useMemo(() => hydrateInventory(slots), [slots]);
   const [selectedSlot, setSelectedSlot] = useState<HydratedInventorySlot | null>(null);
+  const [rotateError, setRotateError] = useState(false);
+
+  function handleRotateSelectedSlot() {
+    if (!selectedSlot) {
+      return;
+    }
+
+    const didRotate = onRotateSlot(selectedSlot.slotId);
+    setRotateError(!didRotate);
+
+    if (didRotate) {
+      setSelectedSlot(null);
+    }
+  }
+
+  function handleBack() {
+    setRotateError(false);
+    setSelectedSlot(null);
+  }
 
   return (
     <Panel className="min-h-0 overflow-hidden p-2">
@@ -24,12 +44,16 @@ export function StashClient({ slots, onMoveSlot }: StashClientProps) {
         selectedSlot.item.category === "weapon" ? (
           <WeaponDetailPanel
             slot={selectedSlot}
-            onBack={() => setSelectedSlot(null)}
+            onBack={handleBack}
+            onRotate={handleRotateSelectedSlot}
+            rotateError={rotateError}
           />
         ) : (
           <StashItemDetailPanel
             slot={selectedSlot}
-            onBack={() => setSelectedSlot(null)}
+            onBack={handleBack}
+            onRotate={handleRotateSelectedSlot}
+            rotateError={rotateError}
           />
         )
       ) : hydratedSlots.length > 0 ? (
@@ -46,7 +70,10 @@ export function StashClient({ slots, onMoveSlot }: StashClientProps) {
           <div className="min-h-0 overflow-y-auto">
             <StashInventoryGrid
               slots={hydratedSlots}
-              onSelectSlot={setSelectedSlot}
+              onSelectSlot={(slot) => {
+                setRotateError(false);
+                setSelectedSlot(slot);
+              }}
               onMoveSlot={onMoveSlot}
             />
           </div>
