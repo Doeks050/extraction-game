@@ -1,39 +1,54 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
 import { formatCredits } from "../../lib/items";
+import { canPlaceStashSlot, layoutStashSlots } from "../../lib/stashGrid";
 import { useGameState } from "../state/GameStateProvider";
 import { StashClient } from "./StashClient";
 import { StashStatsPanel } from "./StashStatsPanel";
 
 export function StashPageClient() {
   const { state, setState } = useGameState();
-  const usedSlots = state.stash.length;
+  const positionedStash = useMemo(() => layoutStashSlots(state.stash), [state.stash]);
+  const usedSlots = positionedStash.length;
   const maxSlots = 40;
 
-  function handleMoveSlot(sourceSlotId: string, targetSlotId: string) {
-    if (sourceSlotId === targetSlotId) {
+  useEffect(() => {
+    const hasPositionChanges = positionedStash.some((slot, index) => {
+      const currentSlot = state.stash[index];
+
+      return (
+        !currentSlot?.gridPosition ||
+        currentSlot.gridPosition.column !== slot.gridPosition?.column ||
+        currentSlot.gridPosition.row !== slot.gridPosition?.row
+      );
+    });
+
+    if (!hasPositionChanges) {
       return;
     }
-
-    const sourceSlot = state.stash.find((slot) => slot.slotId === sourceSlotId);
-
-    if (!sourceSlot) {
-      return;
-    }
-
-    const stashWithoutSource = state.stash.filter((slot) => slot.slotId !== sourceSlotId);
-    const targetIndex = stashWithoutSource.findIndex((slot) => slot.slotId === targetSlotId);
-
-    if (targetIndex < 0) {
-      return;
-    }
-
-    const reorderedStash = [...stashWithoutSource];
-    reorderedStash.splice(targetIndex, 0, sourceSlot);
 
     setState({
       ...state,
-      stash: reorderedStash,
+      stash: positionedStash,
+    });
+  }, [positionedStash, setState, state]);
+
+  function handleMoveSlot(slotId: string, column: number, row: number) {
+    if (!canPlaceStashSlot(positionedStash, slotId, column, row)) {
+      return;
+    }
+
+    setState({
+      ...state,
+      stash: positionedStash.map((slot) =>
+        slot.slotId === slotId
+          ? {
+              ...slot,
+              gridPosition: { column, row },
+            }
+          : slot,
+      ),
     });
   }
 
@@ -45,7 +60,7 @@ export function StashPageClient() {
         credits={formatCredits(state.operator.credits)}
       />
 
-      <StashClient slots={state.stash} onMoveSlot={handleMoveSlot} />
+      <StashClient slots={positionedStash} onMoveSlot={handleMoveSlot} />
     </div>
   );
 }
