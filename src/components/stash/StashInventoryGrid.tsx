@@ -13,8 +13,9 @@ import {
 } from "../../lib/stashGrid";
 import { ItemImage } from "../items/ItemImage";
 
-const HOLD_DELAY_MS = 260;
+const HOLD_DELAY_MS = 220;
 const CELL_HEIGHT_PX = 60;
+const GRID_GAP_PX = 6;
 
 const rarityClassNames = {
   common: "border-zinc-700 text-zinc-300",
@@ -24,11 +25,28 @@ const rarityClassNames = {
   legendary: "border-orange-400/70 text-orange-300",
 };
 
-type DragPreview = {
+type DragState = {
   slotId: string;
-  column: number;
-  row: number;
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+  anchorColumn: number;
+  anchorRow: number;
+  targetColumn: number;
+  targetRow: number;
   isValid: boolean;
+};
+
+type PressState = {
+  slotId: string;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  latestX: number;
+  latestY: number;
+  anchorColumn: number;
+  anchorRow: number;
 };
 
 type StashInventoryGridProps = {
@@ -58,9 +76,10 @@ function getWeaponImageClassName(slot: HydratedInventorySlot) {
 export function StashInventoryGrid({ slots, onSelectSlot, onMoveSlot }: StashInventoryGridProps) {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const draggedSlotIdRef = useRef<string | null>(null);
+  const pressStateRef = useRef<PressState | null>(null);
+  const dragStateRef = useRef<DragState | null>(null);
   const suppressClickRef = useRef(false);
-  const [dragPreview, setDragPreview] = useState<DragPreview | null>(null);
+  const [dragState, setDragState] = useState<DragState | null>(null);
   const rowCount = getStashGridRowCount(slots);
 
   function clearHoldTimer() {
@@ -70,7 +89,7 @@ export function StashInventoryGrid({ slots, onSelectSlot, onMoveSlot }: StashInv
     }
   }
 
-  function getPointerCell(clientX: number, clientY: number) {
+  function getGridMetrics() {
     const grid = gridRef.current;
 
     if (!grid) {
@@ -78,61 +97,130 @@ export function StashInventoryGrid({ slots, onSelectSlot, onMoveSlot }: StashInv
     }
 
     const rect = grid.getBoundingClientRect();
-    const columnWidth = rect.width / STASH_GRID_COLUMNS;
+    const cellWidth =
+      (rect.width - GRID_GAP_PX * (STASH_GRID_COLUMNS - 1)) / STASH_GRID_COLUMNS;
 
     return {
-      column: Math.max(0, Math.min(STASH_GRID_COLUMNS - 1, Math.floor((clientX - rect.left) / columnWidth))),
-      row: Math.max(0, Math.floor((clientY - rect.top) / CELL_HEIGHT_PX)),
+      rect,
+      cellWidth,
+      columnPitch: cellWidth + GRID_GAP_PX,
+      rowPitch: CELL_HEIGHT_PX + GRID_GAP_PX,
     };
   }
 
-  function updateDragPreview(slotId: string, clientX: number, clientY: number) {
-    const cell = getPointerCell(clientX, clientY);
+  function buildDragState(press: PressState, clientX: number, clientY: number): DragState | null {
+    const metrics = getGridMetrics();
 
-    if (!cell) {
-      return;
+    if (!metrics) {
+      return null;
     }
 
-    setDragPreview({
-      slotId,
-      column: cell.column,
-      row: cell.row,
-      isValid: canPlaceStashSlot(slots, slotId, cell.column, cell.row),
-    });
+    const rawColumn = Math.floor((clientX - metrics.rect.left) / metrics.columnPitch);
+    const rawRow = Math.floor((clientY - metrics.rect.top) / metrics.rowPitch);
+    const targetColumn = Math.max(0, rawColumn - press.anchorColumn);
+    const targetRow = Math.max(0, rawRow - press.anchorRow);
+
+    return {
+      slotId: press.slotId,
+      startX: press.startX,
+      startY: press.startY,
+      currentX: clientX,
+      currentY: clientY,
+      anchorColumn: press.anchorColumn,
+      anchorRow: press.anchorRow,
+      targetColumn,
+      targetRow,
+      isValid: canPlaceStashSlot(slots, press.slotId, targetColumn, targetRow),
+    };
   }
 
-  function handlePointerDown(event: React.PointerEvent<HTMLButtonElement>, slotId: string) {
+  function publishDragState(nextDragState: DragState | null) {
+    dragStateRef.current = nextDragState;
+    setDragState(nextDragState);
+  }
+
+  function handlePointerDown(
+    event: React.PointerEvent<HTMLButtonElement>,
+    slot: HydratedInventorySlot,
+  ) {
     clearHoldTimer();
     suppressClickRef.current = false;
 
+    const metrics = getGridMetrics();
+
+    if (!metrics) {
+      return;
+    }
+
+    const buttonRect = event.currentTarget.getBoundingClientRect();
+    const size = getSlotGridSize(slot, slot.item);
+    const anchorColumn = Math.max(
+      0,
+      Math.min(size.width - 1, Math.floor((event.clientX - buttonRect.left) / metrics.columnPitch)),
+    );
+    const anchorRow = Math.max(
+      0,
+      Math.min(size.height - 1, Math.floor((event.clientY - buttonRect.top) / metrics.rowPitch)),
+    );
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+
+    pressStateRef.current = {
+      slotId: slot.slotId,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      latestX: event.clientX,
+      latestY: event.clientY,
+      anchorColumn,
+      anchorRow,
+    };
+
     holdTimerRef.current = setTimeout(() => {
-      draggedSlotIdRef.current = slotId;
+      const press = pressStateRef.current;
+
+      if (!press) {
+        return;
+      }
+
       suppressClickRef.current = true;
-      event.currentTarget.setPointerCapture(event.pointerId);
-      updateDragPreview(slotId, event.clientX, event.clientY);
+      publishDragState(buildDragState(press, press.latestX, press.latestY));
     }, HOLD_DELAY_MS);
   }
 
   function handlePointerMove(event: React.PointerEvent<HTMLButtonElement>) {
-    const slotId = draggedSlotIdRef.current;
+    const press = pressStateRef.current;
 
-    if (!slotId) {
+    if (!press || press.pointerId !== event.pointerId) {
+      return;
+    }
+
+    press.latestX = event.clientX;
+    press.latestY = event.clientY;
+
+    if (!dragStateRef.current) {
       return;
     }
 
     event.preventDefault();
-    updateDragPreview(slotId, event.clientX, event.clientY);
+    publishDragState(buildDragState(press, event.clientX, event.clientY));
   }
 
-  function finishPointerInteraction() {
+  function finishPointerInteraction(event: React.PointerEvent<HTMLButtonElement>) {
     clearHoldTimer();
 
-    if (dragPreview?.isValid) {
-      onMoveSlot(dragPreview.slotId, dragPreview.column, dragPreview.row);
+    const activeDrag = dragStateRef.current;
+
+    if (activeDrag?.isValid) {
+      onMoveSlot(activeDrag.slotId, activeDrag.targetColumn, activeDrag.targetRow);
     }
 
-    draggedSlotIdRef.current = null;
-    setDragPreview(null);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    pressStateRef.current = null;
+    publishDragState(null);
   }
 
   return (
@@ -152,6 +240,29 @@ export function StashInventoryGrid({ slots, onSelectSlot, onMoveSlot }: StashInv
         />
       ))}
 
+      {dragState ? (
+        <div
+          className={[
+            "pointer-events-none z-20 border-2 bg-black/35",
+            dragState.isValid ? "border-emerald-400" : "border-red-500",
+          ].join(" ")}
+          style={{
+            gridColumn: `${dragState.targetColumn + 1} / span ${
+              getSlotGridSize(
+                slots.find((slot) => slot.slotId === dragState.slotId)!,
+                slots.find((slot) => slot.slotId === dragState.slotId)!.item,
+              ).width
+            }`,
+            gridRow: `${dragState.targetRow + 1} / span ${
+              getSlotGridSize(
+                slots.find((slot) => slot.slotId === dragState.slotId)!,
+                slots.find((slot) => slot.slotId === dragState.slotId)!.item,
+              ).height
+            }`,
+          }}
+        />
+      ) : null}
+
       {slots.map((slot) => {
         if (!slot.gridPosition) {
           return null;
@@ -159,14 +270,15 @@ export function StashInventoryGrid({ slots, onSelectSlot, onMoveSlot }: StashInv
 
         const size = getSlotGridSize(slot, slot.item);
         const isWeapon = slot.item.category === "weapon";
-        const isDragging = dragPreview?.slotId === slot.slotId;
-        const displayPosition = isDragging ? dragPreview : slot.gridPosition;
+        const isDragging = dragState?.slotId === slot.slotId;
+        const translateX = isDragging ? dragState.currentX - dragState.startX : 0;
+        const translateY = isDragging ? dragState.currentY - dragState.startY : 0;
 
         return (
           <button
             key={slot.slotId}
             type="button"
-            onPointerDown={(event) => handlePointerDown(event, slot.slotId)}
+            onPointerDown={(event) => handlePointerDown(event, slot)}
             onPointerMove={handlePointerMove}
             onPointerUp={finishPointerInteraction}
             onPointerCancel={finishPointerInteraction}
@@ -181,11 +293,17 @@ export function StashInventoryGrid({ slots, onSelectSlot, onMoveSlot }: StashInv
             className={[
               "relative z-10 overflow-hidden border bg-black/80 p-1 text-left active:scale-[0.99]",
               rarityClassNames[slot.item.rarity],
-              isDragging ? (dragPreview?.isValid ? "border-emerald-400 opacity-80" : "border-red-500 opacity-80") : "",
+              isDragging
+                ? `${dragState.isValid ? "border-emerald-400" : "border-red-500"} z-30 opacity-90 shadow-2xl`
+                : "",
             ].join(" ")}
             style={{
-              gridColumn: `${displayPosition.column + 1} / span ${size.width}`,
-              gridRow: `${displayPosition.row + 1} / span ${size.height}`,
+              gridColumn: `${slot.gridPosition.column + 1} / span ${size.width}`,
+              gridRow: `${slot.gridPosition.row + 1} / span ${size.height}`,
+              transform: isDragging
+                ? `translate3d(${translateX}px, ${translateY}px, 0)`
+                : undefined,
+              willChange: isDragging ? "transform" : undefined,
             }}
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
