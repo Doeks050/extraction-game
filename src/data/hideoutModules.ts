@@ -10,10 +10,10 @@ export const hideoutModules: HideoutModule[] = [
   },
   {
     id: "workshop",
-    name: "Workshop",
-    level: 1,
-    status: "ready",
-    detail: "Crafting ready",
+    name: "Workbench",
+    level: 0,
+    status: "locked",
+    detail: "Not installed",
   },
   {
     id: "generator",
