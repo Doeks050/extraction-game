@@ -47,15 +47,22 @@ export function cloneGameState(state: GameState): GameState {
 
 function normalizeInventorySlots(slots: InventorySlot[]) {
   return slots.map((slot) => {
-    const item = getItemById(slot.itemId);
+    const normalizedSlot =
+      slot.itemId === "part_mechanical_parts"
+        ? {
+            ...slot,
+            itemId: "part_mechanical_components",
+          }
+        : slot;
+    const item = getItemById(normalizedSlot.itemId);
 
     if (item?.category !== "weapon") {
-      return slot;
+      return normalizedSlot;
     }
 
     return {
-      ...slot,
-      currentDurability: slot.currentDurability ?? 100,
+      ...normalizedSlot,
+      currentDurability: normalizedSlot.currentDurability ?? 100,
     };
   });
 }
