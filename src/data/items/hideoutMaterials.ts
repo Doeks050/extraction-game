@@ -163,6 +163,7 @@ export const hideoutMaterials: GameItem[] = [
     value: 1800,
     maxStack: 1,
     gridSize: { width: 1, height: 1 },
+    image: "/items/loot/materials/scrap-metal.png",
     description: "Processed metal scrap used as a basic component in hideout construction and crafting.",
     tags: ["material", "construction", "metal"],
   },
