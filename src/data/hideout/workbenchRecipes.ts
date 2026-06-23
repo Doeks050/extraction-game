@@ -28,6 +28,21 @@ export const workbenchRecipes: WorkbenchRecipe[] = [
     },
   },
   {
+    id: "craft_mechanical_components",
+    name: "Mechanical Components",
+    requiredLevel: 1,
+    durationSeconds: 300,
+    inputs: [
+      { itemId: "part_scrap_metal", quantity: 2 },
+      { itemId: "part_bolt_pack", quantity: 1 },
+      { itemId: "part_screw_pack", quantity: 1 },
+    ],
+    output: {
+      itemId: "part_mechanical_components",
+      quantity: 1,
+    },
+  },
+  {
     id: "craft_wire_bundle",
     name: "Wire Bundle",
     requiredLevel: 1,
