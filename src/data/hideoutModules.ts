@@ -18,9 +18,9 @@ export const hideoutModules: HideoutModule[] = [
   {
     id: "generator",
     name: "Generator",
-    level: 1,
-    status: "stable",
-    detail: "Power stable",
+    level: 0,
+    status: "locked",
+    detail: "Not installed",
   },
   {
     id: "storage",
