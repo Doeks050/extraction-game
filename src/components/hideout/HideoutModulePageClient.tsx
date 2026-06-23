@@ -5,11 +5,16 @@ import {
   generatorLevelOneRequirements,
 } from "../../data/hideout/generatorRequirements";
 import {
+  GROW_ROOM_LEVEL_ONE_DURATION_SECONDS,
+  growRoomLevelOneRequirements,
+} from "../../data/hideout/growRoomRequirements";
+import {
   WORKBENCH_LEVEL_ONE_DURATION_SECONDS,
   workbenchLevelOneRequirements,
 } from "../../data/hideout/workbenchRequirements";
 import {
   startGeneratorLevelOneInstallation,
+  startGrowRoomLevelOneInstallation,
   startWorkbenchLevelOneInstallation,
 } from "../../lib/hideoutInstallation";
 import { startWorkbenchCraft } from "../../lib/workbenchCrafting";
@@ -49,6 +54,14 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
     }
   }
 
+  function handleInstallGrowRoom() {
+    const nextState = startGrowRoomLevelOneInstallation(state, Date.now());
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
   function handleCraft(recipeId: string) {
     const nextState = startWorkbenchCraft(state, recipeId, Date.now());
 
@@ -59,8 +72,10 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
 
   const isWorkbench = module.id === "workshop";
   const isGenerator = module.id === "generator";
+  const isGrowRoom = module.id === "grow_room";
   const isUninstalledWorkbench = isWorkbench && module.level === 0;
   const isUninstalledGenerator = isGenerator && module.level === 0;
+  const isUninstalledGrowRoom = isGrowRoom && module.level === 0;
 
   return (
     <div className="grid h-full content-start gap-2 overflow-y-auto">
@@ -83,6 +98,15 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
           requirements={generatorLevelOneRequirements}
           durationSeconds={GENERATOR_LEVEL_ONE_DURATION_SECONDS}
           onInstall={handleInstallGenerator}
+        />
+      ) : isUninstalledGrowRoom ? (
+        <HideoutInstallationPanel
+          title="Install Grow Room"
+          module={module}
+          stash={state.stash}
+          requirements={growRoomLevelOneRequirements}
+          durationSeconds={GROW_ROOM_LEVEL_ONE_DURATION_SECONDS}
+          onInstall={handleInstallGrowRoom}
         />
       ) : isWorkbench ? (
         <>
