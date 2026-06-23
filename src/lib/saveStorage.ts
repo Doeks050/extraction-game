@@ -82,8 +82,13 @@ function normalizeHideoutModules(
       savedModule.level === 1 &&
       savedModule.status === "stable" &&
       savedModule.detail === "Power stable";
+    const isLegacyGrowRoom =
+      savedModule.id === "grow_room" &&
+      savedModule.level === 1 &&
+      savedModule.status === "idle" &&
+      savedModule.detail === "No crop";
 
-    if (isLegacyGenerator) {
+    if (isLegacyGenerator || isLegacyGrowRoom) {
       return defaultModule;
     }
 
