@@ -161,7 +161,11 @@ export function WorkbenchCraftingPanel({
   );
 
   return (
-    <Panel title="Crafting Recipes" className="p-2">
+    <Panel
+      title="Crafting Recipes"
+      titleClassName="text-orange-300"
+      className="p-2"
+    >
       <div className="grid gap-2">
         {recipes.map(({ recipe, inputs, outputItem }) => {
           if (!outputItem || inputs.length !== recipe.inputs.length) {
