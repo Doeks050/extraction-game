@@ -1,4 +1,5 @@
 import { getItemById } from "./items";
+import type { HideoutModule } from "../types/game";
 import type { GameState } from "../types/state";
 import type { InventorySlot } from "../types/items";
 
@@ -59,6 +60,40 @@ function normalizeInventorySlots(slots: InventorySlot[]) {
   });
 }
 
+function normalizeHideoutModules(
+  savedModules: HideoutModule[] | undefined,
+  defaultModules: HideoutModule[],
+) {
+  if (!savedModules) {
+    return defaultModules;
+  }
+
+  const savedById = new Map(savedModules.map((module) => [module.id, module]));
+
+  return defaultModules.map((defaultModule) => {
+    const savedModule = savedById.get(defaultModule.id);
+
+    if (!savedModule) {
+      return defaultModule;
+    }
+
+    const isLegacyGenerator =
+      savedModule.id === "generator" &&
+      savedModule.level === 1 &&
+      savedModule.status === "stable" &&
+      savedModule.detail === "Power stable";
+
+    if (isLegacyGenerator) {
+      return defaultModule;
+    }
+
+    return {
+      ...defaultModule,
+      ...savedModule,
+    };
+  });
+}
+
 export function normalizeSavedGameState(
   savedState: Partial<GameState> | null,
   defaultState: GameState,
@@ -83,7 +118,10 @@ export function normalizeSavedGameState(
       lastRaid: savedOperator?.lastRaid ?? defaultState.operator.lastRaid,
       activeTask: savedOperator?.activeTask ?? defaultState.operator.activeTask,
     },
-    hideoutModules: savedState.hideoutModules ?? defaultState.hideoutModules,
+    hideoutModules: normalizeHideoutModules(
+      savedState.hideoutModules,
+      clonedDefaultState.hideoutModules,
+    ),
     stash: normalizeInventorySlots(savedState.stash ?? defaultState.stash),
     loadout: savedState.loadout ?? defaultState.loadout,
     tasks: savedState.tasks ?? defaultState.tasks,
