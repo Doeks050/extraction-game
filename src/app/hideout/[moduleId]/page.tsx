@@ -27,7 +27,13 @@ export default async function HideoutModulePage({
   }
 
   return (
-    <GameShell title={moduleDefinition.name} eyebrow="Hideout Module">
+    <GameShell
+      title="Hideout"
+      eyebrow=""
+      showSaveStatus={false}
+      compactHeader
+      titleClassName="text-orange-400"
+    >
       <HideoutModulePageClient moduleId={moduleId} />
     </GameShell>
   );
