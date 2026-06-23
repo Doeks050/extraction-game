@@ -3,6 +3,10 @@ import {
   generatorLevelOneRequirements,
 } from "../data/hideout/generatorRequirements";
 import {
+  GROW_ROOM_LEVEL_ONE_DURATION_SECONDS,
+  growRoomLevelOneRequirements,
+} from "../data/hideout/growRoomRequirements";
+import {
   WORKBENCH_LEVEL_ONE_DURATION_SECONDS,
   workbenchLevelOneRequirements,
   type HideoutItemRequirement,
@@ -136,6 +140,17 @@ export function startGeneratorLevelOneInstallation(
   });
 }
 
+export function startGrowRoomLevelOneInstallation(
+  state: GameState,
+  now: number,
+): GameState | null {
+  return startLevelOneInstallation(state, now, {
+    moduleId: "grow_room",
+    requirements: growRoomLevelOneRequirements,
+    durationSeconds: GROW_ROOM_LEVEL_ONE_DURATION_SECONDS,
+  });
+}
+
 function getCompletedModuleState(moduleId: string, targetLevel: number) {
   if (moduleId === "generator" && targetLevel === 1) {
     return {
@@ -148,6 +163,13 @@ function getCompletedModuleState(moduleId: string, targetLevel: number) {
     return {
       status: "ready" as HideoutModuleStatus,
       detail: "Crafting ready",
+    };
+  }
+
+  if (moduleId === "grow_room" && targetLevel === 1) {
+    return {
+      status: "idle" as HideoutModuleStatus,
+      detail: "No crop",
     };
   }
 
