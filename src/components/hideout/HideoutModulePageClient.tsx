@@ -20,7 +20,6 @@ import {
 import { startWorkbenchCraft } from "../../lib/workbenchCrafting";
 import { useGameState } from "../state/GameStateProvider";
 import { HideoutInstallationPanel } from "./HideoutInstallationPanel";
-import { HideoutModuleHeader } from "./HideoutModuleHeader";
 import { HideoutModuleNavigation } from "./HideoutModuleNavigation";
 import { HideoutModuleProductionPanel } from "./HideoutModuleProductionPanel";
 import { HideoutModuleUpgradePanel } from "./HideoutModuleUpgradePanel";
@@ -79,8 +78,6 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
 
   return (
     <div className="grid h-full content-start gap-2 overflow-y-auto">
-      <HideoutModuleHeader module={module} />
-
       {isUninstalledWorkbench ? (
         <HideoutInstallationPanel
           title="Install Workbench"
