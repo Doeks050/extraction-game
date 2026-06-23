@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { generatorLevelOneRequirements } from "../../data/hideout/generatorRequirements";
 import { workbenchLevelOneRequirements } from "../../data/hideout/workbenchRequirements";
 import {
   getHideoutModuleProgress,
@@ -22,16 +23,29 @@ function getItemFallback(name: string) {
     .slice(0, 2);
 }
 
+function getModuleRequirements(module: HideoutModule) {
+  if (module.level !== 0) {
+    return [];
+  }
+
+  if (module.id === "workshop") {
+    return workbenchLevelOneRequirements;
+  }
+
+  if (module.id === "generator") {
+    return generatorLevelOneRequirements;
+  }
+
+  return [];
+}
+
 export function HideoutModuleCard({ module }: HideoutModuleCardProps) {
   const progress = getHideoutModuleProgress(module);
-  const requirements =
-    module.id === "workshop" && module.level === 0
-      ? workbenchLevelOneRequirements.flatMap((requirement) => {
-          const item = getItemById(requirement.itemId);
+  const requirements = getModuleRequirements(module).flatMap((requirement) => {
+    const item = getItemById(requirement.itemId);
 
-          return item ? [{ ...requirement, item }] : [];
-        })
-      : [];
+    return item ? [{ ...requirement, item }] : [];
+  });
 
   return (
     <Link href={getHideoutModuleRoute(module)} className="block active:scale-[0.98]">
@@ -52,7 +66,11 @@ export function HideoutModuleCard({ module }: HideoutModuleCardProps) {
         </div>
 
         {requirements.length > 0 ? (
-          <div className="mt-2 grid grid-cols-4 gap-1">
+          <div
+            className={`mt-2 grid gap-1 ${
+              requirements.length === 3 ? "grid-cols-3" : "grid-cols-4"
+            }`}
+          >
             {requirements.map((requirement) => (
               <div
                 key={requirement.itemId}
