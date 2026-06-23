@@ -18,9 +18,9 @@ export const hideoutModules: HideoutModule[] = [
   {
     id: "grow_room",
     name: "Grow Room",
-    level: 1,
-    status: "idle",
-    detail: "No crop",
+    level: 0,
+    status: "locked",
+    detail: "Not installed",
   },
   {
     id: "storage",
