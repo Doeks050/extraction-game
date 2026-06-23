@@ -1,8 +1,13 @@
 import {
+  GENERATOR_LEVEL_ONE_DURATION_SECONDS,
+  generatorLevelOneRequirements,
+} from "../data/hideout/generatorRequirements";
+import {
   WORKBENCH_LEVEL_ONE_DURATION_SECONDS,
   workbenchLevelOneRequirements,
   type HideoutItemRequirement,
 } from "../data/hideout/workbenchRequirements";
+import type { HideoutModuleStatus } from "../types/game";
 import type { InventorySlot } from "../types/items";
 import type { GameState } from "../types/state";
 
@@ -59,24 +64,33 @@ export function consumeInventoryRequirements(
   return nextStash;
 }
 
-export function startWorkbenchLevelOneInstallation(
+type StartInstallationOptions = {
+  moduleId: string;
+  requirements: HideoutItemRequirement[];
+  durationSeconds: number;
+};
+
+function startLevelOneInstallation(
   state: GameState,
   now: number,
+  options: StartInstallationOptions,
 ): GameState | null {
-  const workbench = state.hideoutModules.find((module) => module.id === "workshop");
+  const targetModule = state.hideoutModules.find(
+    (module) => module.id === options.moduleId,
+  );
 
   if (
-    !workbench ||
-    workbench.level !== 0 ||
-    workbench.installationEndsAt ||
-    workbench.status !== "locked"
+    !targetModule ||
+    targetModule.level !== 0 ||
+    targetModule.installationEndsAt ||
+    targetModule.status !== "locked"
   ) {
     return null;
   }
 
   const nextStash = consumeInventoryRequirements(
     state.stash,
-    workbenchLevelOneRequirements,
+    options.requirements,
   );
 
   if (!nextStash) {
@@ -87,17 +101,59 @@ export function startWorkbenchLevelOneInstallation(
     ...state,
     stash: nextStash,
     hideoutModules: state.hideoutModules.map((module) =>
-      module.id === "workshop"
+      module.id === options.moduleId
         ? {
             ...module,
             status: "active",
             detail: "Installing Level 1",
-            installationEndsAt:
-              now + WORKBENCH_LEVEL_ONE_DURATION_SECONDS * 1000,
+            installationEndsAt: now + options.durationSeconds * 1000,
             installationTargetLevel: 1,
           }
         : module,
     ),
+  };
+}
+
+export function startWorkbenchLevelOneInstallation(
+  state: GameState,
+  now: number,
+): GameState | null {
+  return startLevelOneInstallation(state, now, {
+    moduleId: "workshop",
+    requirements: workbenchLevelOneRequirements,
+    durationSeconds: WORKBENCH_LEVEL_ONE_DURATION_SECONDS,
+  });
+}
+
+export function startGeneratorLevelOneInstallation(
+  state: GameState,
+  now: number,
+): GameState | null {
+  return startLevelOneInstallation(state, now, {
+    moduleId: "generator",
+    requirements: generatorLevelOneRequirements,
+    durationSeconds: GENERATOR_LEVEL_ONE_DURATION_SECONDS,
+  });
+}
+
+function getCompletedModuleState(moduleId: string, targetLevel: number) {
+  if (moduleId === "generator" && targetLevel === 1) {
+    return {
+      status: "idle" as HideoutModuleStatus,
+      detail: "No fuel",
+    };
+  }
+
+  if (moduleId === "workshop" && targetLevel === 1) {
+    return {
+      status: "ready" as HideoutModuleStatus,
+      detail: "Crafting ready",
+    };
+  }
+
+  return {
+    status: "ready" as HideoutModuleStatus,
+    detail: `Level ${targetLevel} ready`,
   };
 }
 
@@ -114,12 +170,12 @@ export function resolveCompletedHideoutInstallations(
 
     didChange = true;
     const targetLevel = module.installationTargetLevel ?? module.level + 1;
+    const completedState = getCompletedModuleState(module.id, targetLevel);
 
     return {
       ...module,
       level: targetLevel,
-      status: "ready" as const,
-      detail: targetLevel === 1 ? "Crafting ready" : `Level ${targetLevel} ready`,
+      ...completedState,
       installationEndsAt: undefined,
       installationTargetLevel: undefined,
     };
