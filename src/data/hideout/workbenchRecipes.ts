@@ -1,16 +1,6 @@
-import type { HideoutItemRequirement } from "./workbenchRequirements";
+import type { HideoutCraftingRecipe } from "../../types/hideoutCrafting";
 
-export type WorkbenchRecipe = {
-  id: string;
-  name: string;
-  requiredLevel: number;
-  durationSeconds: number;
-  inputs: HideoutItemRequirement[];
-  output: {
-    itemId: string;
-    quantity: number;
-  };
-};
+export type WorkbenchRecipe = HideoutCraftingRecipe;
 
 export const workbenchRecipes: WorkbenchRecipe[] = [
   {
@@ -113,6 +103,22 @@ export const workbenchRecipes: WorkbenchRecipe[] = [
     ],
     output: {
       itemId: "part_cooling_fan",
+      quantity: 1,
+    },
+  },
+  {
+    id: "craft_reinforced_equipment_rack",
+    name: "Reinforced Equipment Rack",
+    requiredLevel: 1,
+    durationSeconds: 1800,
+    inputs: [
+      { itemId: "part_mechanical_components", quantity: 4 },
+      { itemId: "part_scrap_metal", quantity: 4 },
+      { itemId: "part_bolt_pack", quantity: 2 },
+      { itemId: "part_screw_pack", quantity: 2 },
+    ],
+    output: {
+      itemId: "part_reinforced_equipment_rack",
       quantity: 1,
     },
   },
