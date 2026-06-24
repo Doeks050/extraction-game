@@ -17,6 +17,7 @@ import {
   type SaveStatus,
   writeSavedGameState,
 } from "../../lib/saveStorage";
+import { resolveCompletedThreeDPrinterCrafts } from "../../lib/threeDPrinterCrafting";
 import { resolveCompletedWorkbenchCrafts } from "../../lib/workbenchCrafting";
 import type { GameState } from "../../types/state";
 
@@ -35,7 +36,8 @@ type GameStateProviderProps = {
 
 function resolveTimedState(state: GameState, now: number) {
   const installationState = resolveCompletedHideoutInstallations(state, now);
-  return resolveCompletedWorkbenchCrafts(installationState, now);
+  const workbenchState = resolveCompletedWorkbenchCrafts(installationState, now);
+  return resolveCompletedThreeDPrinterCrafts(workbenchState, now);
 }
 
 export function GameStateProvider({ children }: GameStateProviderProps) {
