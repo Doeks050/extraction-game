@@ -7,6 +7,10 @@ import {
   growRoomLevelOneRequirements,
 } from "../data/hideout/growRoomRequirements";
 import {
+  MINING_RIG_LEVEL_ONE_DURATION_SECONDS,
+  miningRigLevelOneRequirements,
+} from "../data/hideout/miningRigRequirements";
+import {
   THREE_D_PRINTER_LEVEL_ONE_DURATION_SECONDS,
   threeDPrinterLevelOneRequirements,
 } from "../data/hideout/threeDPrinterRequirements";
@@ -166,6 +170,17 @@ export function startThreeDPrinterLevelOneInstallation(
   });
 }
 
+export function startMiningRigLevelOneInstallation(
+  state: GameState,
+  now: number,
+): GameState | null {
+  return startLevelOneInstallation(state, now, {
+    moduleId: "mining_rig",
+    requirements: miningRigLevelOneRequirements,
+    durationSeconds: MINING_RIG_LEVEL_ONE_DURATION_SECONDS,
+  });
+}
+
 function getCompletedModuleState(moduleId: string, targetLevel: number) {
   if (moduleId === "generator" && targetLevel === 1) {
     return {
@@ -192,6 +207,13 @@ function getCompletedModuleState(moduleId: string, targetLevel: number) {
     return {
       status: "idle" as HideoutModuleStatus,
       detail: "No print job",
+    };
+  }
+
+  if (moduleId === "mining_rig" && targetLevel === 1) {
+    return {
+      status: "idle" as HideoutModuleStatus,
+      detail: "0 / 1 GPU installed",
     };
   }
 
