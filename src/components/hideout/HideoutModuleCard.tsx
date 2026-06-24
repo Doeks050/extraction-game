@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { generatorLevelOneRequirements } from "../../data/hideout/generatorRequirements";
 import { growRoomLevelOneRequirements } from "../../data/hideout/growRoomRequirements";
+import { threeDPrinterLevelOneRequirements } from "../../data/hideout/threeDPrinterRequirements";
 import { workbenchLevelOneRequirements } from "../../data/hideout/workbenchRequirements";
 import {
   getHideoutModuleProgress,
@@ -39,6 +40,10 @@ function getModuleRequirements(module: HideoutModule) {
 
   if (module.id === "grow_room") {
     return growRoomLevelOneRequirements;
+  }
+
+  if (module.id === "three_d_printer") {
+    return threeDPrinterLevelOneRequirements;
   }
 
   return [];
