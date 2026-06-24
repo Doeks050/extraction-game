@@ -95,7 +95,7 @@ function normalizeInventorySlots(slots: InventorySlot[]) {
 }
 
 function applyTemporaryHideoutUnlock(module: HideoutModule): HideoutModule {
-  if (!TEMP_UNLOCK_HIDEOUT_STATIONS || module.level >= 1) {
+  if (!TEMP_UNLOCK_HIDEOUT_STATIONS) {
     return module;
   }
 
@@ -105,9 +105,18 @@ function applyTemporaryHideoutUnlock(module: HideoutModule): HideoutModule {
     return module;
   }
 
+  if (module.craftingRecipeId && module.craftingEndsAt) {
+    return {
+      ...module,
+      level: Math.max(1, module.level),
+      installationEndsAt: undefined,
+      installationTargetLevel: undefined,
+    };
+  }
+
   return {
     ...module,
-    level: 1,
+    level: Math.max(1, module.level),
     ...unlockedState,
     installationEndsAt: undefined,
     installationTargetLevel: undefined,
