@@ -7,6 +7,7 @@ import { medicalItems } from "./medical";
 import { questItems } from "./questItems";
 import { valuables } from "./valuables";
 import { weapons } from "./weapons";
+import { workbenchMaterials } from "./workbenchMaterials";
 import type { GameItem } from "../../types/items";
 
 export const gameItems: GameItem[] = [
@@ -18,5 +19,6 @@ export const gameItems: GameItem[] = [
   ...medicalItems,
   ...valuables,
   ...hideoutMaterials,
+  ...workbenchMaterials,
   ...questItems,
 ];
