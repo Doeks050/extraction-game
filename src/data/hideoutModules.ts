@@ -30,6 +30,13 @@ export const hideoutModules: HideoutModule[] = [
     detail: "Not installed",
   },
   {
+    id: "mining_rig",
+    name: "Crypto Mining Rig",
+    level: 0,
+    status: "locked",
+    detail: "Not installed",
+  },
+  {
     id: "storage",
     name: "Storage",
     level: 1,
