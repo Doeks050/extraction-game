@@ -77,6 +77,21 @@ export const workbenchRecipes: WorkbenchRecipe[] = [
     },
   },
   {
+    id: "craft_water_pump",
+    name: "Water Pump",
+    requiredLevel: 1,
+    durationSeconds: 600,
+    inputs: [
+      { itemId: "part_electric_motor", quantity: 1 },
+      { itemId: "part_mechanical_components", quantity: 1 },
+      { itemId: "part_rubber_hose", quantity: 1 },
+    ],
+    output: {
+      itemId: "part_water_pump",
+      quantity: 1,
+    },
+  },
+  {
     id: "craft_printer_assembly",
     name: "Printer Assembly",
     requiredLevel: 1,
