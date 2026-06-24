@@ -157,9 +157,18 @@ export function normalizeSavedGameState(
   savedState: Partial<GameState> | null,
   defaultState: GameState,
 ): GameState {
-  if (!savedState) return cloneGameState(defaultState);
-
   const clonedDefaultState = cloneGameState(defaultState);
+
+  if (!savedState) {
+    return {
+      ...clonedDefaultState,
+      hideoutModules: normalizeHideoutModules(
+        undefined,
+        clonedDefaultState.hideoutModules,
+      ),
+    };
+  }
+
   const savedOperator = savedState.operator;
 
   return {
