@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { generatorLevelOneRequirements } from "../../data/hideout/generatorRequirements";
 import { growRoomLevelOneRequirements } from "../../data/hideout/growRoomRequirements";
+import { miningRigLevelOneRequirements } from "../../data/hideout/miningRigRequirements";
 import { threeDPrinterLevelOneRequirements } from "../../data/hideout/threeDPrinterRequirements";
 import { workbenchLevelOneRequirements } from "../../data/hideout/workbenchRequirements";
 import {
@@ -44,6 +45,10 @@ function getModuleRequirements(module: HideoutModule) {
 
   if (module.id === "three_d_printer") {
     return threeDPrinterLevelOneRequirements;
+  }
+
+  if (module.id === "mining_rig") {
+    return miningRigLevelOneRequirements;
   }
 
   return [];
