@@ -86,6 +86,36 @@ export const workbenchRecipes: WorkbenchRecipe[] = [
       quantity: 1,
     },
   },
+  {
+    id: "craft_printer_assembly",
+    name: "Printer Assembly",
+    requiredLevel: 1,
+    durationSeconds: 1200,
+    inputs: [
+      { itemId: "part_mechanical_components", quantity: 2 },
+      { itemId: "part_electrical_components", quantity: 2 },
+      { itemId: "part_plastic_parts", quantity: 2 },
+    ],
+    output: {
+      itemId: "part_printer_assembly",
+      quantity: 1,
+    },
+  },
+  {
+    id: "craft_cooling_fan",
+    name: "Cooling Fan",
+    requiredLevel: 1,
+    durationSeconds: 900,
+    inputs: [
+      { itemId: "part_electric_motor", quantity: 1 },
+      { itemId: "part_wire_bundle", quantity: 1 },
+      { itemId: "part_plastic_parts", quantity: 2 },
+    ],
+    output: {
+      itemId: "part_cooling_fan",
+      quantity: 1,
+    },
+  },
 ];
 
 export function getWorkbenchRecipeById(recipeId: string) {
