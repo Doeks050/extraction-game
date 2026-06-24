@@ -48,6 +48,7 @@ export const hideoutMaterials: GameItem[] = [
     value: 2100,
     maxStack: 5,
     gridSize: { width: 1, height: 1 },
+    image: "/items/loot/electronics/circuit-board.png",
     description: "Electronic board used in workshop and hideout upgrades.",
     tags: ["material", "electronics"],
   },
