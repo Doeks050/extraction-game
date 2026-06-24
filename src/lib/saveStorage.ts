@@ -1,11 +1,38 @@
 import { getItemById } from "./items";
-import type { HideoutModule } from "../types/game";
+import type { HideoutModule, HideoutModuleStatus } from "../types/game";
 import type { GameState } from "../types/state";
 import type { InventorySlot } from "../types/items";
 
 export const SAVE_STORAGE_KEY = "extraction-game-save-v5";
+export const TEMP_UNLOCK_HIDEOUT_STATIONS = true;
 
 export type SaveStatus = "loading" | "ready" | "error";
+
+const temporaryUnlockedStationState: Record<
+  string,
+  { status: HideoutModuleStatus; detail: string }
+> = {
+  workshop: {
+    status: "ready",
+    detail: "Crafting ready",
+  },
+  generator: {
+    status: "idle",
+    detail: "No fuel",
+  },
+  grow_room: {
+    status: "idle",
+    detail: "No crop",
+  },
+  three_d_printer: {
+    status: "idle",
+    detail: "No print job",
+  },
+  mining_rig: {
+    status: "idle",
+    detail: "0 / 1 GPU installed",
+  },
+};
 
 export function readSavedGameState(): Partial<GameState> | null {
   if (typeof window === "undefined") return null;
@@ -67,12 +94,32 @@ function normalizeInventorySlots(slots: InventorySlot[]) {
   });
 }
 
+function applyTemporaryHideoutUnlock(module: HideoutModule): HideoutModule {
+  if (!TEMP_UNLOCK_HIDEOUT_STATIONS || module.level >= 1) {
+    return module;
+  }
+
+  const unlockedState = temporaryUnlockedStationState[module.id];
+
+  if (!unlockedState) {
+    return module;
+  }
+
+  return {
+    ...module,
+    level: 1,
+    ...unlockedState,
+    installationEndsAt: undefined,
+    installationTargetLevel: undefined,
+  };
+}
+
 function normalizeHideoutModules(
   savedModules: HideoutModule[] | undefined,
   defaultModules: HideoutModule[],
 ) {
   if (!savedModules) {
-    return defaultModules;
+    return defaultModules.map(applyTemporaryHideoutUnlock);
   }
 
   const savedById = new Map(savedModules.map((module) => [module.id, module]));
@@ -81,7 +128,7 @@ function normalizeHideoutModules(
     const savedModule = savedById.get(defaultModule.id);
 
     if (!savedModule) {
-      return defaultModule;
+      return applyTemporaryHideoutUnlock(defaultModule);
     }
 
     const isLegacyGenerator =
@@ -96,13 +143,13 @@ function normalizeHideoutModules(
       savedModule.detail === "No crop";
 
     if (isLegacyGenerator || isLegacyGrowRoom) {
-      return defaultModule;
+      return applyTemporaryHideoutUnlock(defaultModule);
     }
 
-    return {
+    return applyTemporaryHideoutUnlock({
       ...defaultModule,
       ...savedModule,
-    };
+    });
   });
 }
 
