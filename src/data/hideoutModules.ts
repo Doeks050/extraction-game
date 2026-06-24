@@ -23,6 +23,13 @@ export const hideoutModules: HideoutModule[] = [
     detail: "Not installed",
   },
   {
+    id: "three_d_printer",
+    name: "3D Printer",
+    level: 0,
+    status: "locked",
+    detail: "Not installed",
+  },
+  {
     id: "storage",
     name: "Storage",
     level: 1,
