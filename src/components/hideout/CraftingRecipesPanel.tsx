@@ -163,7 +163,7 @@ export function CraftingRecipesPanel({
     <Panel
       title="Crafting Recipes"
       titleClassName="text-orange-300"
-      className="min-w-0 overflow-hidden p-2"
+      className="min-w-0 p-2"
     >
       <div className="grid min-w-0 gap-2">
         {resolvedRecipes.map(({ recipe, inputs, outputItem }) => {
