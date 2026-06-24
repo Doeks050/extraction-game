@@ -9,6 +9,10 @@ import {
   growRoomLevelOneRequirements,
 } from "../../data/hideout/growRoomRequirements";
 import {
+  MINING_RIG_LEVEL_ONE_DURATION_SECONDS,
+  miningRigLevelOneRequirements,
+} from "../../data/hideout/miningRigRequirements";
+import {
   THREE_D_PRINTER_LEVEL_ONE_DURATION_SECONDS,
   threeDPrinterLevelOneRequirements,
 } from "../../data/hideout/threeDPrinterRequirements";
@@ -19,15 +23,18 @@ import {
 import {
   startGeneratorLevelOneInstallation,
   startGrowRoomLevelOneInstallation,
+  startMiningRigLevelOneInstallation,
   startThreeDPrinterLevelOneInstallation,
   startWorkbenchLevelOneInstallation,
 } from "../../lib/hideoutInstallation";
+import { startThreeDPrinterCraft } from "../../lib/threeDPrinterCrafting";
 import { startWorkbenchCraft } from "../../lib/workbenchCrafting";
 import { useGameState } from "../state/GameStateProvider";
 import { HideoutInstallationPanel } from "./HideoutInstallationPanel";
 import { HideoutModuleNavigation } from "./HideoutModuleNavigation";
 import { HideoutModuleProductionPanel } from "./HideoutModuleProductionPanel";
 import { HideoutModuleUpgradePanel } from "./HideoutModuleUpgradePanel";
+import { ThreeDPrinterCraftingPanel } from "./ThreeDPrinterCraftingPanel";
 import { WorkbenchCraftingPanel } from "./WorkbenchCraftingPanel";
 
 type HideoutModulePageClientProps = {
@@ -74,8 +81,24 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
     }
   }
 
-  function handleCraft(recipeId: string) {
+  function handleInstallMiningRig() {
+    const nextState = startMiningRigLevelOneInstallation(state, Date.now());
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  function handleWorkbenchCraft(recipeId: string) {
     const nextState = startWorkbenchCraft(state, recipeId, Date.now());
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  function handleThreeDPrinterCraft(recipeId: string) {
+    const nextState = startThreeDPrinterCraft(state, recipeId, Date.now());
 
     if (nextState) {
       setState(nextState);
@@ -86,10 +109,12 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
   const isGenerator = module.id === "generator";
   const isGrowRoom = module.id === "grow_room";
   const isThreeDPrinter = module.id === "three_d_printer";
+  const isMiningRig = module.id === "mining_rig";
   const isUninstalledWorkbench = isWorkbench && module.level === 0;
   const isUninstalledGenerator = isGenerator && module.level === 0;
   const isUninstalledGrowRoom = isGrowRoom && module.level === 0;
   const isUninstalledThreeDPrinter = isThreeDPrinter && module.level === 0;
+  const isUninstalledMiningRig = isMiningRig && module.level === 0;
 
   return (
     <div className="grid h-full content-start gap-2 overflow-y-auto">
@@ -138,12 +163,30 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
           durationSeconds={THREE_D_PRINTER_LEVEL_ONE_DURATION_SECONDS}
           onInstall={handleInstallThreeDPrinter}
         />
+      ) : isUninstalledMiningRig ? (
+        <HideoutInstallationPanel
+          title="Install Crypto Mining Rig"
+          module={module}
+          stash={state.stash}
+          requirements={miningRigLevelOneRequirements}
+          durationSeconds={MINING_RIG_LEVEL_ONE_DURATION_SECONDS}
+          onInstall={handleInstallMiningRig}
+        />
       ) : isWorkbench ? (
         <>
           <WorkbenchCraftingPanel
             module={module}
             stash={state.stash}
-            onCraft={handleCraft}
+            onCraft={handleWorkbenchCraft}
+          />
+          <HideoutModuleUpgradePanel module={module} />
+        </>
+      ) : isThreeDPrinter ? (
+        <>
+          <ThreeDPrinterCraftingPanel
+            module={module}
+            stash={state.stash}
+            onCraft={handleThreeDPrinterCraft}
           />
           <HideoutModuleUpgradePanel module={module} />
         </>
