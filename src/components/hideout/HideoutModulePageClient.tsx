@@ -117,7 +117,7 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
   const isUninstalledMiningRig = isMiningRig && module.level === 0;
 
   return (
-    <div className="grid h-full content-start gap-2 overflow-y-auto">
+    <div className="grid h-full min-h-0 content-start gap-2 overflow-x-hidden overflow-y-auto overscroll-contain pb-2">
       <div className="flex h-11 items-center justify-between border border-zinc-800 bg-zinc-950 px-3">
         <h1 className="text-lg font-black uppercase tracking-tight text-orange-400">
           {module.name}
