@@ -7,6 +7,10 @@ import {
   growRoomLevelOneRequirements,
 } from "../data/hideout/growRoomRequirements";
 import {
+  THREE_D_PRINTER_LEVEL_ONE_DURATION_SECONDS,
+  threeDPrinterLevelOneRequirements,
+} from "../data/hideout/threeDPrinterRequirements";
+import {
   WORKBENCH_LEVEL_ONE_DURATION_SECONDS,
   workbenchLevelOneRequirements,
   type HideoutItemRequirement,
@@ -151,6 +155,17 @@ export function startGrowRoomLevelOneInstallation(
   });
 }
 
+export function startThreeDPrinterLevelOneInstallation(
+  state: GameState,
+  now: number,
+): GameState | null {
+  return startLevelOneInstallation(state, now, {
+    moduleId: "three_d_printer",
+    requirements: threeDPrinterLevelOneRequirements,
+    durationSeconds: THREE_D_PRINTER_LEVEL_ONE_DURATION_SECONDS,
+  });
+}
+
 function getCompletedModuleState(moduleId: string, targetLevel: number) {
   if (moduleId === "generator" && targetLevel === 1) {
     return {
@@ -170,6 +185,13 @@ function getCompletedModuleState(moduleId: string, targetLevel: number) {
     return {
       status: "idle" as HideoutModuleStatus,
       detail: "No crop",
+    };
+  }
+
+  if (moduleId === "three_d_printer" && targetLevel === 1) {
+    return {
+      status: "idle" as HideoutModuleStatus,
+      detail: "No print job",
     };
   }
 
