@@ -67,7 +67,7 @@ function RecipeItemTile({
   return (
     <div
       title={item.name}
-      className={`w-14 shrink-0 border bg-black/60 p-1 ${borderClass}`}
+      className={`min-w-0 overflow-hidden border bg-black/60 p-1 ${borderClass}`}
     >
       <ItemImage
         src={item.image}
@@ -106,7 +106,7 @@ function ClockButton({
       onClick={onClick}
       aria-label={active ? "Crafting in progress" : "Start crafting"}
       title={active ? "Crafting in progress" : ready ? "Start crafting" : "Requirements not met"}
-      className={`flex w-14 shrink-0 flex-col items-center justify-center border px-1 py-2 ${visualClass}`}
+      className={`flex w-16 shrink-0 flex-col items-center justify-center border px-1 py-2 ${visualClass}`}
     >
       <svg
         viewBox="0 0 24 24"
@@ -163,9 +163,9 @@ export function CraftingRecipesPanel({
     <Panel
       title="Crafting Recipes"
       titleClassName="text-orange-300"
-      className="p-2"
+      className="min-w-0 overflow-hidden p-2"
     >
-      <div className="grid gap-2">
+      <div className="grid min-w-0 gap-2">
         {resolvedRecipes.map(({ recipe, inputs, outputItem }) => {
           if (!outputItem || inputs.length !== recipe.inputs.length) {
             return null;
@@ -197,7 +197,10 @@ export function CraftingRecipesPanel({
               : "border-zinc-800 bg-black/35";
 
           return (
-            <div key={recipe.id} className={`border p-2 ${recipeClass}`}>
+            <div
+              key={recipe.id}
+              className={`min-w-0 overflow-hidden border p-2 ${recipeClass}`}
+            >
               <p
                 className={`mb-2 truncate text-[9px] font-black uppercase tracking-[0.12em] ${
                   isActive
@@ -210,23 +213,19 @@ export function CraftingRecipesPanel({
                 {recipe.name}
               </p>
 
-              <div className="flex items-center gap-1 overflow-hidden">
-                <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
-                  {requirements.map((input, index) => (
-                    <div key={input.itemId} className="flex items-center gap-1">
-                      {index > 0 ? (
-                        <span className="text-sm font-black text-zinc-600">+</span>
-                      ) : null}
-                      <RecipeItemTile
-                        item={input.item}
-                        quantity={input.quantity}
-                        owned={isActive ? input.quantity : input.owned}
-                        complete={input.complete}
-                      />
-                    </div>
-                  ))}
-                </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {requirements.map((input) => (
+                  <RecipeItemTile
+                    key={input.itemId}
+                    item={input.item}
+                    quantity={input.quantity}
+                    owned={isActive ? input.quantity : input.owned}
+                    complete={input.complete}
+                  />
+                ))}
+              </div>
 
+              <div className="mt-2 flex min-w-0 items-stretch justify-end gap-2">
                 <ClockButton
                   seconds={remainingSeconds}
                   disabled={!canCraft}
@@ -235,13 +234,17 @@ export function CraftingRecipesPanel({
                   onClick={() => onCraft(recipe.id)}
                 />
 
-                <span className="shrink-0 text-lg font-black text-orange-400">=</span>
+                <div className="flex shrink-0 items-center text-lg font-black text-orange-400">
+                  =
+                </div>
 
-                <RecipeItemTile
-                  item={outputItem}
-                  quantity={recipe.output.quantity}
-                  isOutput
-                />
+                <div className="w-20 shrink-0">
+                  <RecipeItemTile
+                    item={outputItem}
+                    quantity={recipe.output.quantity}
+                    isOutput
+                  />
+                </div>
               </div>
             </div>
           );
