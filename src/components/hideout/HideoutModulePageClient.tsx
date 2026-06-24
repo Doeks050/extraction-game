@@ -9,12 +9,17 @@ import {
   growRoomLevelOneRequirements,
 } from "../../data/hideout/growRoomRequirements";
 import {
+  THREE_D_PRINTER_LEVEL_ONE_DURATION_SECONDS,
+  threeDPrinterLevelOneRequirements,
+} from "../../data/hideout/threeDPrinterRequirements";
+import {
   WORKBENCH_LEVEL_ONE_DURATION_SECONDS,
   workbenchLevelOneRequirements,
 } from "../../data/hideout/workbenchRequirements";
 import {
   startGeneratorLevelOneInstallation,
   startGrowRoomLevelOneInstallation,
+  startThreeDPrinterLevelOneInstallation,
   startWorkbenchLevelOneInstallation,
 } from "../../lib/hideoutInstallation";
 import { startWorkbenchCraft } from "../../lib/workbenchCrafting";
@@ -61,6 +66,14 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
     }
   }
 
+  function handleInstallThreeDPrinter() {
+    const nextState = startThreeDPrinterLevelOneInstallation(state, Date.now());
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
   function handleCraft(recipeId: string) {
     const nextState = startWorkbenchCraft(state, recipeId, Date.now());
 
@@ -72,9 +85,11 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
   const isWorkbench = module.id === "workshop";
   const isGenerator = module.id === "generator";
   const isGrowRoom = module.id === "grow_room";
+  const isThreeDPrinter = module.id === "three_d_printer";
   const isUninstalledWorkbench = isWorkbench && module.level === 0;
   const isUninstalledGenerator = isGenerator && module.level === 0;
   const isUninstalledGrowRoom = isGrowRoom && module.level === 0;
+  const isUninstalledThreeDPrinter = isThreeDPrinter && module.level === 0;
 
   return (
     <div className="grid h-full content-start gap-2 overflow-y-auto">
@@ -113,6 +128,15 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
           requirements={growRoomLevelOneRequirements}
           durationSeconds={GROW_ROOM_LEVEL_ONE_DURATION_SECONDS}
           onInstall={handleInstallGrowRoom}
+        />
+      ) : isUninstalledThreeDPrinter ? (
+        <HideoutInstallationPanel
+          title="Install 3D Printer"
+          module={module}
+          stash={state.stash}
+          requirements={threeDPrinterLevelOneRequirements}
+          durationSeconds={THREE_D_PRINTER_LEVEL_ONE_DURATION_SECONDS}
+          onInstall={handleInstallThreeDPrinter}
         />
       ) : isWorkbench ? (
         <>
