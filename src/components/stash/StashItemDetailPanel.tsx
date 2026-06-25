@@ -1,3 +1,4 @@
+import { getInventoryFuelPercentage } from "../../lib/generatorStation";
 import type { HydratedInventorySlot } from "../../lib/items";
 import { formatCredits, formatWeight } from "../../lib/items";
 import { Panel } from "../ui/Panel";
@@ -31,6 +32,11 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
       </Panel>
     );
   }
+
+  const fuelPercentage = getInventoryFuelPercentage(
+    slot.itemId,
+    slot.fuelRemainingSeconds,
+  );
 
   return (
     <div className="grid gap-2">
@@ -93,15 +99,32 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
           </div>
 
           <div className="border border-zinc-900 bg-black/50 p-1">
-            <p className="text-[8px] font-black uppercase text-zinc-600">Stack</p>
-            <p className="text-[9px] font-black text-zinc-300">
-              {slot.item.maxStack}
+            <p className="text-[8px] font-black uppercase text-zinc-600">
+              {fuelPercentage === null ? "Stack" : "Fuel"}
+            </p>
+            <p
+              className={`text-[9px] font-black ${
+                fuelPercentage === null ? "text-zinc-300" : "text-orange-300"
+              }`}
+            >
+              {fuelPercentage === null ? slot.item.maxStack : `${fuelPercentage}%`}
             </p>
           </div>
         </div>
 
+        {fuelPercentage !== null ? (
+          <div className="mt-2 h-2 border border-zinc-800 bg-black">
+            <div
+              className="h-full bg-orange-500"
+              style={{ width: `${fuelPercentage}%` }}
+            />
+          </div>
+        ) : null}
+
         <p className="mt-2 truncate text-[9px] font-bold uppercase text-zinc-600">
-          {getStatText(slot)}
+          {fuelPercentage === null
+            ? getStatText(slot)
+            : "Looted fuel containers are always found full"}
         </p>
       </Panel>
     </div>
