@@ -21,6 +21,11 @@ import {
   workbenchLevelOneRequirements,
 } from "../../data/hideout/workbenchRequirements";
 import {
+  insertGeneratorFuel,
+  removeGeneratorFuel,
+  toggleGeneratorPower,
+} from "../../lib/generatorStation";
+import {
   startGeneratorLevelOneInstallation,
   startGrowRoomLevelOneInstallation,
   startMiningRigLevelOneInstallation,
@@ -30,6 +35,7 @@ import {
 import { startThreeDPrinterCraft } from "../../lib/threeDPrinterCrafting";
 import { startWorkbenchCraft } from "../../lib/workbenchCrafting";
 import { useGameState } from "../state/GameStateProvider";
+import { GeneratorStationPanel } from "./GeneratorStationPanel";
 import { HideoutInstallationPanel } from "./HideoutInstallationPanel";
 import { HideoutModuleNavigation } from "./HideoutModuleNavigation";
 import { HideoutModuleProductionPanel } from "./HideoutModuleProductionPanel";
@@ -105,6 +111,30 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
     }
   }
 
+  function handleInsertGeneratorFuel(slotIndex: number) {
+    const nextState = insertGeneratorFuel(state, slotIndex);
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  function handleRemoveGeneratorFuel(slotIndex: number) {
+    const nextState = removeGeneratorFuel(state, slotIndex);
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  function handleToggleGeneratorPower() {
+    const nextState = toggleGeneratorPower(state);
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
   const isWorkbench = module.id === "workshop";
   const isGenerator = module.id === "generator";
   const isGrowRoom = module.id === "grow_room";
@@ -172,6 +202,17 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
           durationSeconds={MINING_RIG_LEVEL_ONE_DURATION_SECONDS}
           onInstall={handleInstallMiningRig}
         />
+      ) : isGenerator ? (
+        <>
+          <GeneratorStationPanel
+            module={module}
+            stash={state.stash}
+            onInsertFuel={handleInsertGeneratorFuel}
+            onRemoveFuel={handleRemoveGeneratorFuel}
+            onTogglePower={handleToggleGeneratorPower}
+          />
+          <HideoutModuleUpgradePanel module={module} />
+        </>
       ) : isWorkbench ? (
         <>
           <WorkbenchCraftingPanel
