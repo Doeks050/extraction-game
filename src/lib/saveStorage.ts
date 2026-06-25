@@ -1,4 +1,8 @@
-import { GENERATOR_FUEL_ITEM_ID } from "./generatorStation";
+import { getGeneratorFuelSlotCount } from "../data/hideout/generatorConfig";
+import {
+  GENERATOR_FUEL_ITEM_ID,
+  normalizeGeneratorFuelSlots,
+} from "./generatorStation";
 import { getItemById } from "./items";
 import type { HideoutModule, HideoutModuleStatus } from "../types/game";
 import type { GameState } from "../types/state";
@@ -92,6 +96,42 @@ function normalizeInventorySlots(slots: InventorySlot[]) {
   });
 }
 
+function addOneInventoryItem(
+  stash: InventorySlot[],
+  itemId: string,
+  slotPrefix: string,
+) {
+  const item = getItemById(itemId);
+
+  if (!item) {
+    return stash;
+  }
+
+  const stackIndex = stash.findIndex(
+    (slot) => slot.itemId === itemId && slot.quantity < item.maxStack,
+  );
+
+  if (stackIndex >= 0) {
+    return stash.map((slot, index) =>
+      index === stackIndex
+        ? {
+            ...slot,
+            quantity: slot.quantity + 1,
+          }
+        : slot,
+    );
+  }
+
+  return [
+    ...stash,
+    {
+      slotId: `${slotPrefix}_${stash.length + 1}`,
+      itemId,
+      quantity: 1,
+    },
+  ];
+}
+
 function ensureTemporaryGeneratorFuel(stash: InventorySlot[]) {
   if (!TEMP_GRANT_GENERATOR_TEST_FUEL) {
     return stash;
@@ -102,7 +142,7 @@ function ensureTemporaryGeneratorFuel(stash: InventorySlot[]) {
       total + (slot.itemId === GENERATOR_FUEL_ITEM_ID ? slot.quantity : 0),
     0,
   );
-  const fuelToAdd = Math.max(0, 2 - currentFuelCount);
+  const fuelToAdd = Math.max(0, 1 - currentFuelCount);
 
   if (fuelToAdd === 0) {
     return stash;
@@ -119,21 +159,22 @@ function ensureTemporaryGeneratorFuel(stash: InventorySlot[]) {
 }
 
 function normalizeGeneratorModule(module: HideoutModule): HideoutModule {
-  const fuelSlots = [
-    module.generatorFuelSlots?.[0] ?? null,
-    module.generatorFuelSlots?.[1] ?? null,
-  ];
+  const level = Math.max(1, module.level);
+  const fuelSlots = normalizeGeneratorFuelSlots(
+    level,
+    module.generatorFuelSlots,
+  );
   const loadedCount = fuelSlots.filter(Boolean).length;
   const poweredOn = Boolean(module.generatorPoweredOn && loadedCount > 0);
 
   return {
     ...module,
-    level: Math.max(1, module.level),
+    level,
     status: poweredOn ? "active" : "idle",
     detail: poweredOn
       ? "Power online"
       : loadedCount > 0
-        ? `${loadedCount} / 2 fuel loaded`
+        ? `${loadedCount} / ${fuelSlots.length} fuel loaded`
         : "No fuel",
     generatorFuelSlots: fuelSlots,
     generatorPoweredOn: poweredOn,
@@ -214,6 +255,36 @@ function normalizeHideoutModules(
   });
 }
 
+function returnOverflowGeneratorFuel(
+  savedModules: HideoutModule[] | undefined,
+  normalizedModules: HideoutModule[],
+  stash: InventorySlot[],
+) {
+  const savedGenerator = savedModules?.find(
+    (module) => module.id === "generator",
+  );
+  const normalizedGenerator = normalizedModules.find(
+    (module) => module.id === "generator",
+  );
+
+  if (!savedGenerator || !normalizedGenerator) {
+    return stash;
+  }
+
+  const allowedSlotCount = getGeneratorFuelSlotCount(
+    normalizedGenerator.level,
+  );
+  const overflowFuel = (savedGenerator.generatorFuelSlots ?? [])
+    .slice(allowedSlotCount)
+    .filter((itemId): itemId is string => Boolean(itemId));
+
+  return overflowFuel.reduce(
+    (nextStash, itemId, index) =>
+      addOneInventoryItem(nextStash, itemId, `generator_slot_migration_${index}`),
+    stash,
+  );
+}
+
 export function normalizeSavedGameState(
   savedState: Partial<GameState> | null,
   defaultState: GameState,
@@ -238,8 +309,20 @@ export function normalizeSavedGameState(
   }
 
   const savedOperator = savedState.operator;
+  const normalizedModules = normalizeHideoutModules(
+    savedState.hideoutModules,
+    clonedDefaultState.hideoutModules,
+  );
   const normalizedStash = normalizeInventorySlots(
     savedState.stash ?? defaultState.stash,
+  );
+  const stashWithTestFuel = needsTemporaryFuelGrant
+    ? ensureTemporaryGeneratorFuel(normalizedStash)
+    : normalizedStash;
+  const reconciledStash = returnOverflowGeneratorFuel(
+    savedState.hideoutModules,
+    normalizedModules,
+    stashWithTestFuel,
   );
 
   return {
@@ -257,13 +340,8 @@ export function normalizeSavedGameState(
       lastRaid: savedOperator?.lastRaid ?? defaultState.operator.lastRaid,
       activeTask: savedOperator?.activeTask ?? defaultState.operator.activeTask,
     },
-    hideoutModules: normalizeHideoutModules(
-      savedState.hideoutModules,
-      clonedDefaultState.hideoutModules,
-    ),
-    stash: needsTemporaryFuelGrant
-      ? ensureTemporaryGeneratorFuel(normalizedStash)
-      : normalizedStash,
+    hideoutModules: normalizedModules,
+    stash: reconciledStash,
     loadout: savedState.loadout ?? defaultState.loadout,
     tasks: savedState.tasks ?? defaultState.tasks,
   };
