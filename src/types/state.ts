@@ -9,4 +9,5 @@ export type GameState = {
   stash: InventorySlot[];
   loadout: CurrentLoadout;
   tasks: GameTask[];
+  contentMigrationVersion?: number;
 };
