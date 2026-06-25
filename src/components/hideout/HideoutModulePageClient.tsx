@@ -118,8 +118,8 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
     }
   }
 
-  function handleInsertPrinterFilament() {
-    const nextState = insertPrinterFilament(state);
+  function handleInsertPrinterFilament(itemId: string) {
+    const nextState = insertPrinterFilament(state, itemId);
 
     if (nextState) {
       setState(nextState);
@@ -134,8 +134,8 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
     }
   }
 
-  function handleInsertPrinterUsb() {
-    const nextState = insertPrinterUsb(state);
+  function handleInsertPrinterUsb(itemId: string) {
+    const nextState = insertPrinterUsb(state, itemId);
 
     if (nextState) {
       setState(nextState);
