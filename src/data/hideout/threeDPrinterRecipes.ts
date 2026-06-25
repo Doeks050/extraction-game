@@ -6,6 +6,7 @@ export const threeDPrinterRecipes: HideoutCraftingRecipe[] = [
     name: "Power Distribution Unit",
     requiredLevel: 1,
     durationSeconds: 2400,
+    filamentCostUnits: 20,
     inputs: [
       { itemId: "part_electrical_components", quantity: 3 },
       { itemId: "part_circuit_board", quantity: 2 },
@@ -22,6 +23,7 @@ export const threeDPrinterRecipes: HideoutCraftingRecipe[] = [
     name: "Thermal Management Unit",
     requiredLevel: 1,
     durationSeconds: 2100,
+    filamentCostUnits: 25,
     inputs: [
       { itemId: "part_cooling_fan", quantity: 2 },
       { itemId: "part_electrical_components", quantity: 1 },
