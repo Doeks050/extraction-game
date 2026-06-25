@@ -34,6 +34,12 @@ import {
   startWorkbenchLevelOneInstallation,
 } from "../../lib/hideoutInstallation";
 import { startThreeDPrinterCraft } from "../../lib/threeDPrinterCrafting";
+import {
+  insertPrinterFilament,
+  insertPrinterUsb,
+  removePrinterFilament,
+  removePrinterUsb,
+} from "../../lib/threeDPrinterSupplies";
 import { startWorkbenchCraft } from "../../lib/workbenchCrafting";
 import { useGameState } from "../state/GameStateProvider";
 import { GeneratorStationPanel } from "./GeneratorStationPanel";
@@ -106,6 +112,38 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
 
   function handleThreeDPrinterCraft(recipeId: string) {
     const nextState = startThreeDPrinterCraft(state, recipeId, Date.now());
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  function handleInsertPrinterFilament() {
+    const nextState = insertPrinterFilament(state);
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  function handleRemovePrinterFilament() {
+    const nextState = removePrinterFilament(state);
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  function handleInsertPrinterUsb() {
+    const nextState = insertPrinterUsb(state);
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  function handleRemovePrinterUsb() {
+    const nextState = removePrinterUsb(state);
 
     if (nextState) {
       setState(nextState);
@@ -231,6 +269,10 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
             module={module}
             stash={state.stash}
             generatorPoweredOn={generatorPoweredOn}
+            onInsertFilament={handleInsertPrinterFilament}
+            onRemoveFilament={handleRemovePrinterFilament}
+            onInsertUsb={handleInsertPrinterUsb}
+            onRemoveUsb={handleRemovePrinterUsb}
             onCraft={handleThreeDPrinterCraft}
           />
           <HideoutModuleUpgradePanel module={module} />
