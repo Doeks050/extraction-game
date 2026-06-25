@@ -1,6 +1,7 @@
 import { ammoItems } from "./ammo";
 import { attachments } from "./attachments";
 import { gearItems } from "./gear";
+import { generatorFuelItems } from "./generatorFuelItems";
 import { hideoutMaterials } from "./hideoutMaterials";
 import { magazines } from "./magazines";
 import { medicalItems } from "./medical";
@@ -19,6 +20,7 @@ export const gameItems: GameItem[] = [
   ...medicalItems,
   ...valuables,
   ...hideoutMaterials,
+  ...generatorFuelItems,
   ...workbenchMaterials,
   ...questItems,
 ];
