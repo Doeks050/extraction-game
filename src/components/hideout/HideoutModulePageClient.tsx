@@ -129,7 +129,7 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
   }
 
   function handleToggleGeneratorPower() {
-    const nextState = toggleGeneratorPower(state);
+    const nextState = toggleGeneratorPower(state, Date.now());
 
     if (nextState) {
       setState(nextState);
