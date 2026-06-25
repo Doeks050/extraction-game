@@ -9,6 +9,8 @@ export type ItemCategory =
   | "medical"
   | "valuable"
   | "hideout_material"
+  | "data"
+  | "container"
   | "quest"
   | "key";
 
@@ -47,8 +49,11 @@ export type GameItem = {
   image?: string;
   stats?: ItemStatBlock;
   fuelCapacitySeconds?: number;
+  filamentPrintCapacity?: number;
   filamentCapacityUnits?: number;
   printerRecipeIds?: string[];
+  containerGridSize?: ItemGridSize;
+  containerAllowedTags?: string[];
 };
 
 export type InventoryGridPosition = {
@@ -62,7 +67,9 @@ export type InventorySlot = {
   quantity: number;
   currentDurability?: number;
   fuelRemainingSeconds?: number;
+  filamentPrintsRemaining?: number;
   filamentRemainingUnits?: number;
+  containedSlots?: InventorySlot[];
   gridPosition?: InventoryGridPosition;
   isRotated?: boolean;
 };
