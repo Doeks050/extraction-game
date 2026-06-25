@@ -17,9 +17,9 @@ type ThreeDPrinterCraftingPanelProps = {
   module: HideoutModule;
   stash: InventorySlot[];
   generatorPoweredOn: boolean;
-  onInsertFilament: () => void;
+  onInsertFilament: (itemId: string) => void;
   onRemoveFilament: () => void;
-  onInsertUsb: () => void;
+  onInsertUsb: (itemId: string) => void;
   onRemoveUsb: () => void;
   onCraft: (recipeId: string) => void;
 };
@@ -45,7 +45,7 @@ export function ThreeDPrinterCraftingPanel({
   function isRecipeAvailable(recipe: HideoutCraftingRecipe) {
     return (
       isPrinterRecipeUnlocked(module, recipe) &&
-      hasEnoughPrinterFilament(module, recipe)
+      hasEnoughPrinterFilament(module)
     );
   }
 
@@ -61,11 +61,11 @@ export function ThreeDPrinterCraftingPanel({
     );
 
     if (!filamentSlot) {
-      return "Insert filament spool";
+      return "Insert filament";
     }
 
-    if (!hasEnoughPrinterFilament(module, recipe)) {
-      return "Not enough filament";
+    if (!hasEnoughPrinterFilament(module)) {
+      return "Filament is empty";
     }
 
     return undefined;
@@ -90,11 +90,7 @@ export function ThreeDPrinterCraftingPanel({
         unavailableMessage="Turn on generator"
         isRecipeAvailable={isRecipeAvailable}
         getRecipeUnavailableMessage={getRecipeUnavailableMessage}
-        getRecipeMetaLabel={(recipe) =>
-          recipe.filamentCostUnits
-            ? `Filament ${recipe.filamentCostUnits}%`
-            : undefined
-        }
+        getRecipeMetaLabel={() => "1 filament print"}
         onCraft={onCraft}
       />
     </div>
