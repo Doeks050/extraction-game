@@ -4,7 +4,10 @@ import {
   GENERATOR_ROOM_BACKGROUND_IMAGE,
   getGeneratorFuelSlotCount,
 } from "../../data/hideout/generatorConfig";
-import { GENERATOR_FUEL_ITEM_ID } from "../../lib/generatorStation";
+import {
+  GENERATOR_FUEL_ITEM_ID,
+  getFuelPercentage,
+} from "../../lib/generatorStation";
 import { countInventoryItem } from "../../lib/hideoutInstallation";
 import { getItemById } from "../../lib/items";
 import type { HideoutModule } from "../../types/game";
@@ -19,6 +22,17 @@ type GeneratorStationPanelProps = {
   onTogglePower: () => void;
 };
 
+function formatFuelTime(totalSeconds: number) {
+  const safeSeconds = Math.max(0, Math.ceil(totalSeconds));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`;
+}
+
 export function GeneratorStationPanel({
   module,
   stash,
@@ -26,7 +40,7 @@ export function GeneratorStationPanel({
   onRemoveFuel,
   onTogglePower,
 }: GeneratorStationPanelProps) {
-  const fuelItem = getItemById(GENERATOR_FUEL_ITEM_ID);
+  const defaultFuelItem = getItemById(GENERATOR_FUEL_ITEM_ID);
   const slotCount = getGeneratorFuelSlotCount(module.level);
   const fuelSlots = Array.from(
     { length: slotCount },
@@ -35,7 +49,16 @@ export function GeneratorStationPanel({
   const poweredOn = Boolean(module.generatorPoweredOn);
   const loadedCount = fuelSlots.filter(Boolean).length;
   const fuelInStash = countInventoryItem(stash, GENERATOR_FUEL_ITEM_ID);
-  const canTurnOn = loadedCount > 0;
+  const activeFuel = fuelSlots.find(
+    (slot) => slot && slot.fuelRemainingSeconds > 0,
+  );
+  const fuelPercentage = activeFuel
+    ? getFuelPercentage(
+        activeFuel.fuelRemainingSeconds,
+        activeFuel.fuelCapacitySeconds,
+      )
+    : 0;
+  const canTurnOn = Boolean(activeFuel);
 
   return (
     <section className="relative min-h-[520px] overflow-hidden border border-zinc-800 bg-zinc-950">
@@ -68,10 +91,14 @@ export function GeneratorStationPanel({
 
           <div className="text-right">
             <p className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">
-              Fuel Loaded
+              Fuel Remaining
             </p>
-            <p className="mt-0.5 text-sm font-black text-orange-300">
-              {loadedCount} / {slotCount}
+            <p
+              className={`mt-0.5 text-sm font-black ${
+                fuelPercentage > 0 ? "text-orange-300" : "text-zinc-600"
+              }`}
+            >
+              {fuelPercentage}%
             </p>
           </div>
         </div>
@@ -94,7 +121,7 @@ export function GeneratorStationPanel({
                 Fuel Slot
               </p>
               <p className="mt-0.5 text-[8px] font-bold uppercase text-zinc-600">
-                Level {module.level} capacity
+                Level {module.level} capacity · {loadedCount}/{slotCount}
               </p>
             </div>
             <p className="text-[8px] font-black uppercase text-zinc-500">
@@ -103,9 +130,18 @@ export function GeneratorStationPanel({
           </div>
 
           <div className="grid gap-2">
-            {fuelSlots.map((itemId, slotIndex) => {
-              const isFilled = Boolean(itemId);
+            {fuelSlots.map((fuelSlot, slotIndex) => {
+              const isFilled = Boolean(fuelSlot);
               const slotDisabled = poweredOn || (!isFilled && fuelInStash <= 0);
+              const fuelItem = fuelSlot
+                ? getItemById(fuelSlot.itemId)
+                : defaultFuelItem;
+              const slotFuelPercentage = fuelSlot
+                ? getFuelPercentage(
+                    fuelSlot.fuelRemainingSeconds,
+                    fuelSlot.fuelCapacitySeconds,
+                  )
+                : 0;
 
               return (
                 <button
@@ -115,7 +151,7 @@ export function GeneratorStationPanel({
                   onClick={() =>
                     isFilled ? onRemoveFuel(slotIndex) : onInsertFuel(slotIndex)
                   }
-                  className={`relative min-h-24 overflow-hidden border p-2 text-left transition active:scale-[0.98] ${
+                  className={`relative min-h-28 overflow-hidden border p-2 text-left transition active:scale-[0.98] ${
                     isFilled
                       ? "border-orange-500/55 bg-orange-500/8"
                       : "border-zinc-700 bg-black/65"
@@ -125,7 +161,7 @@ export function GeneratorStationPanel({
                     Fuel Slot {slotIndex + 1}
                   </span>
 
-                  {isFilled && fuelItem ? (
+                  {fuelSlot && fuelItem ? (
                     <div className="mt-3 grid grid-cols-[60px_1fr] items-center gap-3">
                       <ItemImage
                         src={fuelItem.image}
@@ -135,19 +171,34 @@ export function GeneratorStationPanel({
                         imageClassName="p-0.5"
                       />
                       <div className="min-w-0">
-                        <p className="truncate text-[10px] font-black uppercase text-zinc-100">
-                          {fuelItem.name}
-                        </p>
-                        <p className="mt-1 text-[8px] font-black uppercase text-orange-300">
-                          60 min fuel
-                        </p>
-                        <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
-                          {poweredOn ? "Generator running" : "Tap to remove"}
-                        </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-[10px] font-black uppercase text-zinc-100">
+                            {fuelItem.name}
+                          </p>
+                          <p className="shrink-0 text-sm font-black text-orange-300">
+                            {slotFuelPercentage}%
+                          </p>
+                        </div>
+
+                        <div className="mt-1.5 h-2 border border-zinc-800 bg-black">
+                          <div
+                            className="h-full bg-orange-500 transition-[width] duration-500"
+                            style={{ width: `${slotFuelPercentage}%` }}
+                          />
+                        </div>
+
+                        <div className="mt-1 flex items-center justify-between gap-2 text-[7px] font-black uppercase">
+                          <span className="text-zinc-500">
+                            {formatFuelTime(fuelSlot.fuelRemainingSeconds)} remaining
+                          </span>
+                          <span className="text-zinc-600">
+                            {poweredOn ? "Running" : "Tap to remove"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-4 flex h-16 items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center">
+                    <div className="mt-4 flex h-20 items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center">
                       <div>
                         <p className="text-[9px] font-black uppercase text-zinc-400">
                           Empty Fuel Slot
