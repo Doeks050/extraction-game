@@ -74,6 +74,12 @@ export type GeneratorFuelSlot = {
   fuelCapacitySeconds: number;
 };
 
+export type PrinterFilamentSlot = {
+  itemId: string;
+  filamentRemainingUnits: number;
+  filamentCapacityUnits: number;
+};
+
 export type HideoutModule = {
   id: string;
   name: string;
@@ -87,4 +93,6 @@ export type HideoutModule = {
   generatorFuelSlots?: Array<GeneratorFuelSlot | null>;
   generatorPoweredOn?: boolean;
   generatorFuelUpdatedAt?: number;
+  printerFilamentSlot?: PrinterFilamentSlot | null;
+  printerUsbItemId?: string | null;
 };
