@@ -46,6 +46,7 @@ export type GameItem = {
   tags: string[];
   image?: string;
   stats?: ItemStatBlock;
+  fuelCapacitySeconds?: number;
 };
 
 export type InventoryGridPosition = {
@@ -58,6 +59,7 @@ export type InventorySlot = {
   itemId: string;
   quantity: number;
   currentDurability?: number;
+  fuelRemainingSeconds?: number;
   gridPosition?: InventoryGridPosition;
   isRotated?: boolean;
 };
