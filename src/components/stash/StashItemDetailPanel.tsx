@@ -1,7 +1,7 @@
 import { getInventoryFuelPercentage } from "../../lib/generatorStation";
 import type { HydratedInventorySlot } from "../../lib/items";
 import { formatCredits, formatWeight } from "../../lib/items";
-import { getInventoryFilamentPercentage } from "../../lib/threeDPrinterSupplies";
+import { getInventoryFilamentState } from "../../lib/threeDPrinterSupplies";
 import { Panel } from "../ui/Panel";
 
 type StashItemDetailPanelProps = {
@@ -38,23 +38,50 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
     slot.itemId,
     slot.fuelRemainingSeconds,
   );
-  const filamentPercentage = getInventoryFilamentPercentage(
+  const filamentState = getInventoryFilamentState(
     slot.itemId,
+    slot.filamentPrintsRemaining,
     slot.filamentRemainingUnits,
   );
-  const resourcePercentage = fuelPercentage ?? filamentPercentage;
+  const containerCapacity = slot.item.containerGridSize
+    ? slot.item.containerGridSize.width * slot.item.containerGridSize.height
+    : null;
+  const containerUsed = slot.containedSlots?.length ?? 0;
+
   const resourceLabel =
     fuelPercentage !== null
       ? "Fuel"
-      : filamentPercentage !== null
-        ? "Filament"
-        : "Stack";
+      : filamentState
+        ? "Prints"
+        : containerCapacity !== null
+          ? "USB Slots"
+          : "Stack";
+  const resourceValue =
+    fuelPercentage !== null
+      ? `${fuelPercentage}%`
+      : filamentState
+        ? `${filamentState.filamentPrintsRemaining}/${filamentState.filamentPrintCapacity}`
+        : containerCapacity !== null
+          ? `${containerUsed}/${containerCapacity}`
+          : `${slot.item.maxStack}`;
+  const progressPercentage =
+    fuelPercentage !== null
+      ? fuelPercentage
+      : filamentState
+        ? (filamentState.filamentPrintsRemaining /
+            filamentState.filamentPrintCapacity) *
+          100
+        : containerCapacity
+          ? (containerUsed / containerCapacity) * 100
+          : null;
   const resourceDescription =
     fuelPercentage !== null
       ? "Looted fuel containers are always found full"
-      : filamentPercentage !== null
-        ? "Looted filament spools are always found full"
-        : getStatText(slot);
+      : filamentState
+        ? "Each completed printer job consumes one print"
+        : containerCapacity !== null
+          ? "Open this case to manage stored USB sticks"
+          : getStatText(slot);
 
   return (
     <div className="grid gap-2">
@@ -122,23 +149,21 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
             </p>
             <p
               className={`text-[9px] font-black ${
-                resourcePercentage === null
+                progressPercentage === null
                   ? "text-zinc-300"
                   : "text-orange-300"
               }`}
             >
-              {resourcePercentage === null
-                ? slot.item.maxStack
-                : `${resourcePercentage}%`}
+              {resourceValue}
             </p>
           </div>
         </div>
 
-        {resourcePercentage !== null ? (
+        {progressPercentage !== null ? (
           <div className="mt-2 h-2 border border-zinc-800 bg-black">
             <div
               className="h-full bg-orange-500"
-              style={{ width: `${resourcePercentage}%` }}
+              style={{ width: `${progressPercentage}%` }}
             />
           </div>
         ) : null}
