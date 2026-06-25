@@ -13,6 +13,5 @@ export type HideoutCraftingRecipe = {
     itemId: string;
     quantity: number;
   };
-  filamentCostUnits?: number;
   requiredUsbItemId?: string;
 };
