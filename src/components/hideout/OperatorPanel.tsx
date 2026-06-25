@@ -4,13 +4,17 @@ import { Panel } from "../ui/Panel";
 
 type OperatorPanelProps = {
   operator: OperatorProfile;
+  generatorPoweredOn: boolean;
 };
 
 function formatCredits(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-export function OperatorPanel({ operator }: OperatorPanelProps) {
+export function OperatorPanel({
+  operator,
+  generatorPoweredOn,
+}: OperatorPanelProps) {
   const xpPercent = Math.round((operator.xp / operator.nextXp) * 100);
 
   return (
@@ -49,9 +53,20 @@ export function OperatorPanel({ operator }: OperatorPanelProps) {
             <p className="text-base font-black leading-tight text-orange-400">
               {formatCredits(operator.credits)}
             </p>
-            <p className="text-[9px] font-bold uppercase text-zinc-600">
-              Tap profile
-            </p>
+            <div
+              className={`mt-1 inline-flex items-center gap-1 border px-1.5 py-0.5 text-[7px] font-black uppercase tracking-[0.12em] ${
+                generatorPoweredOn
+                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
+                  : "border-zinc-800 bg-black text-zinc-600"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  generatorPoweredOn ? "bg-emerald-400" : "bg-zinc-700"
+                }`}
+              />
+              Power {generatorPoweredOn ? "On" : "Off"}
+            </div>
           </div>
         </div>
       </Panel>
