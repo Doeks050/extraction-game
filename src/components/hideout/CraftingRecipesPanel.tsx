@@ -14,6 +14,10 @@ type CraftingRecipesPanelProps = {
   stash: InventorySlot[];
   recipes: HideoutCraftingRecipe[];
   onCraft: (recipeId: string) => void;
+  isAvailable?: boolean;
+  unavailableMessage?: string;
+  durationMultiplier?: number;
+  activeBonusLabel?: string;
 };
 
 type TileSize = "regular" | "compact" | "dense";
@@ -33,6 +37,7 @@ type ClockButtonProps = {
   active: boolean;
   ready: boolean;
   size: TileSize;
+  disabledTitle?: string;
   onClick: () => void;
 };
 
@@ -143,6 +148,7 @@ function ClockButton({
   active,
   ready,
   size,
+  disabledTitle,
   onClick,
 }: ClockButtonProps) {
   const visualClass = active
@@ -150,14 +156,19 @@ function ClockButton({
     : ready
       ? "border-emerald-500/70 bg-emerald-500/15 text-emerald-300 active:scale-[0.96]"
       : "border-zinc-800 bg-zinc-950/80 text-zinc-600";
+  const title = active
+    ? "Crafting in progress"
+    : ready
+      ? "Start crafting"
+      : disabledTitle ?? "Requirements not met";
 
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      aria-label={active ? "Crafting in progress" : "Start crafting"}
-      title={active ? "Crafting in progress" : ready ? "Start crafting" : "Requirements not met"}
+      aria-label={title}
+      title={title}
       className={`flex shrink-0 flex-col items-center justify-center border px-1 py-1.5 ${clockWidthClasses[size]} ${visualClass}`}
     >
       <svg
@@ -188,6 +199,10 @@ export function CraftingRecipesPanel({
   stash,
   recipes,
   onCraft,
+  isAvailable = true,
+  unavailableMessage = "Station unavailable",
+  durationMultiplier = 1,
+  activeBonusLabel,
 }: CraftingRecipesPanelProps) {
   const [now, setNow] = useState<number | null>(null);
 
@@ -217,6 +232,28 @@ export function CraftingRecipesPanel({
       titleClassName="text-orange-300"
       className="min-w-0 p-2"
     >
+      {!isAvailable ? (
+        <div className="mb-2 flex items-center justify-between border border-red-500/45 bg-red-500/10 px-2 py-1.5">
+          <span className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-[0.16em] text-red-300">
+            <span className="h-2 w-2 rounded-full bg-red-500" />
+            Power Required
+          </span>
+          <span className="text-[7px] font-black uppercase text-zinc-500">
+            {unavailableMessage}
+          </span>
+        </div>
+      ) : activeBonusLabel ? (
+        <div className="mb-2 flex items-center justify-between border border-emerald-500/45 bg-emerald-500/10 px-2 py-1.5">
+          <span className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-[0.16em] text-emerald-300">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            Generator Online
+          </span>
+          <span className="text-[7px] font-black uppercase text-emerald-400">
+            {activeBonusLabel}
+          </span>
+        </div>
+      ) : null}
+
       <div className="grid min-w-0 gap-2">
         {resolvedRecipes.map(({ recipe, inputs, outputItem }) => {
           if (!outputItem || inputs.length !== recipe.inputs.length) {
@@ -236,17 +273,22 @@ export function CraftingRecipesPanel({
             };
           });
           const hasItems = requirements.every((input) => input.complete);
+          const baseDurationSeconds = Math.ceil(
+            recipe.durationSeconds * durationMultiplier,
+          );
           const remainingSeconds =
             isActive && module.craftingEndsAt && now !== null
               ? Math.max(0, Math.ceil((module.craftingEndsAt - now) / 1000))
-              : recipe.durationSeconds;
-          const canCraft = !isBusy && !levelLocked && hasItems;
-          const recipeReady = !levelLocked && hasItems;
+              : baseDurationSeconds;
+          const canCraft = isAvailable && !isBusy && !levelLocked && hasItems;
+          const recipeReady = isAvailable && !levelLocked && hasItems;
           const recipeClass = isActive
             ? "border-orange-500/70 bg-orange-500/10"
-            : recipeReady
-              ? "border-emerald-500/60 bg-emerald-500/10"
-              : "border-zinc-800 bg-black/35";
+            : !isAvailable
+              ? "border-red-950 bg-black/45"
+              : recipeReady
+                ? "border-emerald-500/60 bg-emerald-500/10"
+                : "border-zinc-800 bg-black/35";
           const tileSize = getTileSize(requirements.length);
 
           return (
@@ -258,9 +300,11 @@ export function CraftingRecipesPanel({
                 className={`mb-2 truncate text-[9px] font-black uppercase tracking-[0.12em] ${
                   isActive
                     ? "text-orange-300"
-                    : recipeReady
-                      ? "text-emerald-300"
-                      : "text-zinc-500"
+                    : !isAvailable
+                      ? "text-red-400"
+                      : recipeReady
+                        ? "text-emerald-300"
+                        : "text-zinc-500"
                 }`}
               >
                 {recipe.name}
@@ -290,6 +334,7 @@ export function CraftingRecipesPanel({
                   active={isActive}
                   ready={canCraft}
                   size={tileSize}
+                  disabledTitle={!isAvailable ? unavailableMessage : undefined}
                   onClick={() => onCraft(recipe.id)}
                 />
 
