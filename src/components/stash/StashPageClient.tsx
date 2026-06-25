@@ -6,6 +6,10 @@ import {
   canPlaceStashSlotWithRotation,
   layoutStashSlots,
 } from "../../lib/stashGrid";
+import {
+  removeUsbFromCase,
+  storeUsbInCase,
+} from "../../lib/usbCaseStorage";
 import { useGameState } from "../state/GameStateProvider";
 import { StashClient } from "./StashClient";
 import { StashStatsPanel } from "./StashStatsPanel";
@@ -69,6 +73,22 @@ export function StashPageClient() {
     });
   }
 
+  function handleStoreUsb(caseSlotId: string, usbSlotId: string) {
+    const nextState = storeUsbInCase(state, caseSlotId, usbSlotId);
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
+  function handleRemoveUsb(caseSlotId: string, usbSlotId: string) {
+    const nextState = removeUsbFromCase(state, caseSlotId, usbSlotId);
+
+    if (nextState) {
+      setState(nextState);
+    }
+  }
+
   return (
     <div className="grid h-full grid-rows-[auto_1fr] gap-2">
       <StashStatsPanel
@@ -77,7 +97,12 @@ export function StashPageClient() {
         credits={formatCredits(state.operator.credits)}
       />
 
-      <StashClient slots={positionedStash} onMoveSlot={handleMoveSlot} />
+      <StashClient
+        slots={positionedStash}
+        onMoveSlot={handleMoveSlot}
+        onStoreUsb={handleStoreUsb}
+        onRemoveUsb={handleRemoveUsb}
+      />
     </div>
   );
 }
