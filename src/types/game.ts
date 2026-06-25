@@ -68,6 +68,12 @@ export type HideoutModuleStatus =
   | "stable"
   | "locked";
 
+export type GeneratorFuelSlot = {
+  itemId: string;
+  fuelRemainingSeconds: number;
+  fuelCapacitySeconds: number;
+};
+
 export type HideoutModule = {
   id: string;
   name: string;
@@ -78,6 +84,7 @@ export type HideoutModule = {
   installationTargetLevel?: number;
   craftingRecipeId?: string;
   craftingEndsAt?: number;
-  generatorFuelSlots?: Array<string | null>;
+  generatorFuelSlots?: Array<GeneratorFuelSlot | null>;
   generatorPoweredOn?: boolean;
+  generatorFuelUpdatedAt?: number;
 };
