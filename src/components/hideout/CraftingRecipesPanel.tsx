@@ -18,6 +18,7 @@ type CraftingRecipesPanelProps = {
   unavailableMessage?: string;
   durationMultiplier?: number;
   activeBonusLabel?: string;
+  recipeTitleClassName?: string;
 };
 
 type RecipeItemTileProps = {
@@ -153,6 +154,7 @@ export function CraftingRecipesPanel({
   unavailableMessage = "Station unavailable",
   durationMultiplier = 1,
   activeBonusLabel,
+  recipeTitleClassName,
 }: CraftingRecipesPanelProps) {
   const [now, setNow] = useState<number | null>(null);
 
@@ -239,6 +241,15 @@ export function CraftingRecipesPanel({
               : recipeReady
                 ? "border-emerald-500/60 bg-emerald-500/10"
                 : "border-zinc-800 bg-black/35";
+          const titleClass = recipeTitleClassName
+            ? recipeTitleClassName
+            : isActive
+              ? "text-orange-300"
+              : !isAvailable
+                ? "text-red-400"
+                : recipeReady
+                  ? "text-emerald-300"
+                  : "text-zinc-500";
 
           return (
             <div
@@ -246,15 +257,7 @@ export function CraftingRecipesPanel({
               className={`flex h-[100px] min-w-0 flex-col overflow-hidden border p-2 ${recipeClass}`}
             >
               <p
-                className={`mb-2 h-3 shrink-0 truncate text-[9px] font-black uppercase leading-3 tracking-[0.12em] ${
-                  isActive
-                    ? "text-orange-300"
-                    : !isAvailable
-                      ? "text-red-400"
-                      : recipeReady
-                        ? "text-emerald-300"
-                        : "text-zinc-500"
-                }`}
+                className={`mb-2 h-3 shrink-0 truncate text-[9px] font-black uppercase leading-3 tracking-[0.12em] ${titleClass}`}
               >
                 {recipe.name}
               </p>
