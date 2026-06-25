@@ -4,6 +4,10 @@ import {
 } from "../data/hideout/workbenchRecipes";
 import type { InventorySlot } from "../types/items";
 import type { GameState } from "../types/state";
+import {
+  isGeneratorPowered,
+  WORKBENCH_POWERED_DURATION_MULTIPLIER,
+} from "./generatorStation";
 import { consumeInventoryRequirements } from "./hideoutInstallation";
 import { getItemById } from "./items";
 
@@ -86,6 +90,13 @@ export function startWorkbenchCraft(
     return null;
   }
 
+  const durationMultiplier = isGeneratorPowered(state)
+    ? WORKBENCH_POWERED_DURATION_MULTIPLIER
+    : 1;
+  const durationSeconds = Math.ceil(
+    recipe.durationSeconds * durationMultiplier,
+  );
+
   return {
     ...state,
     stash: nextStash,
@@ -96,7 +107,7 @@ export function startWorkbenchCraft(
             status: "active",
             detail: `Crafting ${recipe.name}`,
             craftingRecipeId: recipe.id,
-            craftingEndsAt: now + recipe.durationSeconds * 1000,
+            craftingEndsAt: now + durationSeconds * 1000,
           }
         : module,
     ),
