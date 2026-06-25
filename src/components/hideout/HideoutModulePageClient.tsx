@@ -22,6 +22,7 @@ import {
 } from "../../data/hideout/workbenchRequirements";
 import {
   insertGeneratorFuel,
+  isGeneratorPowered,
   removeGeneratorFuel,
   toggleGeneratorPower,
 } from "../../lib/generatorStation";
@@ -135,6 +136,7 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
     }
   }
 
+  const generatorPoweredOn = isGeneratorPowered(state);
   const isWorkbench = module.id === "workshop";
   const isGenerator = module.id === "generator";
   const isGrowRoom = module.id === "grow_room";
@@ -218,6 +220,7 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
           <WorkbenchCraftingPanel
             module={module}
             stash={state.stash}
+            generatorPoweredOn={generatorPoweredOn}
             onCraft={handleWorkbenchCraft}
           />
           <HideoutModuleUpgradePanel module={module} />
@@ -227,6 +230,7 @@ export function HideoutModulePageClient({ moduleId }: HideoutModulePageClientPro
           <ThreeDPrinterCraftingPanel
             module={module}
             stash={state.stash}
+            generatorPoweredOn={generatorPoweredOn}
             onCraft={handleThreeDPrinterCraft}
           />
           <HideoutModuleUpgradePanel module={module} />
