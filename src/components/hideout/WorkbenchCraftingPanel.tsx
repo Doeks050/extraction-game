@@ -28,6 +28,7 @@ export function WorkbenchCraftingPanel({
         generatorPoweredOn ? WORKBENCH_POWERED_DURATION_MULTIPLIER : 1
       }
       activeBonusLabel={generatorPoweredOn ? "25% faster" : undefined}
+      recipeTitleClassName="text-orange-300"
       onCraft={onCraft}
     />
   );
