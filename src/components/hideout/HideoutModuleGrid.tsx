@@ -7,7 +7,7 @@ type HideoutModuleGridProps = {
 
 export function HideoutModuleGrid({ modules }: HideoutModuleGridProps) {
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-px border border-zinc-800 bg-zinc-800">
       {modules.map((module) => (
         <HideoutModuleCard key={module.id} module={module} />
       ))}
