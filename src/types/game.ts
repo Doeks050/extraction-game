@@ -78,4 +78,6 @@ export type HideoutModule = {
   installationTargetLevel?: number;
   craftingRecipeId?: string;
   craftingEndsAt?: number;
+  generatorFuelSlots?: Array<string | null>;
+  generatorPoweredOn?: boolean;
 };
