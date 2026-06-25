@@ -1,4 +1,5 @@
 import { getGeneratorFuelSlotCount } from "../data/hideout/generatorConfig";
+import type { GeneratorFuelSlot } from "../types/game";
 import type { InventorySlot } from "../types/items";
 import type { GameState } from "../types/state";
 import { getItemById } from "./items";
@@ -6,15 +7,94 @@ import { getItemById } from "./items";
 export const GENERATOR_FUEL_ITEM_ID = "part_fuel_jerrycan";
 export const WORKBENCH_POWERED_DURATION_MULTIPLIER = 0.75;
 
+type LegacyGeneratorFuelSlot = GeneratorFuelSlot | string | null;
+
+function getFuelCapacitySeconds(itemId: string) {
+  return getItemById(itemId)?.fuelCapacitySeconds ?? 0;
+}
+
+function normalizeFuelSlot(
+  slot: LegacyGeneratorFuelSlot | undefined,
+): GeneratorFuelSlot | null {
+  if (!slot) {
+    return null;
+  }
+
+  if (typeof slot === "string") {
+    const fuelCapacitySeconds = getFuelCapacitySeconds(slot);
+
+    if (fuelCapacitySeconds <= 0) {
+      return null;
+    }
+
+    return {
+      itemId: slot,
+      fuelRemainingSeconds: fuelCapacitySeconds,
+      fuelCapacitySeconds,
+    };
+  }
+
+  const configuredCapacity = getFuelCapacitySeconds(slot.itemId);
+  const fuelCapacitySeconds = Math.max(
+    0,
+    slot.fuelCapacitySeconds || configuredCapacity,
+  );
+
+  if (fuelCapacitySeconds <= 0) {
+    return null;
+  }
+
+  return {
+    itemId: slot.itemId,
+    fuelCapacitySeconds,
+    fuelRemainingSeconds: Math.min(
+      fuelCapacitySeconds,
+      Math.max(0, slot.fuelRemainingSeconds),
+    ),
+  };
+}
+
 export function normalizeGeneratorFuelSlots(
   level: number,
-  slots: Array<string | null> | undefined,
+  slots: Array<LegacyGeneratorFuelSlot> | undefined,
 ) {
   const slotCount = getGeneratorFuelSlotCount(level);
 
-  return Array.from(
-    { length: slotCount },
-    (_, index) => slots?.[index] ?? null,
+  return Array.from({ length: slotCount }, (_, index) =>
+    normalizeFuelSlot(slots?.[index]),
+  );
+}
+
+export function getFuelPercentage(
+  fuelRemainingSeconds: number,
+  fuelCapacitySeconds: number,
+) {
+  if (fuelCapacitySeconds <= 0) {
+    return 0;
+  }
+
+  return Math.max(
+    0,
+    Math.min(
+      100,
+      Math.ceil((fuelRemainingSeconds / fuelCapacitySeconds) * 100),
+    ),
+  );
+}
+
+export function getInventoryFuelPercentage(
+  itemId: string,
+  fuelRemainingSeconds?: number,
+) {
+  const fuelCapacitySeconds = getFuelCapacitySeconds(itemId);
+
+  if (fuelCapacitySeconds <= 0) {
+    return null;
+  }
+
+  return getFuelPercentage(
+    fuelRemainingSeconds ?? fuelCapacitySeconds,
+    fuelCapacitySeconds,
   );
 }
 
@@ -30,10 +110,10 @@ export function isGeneratorPowered(state: GameState) {
   return normalizeGeneratorFuelSlots(
     generator.level,
     generator.generatorFuelSlots,
-  ).some(Boolean);
+  ).some((slot) => Boolean(slot && slot.fuelRemainingSeconds > 0));
 }
 
-function consumeOneItem(stash: InventorySlot[], itemId: string) {
+function consumeOneFuelItem(stash: InventorySlot[], itemId: string) {
   const targetIndex = stash.findIndex(
     (slot) => slot.itemId === itemId && slot.quantity > 0,
   );
@@ -42,7 +122,25 @@ function consumeOneItem(stash: InventorySlot[], itemId: string) {
     return null;
   }
 
-  return stash.flatMap((slot, index) => {
+  const sourceSlot = stash[targetIndex];
+  const fuelCapacitySeconds = getFuelCapacitySeconds(itemId);
+
+  if (fuelCapacitySeconds <= 0) {
+    return null;
+  }
+
+  const fuelSlot: GeneratorFuelSlot = {
+    itemId,
+    fuelCapacitySeconds,
+    fuelRemainingSeconds: Math.min(
+      fuelCapacitySeconds,
+      Math.max(
+        0,
+        sourceSlot.fuelRemainingSeconds ?? fuelCapacitySeconds,
+      ),
+    ),
+  };
+  const nextStash = stash.flatMap((slot, index) => {
     if (index !== targetIndex) {
       return [slot];
     }
@@ -58,56 +156,125 @@ function consumeOneItem(stash: InventorySlot[], itemId: string) {
       },
     ];
   });
+
+  return {
+    stash: nextStash,
+    fuelSlot,
+  };
 }
 
-function addOneItem(stash: InventorySlot[], itemId: string): InventorySlot[] {
-  const item = getItemById(itemId);
-
-  if (!item) {
-    return stash;
-  }
-
-  const stackIndex = stash.findIndex(
-    (slot) => slot.itemId === itemId && slot.quantity < item.maxStack,
-  );
-
-  if (stackIndex >= 0) {
-    return stash.map((slot, index) =>
-      index === stackIndex
-        ? {
-            ...slot,
-            quantity: slot.quantity + 1,
-          }
-        : slot,
-    );
-  }
-
+function addFuelItemToStash(
+  stash: InventorySlot[],
+  fuelSlot: GeneratorFuelSlot,
+): InventorySlot[] {
   return [
     ...stash,
     {
       slotId: `generator_return_${Date.now()}`,
-      itemId,
+      itemId: fuelSlot.itemId,
       quantity: 1,
+      fuelRemainingSeconds: fuelSlot.fuelRemainingSeconds,
     },
   ];
 }
 
 function getGeneratorDetail(
   poweredOn: boolean,
-  fuelSlots: Array<string | null>,
+  fuelSlots: Array<GeneratorFuelSlot | null>,
 ) {
-  const loadedCount = fuelSlots.filter(Boolean).length;
-  const slotCount = fuelSlots.length;
+  const activeFuel = fuelSlots.find(
+    (slot) => slot && slot.fuelRemainingSeconds > 0,
+  );
 
-  if (poweredOn && loadedCount > 0) {
-    return "Power online";
+  if (poweredOn && activeFuel) {
+    const percentage = getFuelPercentage(
+      activeFuel.fuelRemainingSeconds,
+      activeFuel.fuelCapacitySeconds,
+    );
+
+    return `Power online · ${percentage}% fuel`;
   }
 
-  if (loadedCount > 0) {
-    return `${loadedCount} / ${slotCount} fuel loaded`;
+  if (activeFuel) {
+    const percentage = getFuelPercentage(
+      activeFuel.fuelRemainingSeconds,
+      activeFuel.fuelCapacitySeconds,
+    );
+
+    return `${percentage}% fuel loaded`;
+  }
+
+  if (fuelSlots.some(Boolean)) {
+    return "Fuel empty";
   }
 
   return "No fuel";
+}
+
+export function resolveGeneratorFuel(
+  state: GameState,
+  now: number,
+): GameState {
+  const generator = state.hideoutModules.find(
+    (module) => module.id === "generator",
+  );
+
+  if (!generator?.generatorPoweredOn) {
+    return state;
+  }
+
+  const fuelSlots = normalizeGeneratorFuelSlots(
+    generator.level,
+    generator.generatorFuelSlots,
+  );
+  const previousUpdatedAt = generator.generatorFuelUpdatedAt ?? now;
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor((now - previousUpdatedAt) / 1000),
+  );
+
+  if (elapsedSeconds <= 0) {
+    return state;
+  }
+
+  let secondsToConsume = elapsedSeconds;
+  const nextFuelSlots = fuelSlots.map((slot) => {
+    if (!slot || secondsToConsume <= 0 || slot.fuelRemainingSeconds <= 0) {
+      return slot;
+    }
+
+    const consumedSeconds = Math.min(
+      secondsToConsume,
+      slot.fuelRemainingSeconds,
+    );
+    secondsToConsume -= consumedSeconds;
+
+    return {
+      ...slot,
+      fuelRemainingSeconds: slot.fuelRemainingSeconds - consumedSeconds,
+    };
+  });
+  const hasFuelRemaining = nextFuelSlots.some(
+    (slot) => slot && slot.fuelRemainingSeconds > 0,
+  );
+
+  return {
+    ...state,
+    hideoutModules: state.hideoutModules.map((module) =>
+      module.id === "generator"
+        ? {
+            ...module,
+            status: hasFuelRemaining ? "active" : "idle",
+            detail: getGeneratorDetail(hasFuelRemaining, nextFuelSlots),
+            generatorFuelSlots: nextFuelSlots,
+            generatorPoweredOn: hasFuelRemaining,
+            generatorFuelUpdatedAt: hasFuelRemaining
+              ? previousUpdatedAt + elapsedSeconds * 1000
+              : undefined,
+          }
+        : module,
+    ),
+  };
 }
 
 export function insertGeneratorFuel(
@@ -131,17 +298,20 @@ export function insertGeneratorFuel(
     return null;
   }
 
-  const nextStash = consumeOneItem(state.stash, GENERATOR_FUEL_ITEM_ID);
+  const consumedFuel = consumeOneFuelItem(
+    state.stash,
+    GENERATOR_FUEL_ITEM_ID,
+  );
 
-  if (!nextStash) {
+  if (!consumedFuel) {
     return null;
   }
 
-  fuelSlots[slotIndex] = GENERATOR_FUEL_ITEM_ID;
+  fuelSlots[slotIndex] = consumedFuel.fuelSlot;
 
   return {
     ...state,
-    stash: nextStash,
+    stash: consumedFuel.stash,
     hideoutModules: state.hideoutModules.map((module) =>
       module.id === "generator"
         ? {
@@ -150,6 +320,7 @@ export function insertGeneratorFuel(
             detail: getGeneratorDetail(false, fuelSlots),
             generatorFuelSlots: fuelSlots,
             generatorPoweredOn: false,
+            generatorFuelUpdatedAt: undefined,
           }
         : module,
     ),
@@ -177,9 +348,9 @@ export function removeGeneratorFuel(
     return null;
   }
 
-  const itemId = fuelSlots[slotIndex];
+  const fuelSlot = fuelSlots[slotIndex];
 
-  if (!itemId) {
+  if (!fuelSlot) {
     return null;
   }
 
@@ -187,7 +358,7 @@ export function removeGeneratorFuel(
 
   return {
     ...state,
-    stash: addOneItem(state.stash, itemId),
+    stash: addFuelItemToStash(state.stash, fuelSlot),
     hideoutModules: state.hideoutModules.map((module) =>
       module.id === "generator"
         ? {
@@ -196,14 +367,19 @@ export function removeGeneratorFuel(
             detail: getGeneratorDetail(false, fuelSlots),
             generatorFuelSlots: fuelSlots,
             generatorPoweredOn: false,
+            generatorFuelUpdatedAt: undefined,
           }
         : module,
     ),
   };
 }
 
-export function toggleGeneratorPower(state: GameState): GameState | null {
-  const generator = state.hideoutModules.find(
+export function toggleGeneratorPower(
+  state: GameState,
+  now: number,
+): GameState | null {
+  const resolvedState = resolveGeneratorFuel(state, now);
+  const generator = resolvedState.hideoutModules.find(
     (module) => module.id === "generator",
   );
 
@@ -215,7 +391,9 @@ export function toggleGeneratorPower(state: GameState): GameState | null {
     generator.level,
     generator.generatorFuelSlots,
   );
-  const hasFuel = fuelSlots.some(Boolean);
+  const hasFuel = fuelSlots.some(
+    (slot) => slot && slot.fuelRemainingSeconds > 0,
+  );
   const nextPoweredOn = !generator.generatorPoweredOn;
 
   if (nextPoweredOn && !hasFuel) {
@@ -223,8 +401,8 @@ export function toggleGeneratorPower(state: GameState): GameState | null {
   }
 
   return {
-    ...state,
-    hideoutModules: state.hideoutModules.map((module) =>
+    ...resolvedState,
+    hideoutModules: resolvedState.hideoutModules.map((module) =>
       module.id === "generator"
         ? {
             ...module,
@@ -232,6 +410,7 @@ export function toggleGeneratorPower(state: GameState): GameState | null {
             detail: getGeneratorDetail(nextPoweredOn, fuelSlots),
             generatorFuelSlots: fuelSlots,
             generatorPoweredOn: nextPoweredOn,
+            generatorFuelUpdatedAt: nextPoweredOn ? now : undefined,
           }
         : module,
     ),
