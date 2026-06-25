@@ -75,7 +75,7 @@ export function startThreeDPrinterCraft(
     !printer ||
     !isGeneratorPowered(state) ||
     !isPrinterRecipeUnlocked(printer, recipe) ||
-    !hasEnoughPrinterFilament(printer, recipe) ||
+    !hasEnoughPrinterFilament(printer) ||
     printer.status !== "idle" ||
     printer.craftingRecipeId ||
     printer.craftingEndsAt
@@ -92,12 +92,11 @@ export function startThreeDPrinterCraft(
     return null;
   }
 
-  const filamentCostUnits = recipe.filamentCostUnits ?? 0;
   const nextFilamentSlot = {
     ...filamentSlot,
-    filamentRemainingUnits: Math.max(
+    filamentPrintsRemaining: Math.max(
       0,
-      filamentSlot.filamentRemainingUnits - filamentCostUnits,
+      filamentSlot.filamentPrintsRemaining - 1,
     ),
   };
 
