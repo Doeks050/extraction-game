@@ -1,10 +1,15 @@
 import { getGeneratorFuelSlotCount } from "../data/hideout/generatorConfig";
 import {
   GENERATOR_FUEL_ITEM_ID,
+  getFuelPercentage,
   normalizeGeneratorFuelSlots,
 } from "./generatorStation";
 import { getItemById } from "./items";
-import type { HideoutModule, HideoutModuleStatus } from "../types/game";
+import type {
+  GeneratorFuelSlot,
+  HideoutModule,
+  HideoutModuleStatus,
+} from "../types/game";
 import type { GameState } from "../types/state";
 import type { InventorySlot } from "../types/items";
 
@@ -85,14 +90,31 @@ function normalizeInventorySlots(slots: InventorySlot[]) {
         : slot;
     const item = getItemById(normalizedSlot.itemId);
 
-    if (item?.category !== "weapon") {
+    if (!item) {
       return normalizedSlot;
     }
 
-    return {
-      ...normalizedSlot,
-      currentDurability: normalizedSlot.currentDurability ?? 100,
-    };
+    if (item.category === "weapon") {
+      return {
+        ...normalizedSlot,
+        currentDurability: normalizedSlot.currentDurability ?? 100,
+      };
+    }
+
+    if (item.fuelCapacitySeconds) {
+      return {
+        ...normalizedSlot,
+        fuelRemainingSeconds: Math.min(
+          item.fuelCapacitySeconds,
+          Math.max(
+            0,
+            normalizedSlot.fuelRemainingSeconds ?? item.fuelCapacitySeconds,
+          ),
+        ),
+      };
+    }
+
+    return normalizedSlot;
   });
 }
 
@@ -100,6 +122,7 @@ function addOneInventoryItem(
   stash: InventorySlot[],
   itemId: string,
   slotPrefix: string,
+  fuelRemainingSeconds?: number,
 ) {
   const item = getItemById(itemId);
 
@@ -107,19 +130,21 @@ function addOneInventoryItem(
     return stash;
   }
 
-  const stackIndex = stash.findIndex(
-    (slot) => slot.itemId === itemId && slot.quantity < item.maxStack,
-  );
-
-  if (stackIndex >= 0) {
-    return stash.map((slot, index) =>
-      index === stackIndex
-        ? {
-            ...slot,
-            quantity: slot.quantity + 1,
-          }
-        : slot,
+  if (item.maxStack > 1 && fuelRemainingSeconds === undefined) {
+    const stackIndex = stash.findIndex(
+      (slot) => slot.itemId === itemId && slot.quantity < item.maxStack,
     );
+
+    if (stackIndex >= 0) {
+      return stash.map((slot, index) =>
+        index === stackIndex
+          ? {
+              ...slot,
+              quantity: slot.quantity + 1,
+            }
+          : slot,
+      );
+    }
   }
 
   return [
@@ -128,6 +153,7 @@ function addOneInventoryItem(
       slotId: `${slotPrefix}_${stash.length + 1}`,
       itemId,
       quantity: 1,
+      fuelRemainingSeconds,
     },
   ];
 }
@@ -143,8 +169,10 @@ function ensureTemporaryGeneratorFuel(stash: InventorySlot[]) {
     0,
   );
   const fuelToAdd = Math.max(0, 1 - currentFuelCount);
+  const fuelCapacitySeconds =
+    getItemById(GENERATOR_FUEL_ITEM_ID)?.fuelCapacitySeconds;
 
-  if (fuelToAdd === 0) {
+  if (fuelToAdd === 0 || !fuelCapacitySeconds) {
     return stash;
   }
 
@@ -154,8 +182,31 @@ function ensureTemporaryGeneratorFuel(stash: InventorySlot[]) {
       slotId: `temp_generator_fuel_${index + 1}`,
       itemId: GENERATOR_FUEL_ITEM_ID,
       quantity: 1,
+      fuelRemainingSeconds: fuelCapacitySeconds,
     })),
   ];
+}
+
+function getGeneratorDetail(
+  poweredOn: boolean,
+  fuelSlots: Array<GeneratorFuelSlot | null>,
+) {
+  const activeFuel = fuelSlots.find(
+    (slot) => slot && slot.fuelRemainingSeconds > 0,
+  );
+
+  if (activeFuel) {
+    const percentage = getFuelPercentage(
+      activeFuel.fuelRemainingSeconds,
+      activeFuel.fuelCapacitySeconds,
+    );
+
+    return poweredOn
+      ? `Power online · ${percentage}% fuel`
+      : `${percentage}% fuel loaded`;
+  }
+
+  return fuelSlots.some(Boolean) ? "Fuel empty" : "No fuel";
 }
 
 function normalizeGeneratorModule(module: HideoutModule): HideoutModule {
@@ -164,20 +215,21 @@ function normalizeGeneratorModule(module: HideoutModule): HideoutModule {
     level,
     module.generatorFuelSlots,
   );
-  const loadedCount = fuelSlots.filter(Boolean).length;
-  const poweredOn = Boolean(module.generatorPoweredOn && loadedCount > 0);
+  const hasFuel = fuelSlots.some(
+    (slot) => slot && slot.fuelRemainingSeconds > 0,
+  );
+  const poweredOn = Boolean(module.generatorPoweredOn && hasFuel);
 
   return {
     ...module,
     level,
     status: poweredOn ? "active" : "idle",
-    detail: poweredOn
-      ? "Power online"
-      : loadedCount > 0
-        ? `${loadedCount} / ${fuelSlots.length} fuel loaded`
-        : "No fuel",
+    detail: getGeneratorDetail(poweredOn, fuelSlots),
     generatorFuelSlots: fuelSlots,
     generatorPoweredOn: poweredOn,
+    generatorFuelUpdatedAt: poweredOn
+      ? module.generatorFuelUpdatedAt
+      : undefined,
     installationEndsAt: undefined,
     installationTargetLevel: undefined,
   };
@@ -255,6 +307,50 @@ function normalizeHideoutModules(
   });
 }
 
+function normalizeLegacyFuelSlot(value: unknown): GeneratorFuelSlot | null {
+  if (typeof value === "string") {
+    const fuelCapacitySeconds = getItemById(value)?.fuelCapacitySeconds;
+
+    return fuelCapacitySeconds
+      ? {
+          itemId: value,
+          fuelRemainingSeconds: fuelCapacitySeconds,
+          fuelCapacitySeconds,
+        }
+      : null;
+  }
+
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidate = value as Partial<GeneratorFuelSlot>;
+
+  if (typeof candidate.itemId !== "string") {
+    return null;
+  }
+
+  const configuredCapacity = getItemById(candidate.itemId)?.fuelCapacitySeconds;
+  const fuelCapacitySeconds =
+    candidate.fuelCapacitySeconds ?? configuredCapacity;
+
+  if (!fuelCapacitySeconds) {
+    return null;
+  }
+
+  return {
+    itemId: candidate.itemId,
+    fuelCapacitySeconds,
+    fuelRemainingSeconds: Math.min(
+      fuelCapacitySeconds,
+      Math.max(
+        0,
+        candidate.fuelRemainingSeconds ?? fuelCapacitySeconds,
+      ),
+    ),
+  };
+}
+
 function returnOverflowGeneratorFuel(
   savedModules: HideoutModule[] | undefined,
   normalizedModules: HideoutModule[],
@@ -274,13 +370,20 @@ function returnOverflowGeneratorFuel(
   const allowedSlotCount = getGeneratorFuelSlotCount(
     normalizedGenerator.level,
   );
-  const overflowFuel = (savedGenerator.generatorFuelSlots ?? [])
+  const rawFuelSlots = (savedGenerator.generatorFuelSlots ?? []) as unknown[];
+  const overflowFuel = rawFuelSlots
     .slice(allowedSlotCount)
-    .filter((itemId): itemId is string => Boolean(itemId));
+    .map(normalizeLegacyFuelSlot)
+    .filter((slot): slot is GeneratorFuelSlot => Boolean(slot));
 
   return overflowFuel.reduce(
-    (nextStash, itemId, index) =>
-      addOneInventoryItem(nextStash, itemId, `generator_slot_migration_${index}`),
+    (nextStash, fuelSlot, index) =>
+      addOneInventoryItem(
+        nextStash,
+        fuelSlot.itemId,
+        `generator_slot_migration_${index}`,
+        fuelSlot.fuelRemainingSeconds,
+      ),
     stash,
   );
 }
@@ -304,7 +407,9 @@ export function normalizeSavedGameState(
         undefined,
         clonedDefaultState.hideoutModules,
       ),
-      stash: ensureTemporaryGeneratorFuel(clonedDefaultState.stash),
+      stash: ensureTemporaryGeneratorFuel(
+        normalizeInventorySlots(clonedDefaultState.stash),
+      ),
     };
   }
 
