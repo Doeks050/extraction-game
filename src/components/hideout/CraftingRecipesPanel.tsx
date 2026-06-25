@@ -20,15 +20,12 @@ type CraftingRecipesPanelProps = {
   activeBonusLabel?: string;
 };
 
-type TileSize = "regular" | "compact" | "dense";
-
 type RecipeItemTileProps = {
   item: GameItem;
   quantity: number;
   owned?: number;
   complete?: boolean;
   isOutput?: boolean;
-  size: TileSize;
 };
 
 type ClockButtonProps = {
@@ -36,39 +33,8 @@ type ClockButtonProps = {
   disabled: boolean;
   active: boolean;
   ready: boolean;
-  size: TileSize;
   disabledTitle?: string;
   onClick: () => void;
-};
-
-const tileWidthClasses: Record<TileSize, string> = {
-  regular: "w-14",
-  compact: "w-11",
-  dense: "w-9",
-};
-
-const tileImageClasses: Record<TileSize, string> = {
-  regular: "h-10",
-  compact: "h-8",
-  dense: "h-7",
-};
-
-const tileNameClasses: Record<TileSize, string> = {
-  regular: "text-[7px]",
-  compact: "text-[6px]",
-  dense: "text-[5px]",
-};
-
-const tileQuantityClasses: Record<TileSize, string> = {
-  regular: "text-[8px]",
-  compact: "text-[7px]",
-  dense: "text-[6px]",
-};
-
-const clockWidthClasses: Record<TileSize, string> = {
-  regular: "w-14",
-  compact: "w-12",
-  dense: "w-11",
 };
 
 function formatTime(totalSeconds: number) {
@@ -85,25 +51,12 @@ function getFallback(name: string) {
     .slice(0, 2);
 }
 
-function getTileSize(inputCount: number): TileSize {
-  if (inputCount >= 5) {
-    return "dense";
-  }
-
-  if (inputCount === 4) {
-    return "compact";
-  }
-
-  return "regular";
-}
-
 function RecipeItemTile({
   item,
   quantity,
   owned,
   complete = true,
   isOutput = false,
-  size,
 }: RecipeItemTileProps) {
   const borderClass = isOutput
     ? "border-orange-500/45"
@@ -119,22 +72,20 @@ function RecipeItemTile({
   return (
     <div
       title={item.name}
-      className={`${tileWidthClasses[size]} shrink-0 overflow-hidden border bg-black/60 p-1 ${borderClass}`}
+      className={`h-[62px] w-11 shrink-0 overflow-hidden border bg-black/60 p-1 ${borderClass}`}
     >
       <ItemImage
         src={item.image}
         alt={item.name}
         fallback={getFallback(item.name)}
-        className={`${tileImageClasses[size]} w-full`}
+        className="h-8 w-full"
         imageClassName="p-0.5 opacity-100"
       />
-      <p
-        className={`mt-0.5 truncate text-center font-black uppercase text-zinc-300 ${tileNameClasses[size]}`}
-      >
+      <p className="mt-0.5 truncate text-center text-[6px] font-black uppercase leading-[8px] text-zinc-300">
         {item.name}
       </p>
       <p
-        className={`truncate text-center font-black ${quantityClass} ${tileQuantityClasses[size]}`}
+        className={`truncate text-center text-[7px] font-black leading-[9px] ${quantityClass}`}
       >
         {owned === undefined ? `x${quantity}` : `${owned}/${quantity}`}
       </p>
@@ -147,7 +98,6 @@ function ClockButton({
   disabled,
   active,
   ready,
-  size,
   disabledTitle,
   onClick,
 }: ClockButtonProps) {
@@ -169,7 +119,7 @@ function ClockButton({
       onClick={onClick}
       aria-label={title}
       title={title}
-      className={`flex shrink-0 flex-col items-center justify-center border px-1 py-1.5 ${clockWidthClasses[size]} ${visualClass}`}
+      className={`flex h-[62px] w-12 shrink-0 flex-col items-center justify-center border px-1 ${visualClass}`}
     >
       <svg
         viewBox="0 0 24 24"
@@ -289,15 +239,14 @@ export function CraftingRecipesPanel({
               : recipeReady
                 ? "border-emerald-500/60 bg-emerald-500/10"
                 : "border-zinc-800 bg-black/35";
-          const tileSize = getTileSize(requirements.length);
 
           return (
             <div
               key={recipe.id}
-              className={`min-w-0 overflow-hidden border p-2 ${recipeClass}`}
+              className={`flex h-[100px] min-w-0 flex-col overflow-hidden border p-2 ${recipeClass}`}
             >
               <p
-                className={`mb-2 truncate text-[9px] font-black uppercase tracking-[0.12em] ${
+                className={`mb-2 h-3 shrink-0 truncate text-[9px] font-black uppercase leading-3 tracking-[0.12em] ${
                   isActive
                     ? "text-orange-300"
                     : !isAvailable
@@ -310,19 +259,20 @@ export function CraftingRecipesPanel({
                 {recipe.name}
               </p>
 
-              <div className="flex min-w-0 items-center justify-between gap-1 overflow-hidden">
+              <div className="flex min-h-0 flex-1 items-center justify-between gap-1 overflow-hidden">
                 <div className="flex min-w-0 items-center gap-0.5">
                   {requirements.map((input, index) => (
                     <div key={input.itemId} className="flex shrink-0 items-center gap-0.5">
                       {index > 0 ? (
-                        <span className="text-[10px] font-black text-zinc-600">+</span>
+                        <span className="w-1.5 shrink-0 text-center text-[9px] font-black text-zinc-600">
+                          +
+                        </span>
                       ) : null}
                       <RecipeItemTile
                         item={input.item}
                         quantity={input.quantity}
                         owned={isActive ? input.quantity : input.owned}
                         complete={input.complete}
-                        size={tileSize}
                       />
                     </div>
                   ))}
@@ -333,18 +283,18 @@ export function CraftingRecipesPanel({
                   disabled={!canCraft}
                   active={isActive}
                   ready={canCraft}
-                  size={tileSize}
                   disabledTitle={!isAvailable ? unavailableMessage : undefined}
                   onClick={() => onCraft(recipe.id)}
                 />
 
-                <span className="shrink-0 text-sm font-black text-orange-400">=</span>
+                <span className="w-2 shrink-0 text-center text-sm font-black text-orange-400">
+                  =
+                </span>
 
                 <RecipeItemTile
                   item={outputItem}
                   quantity={recipe.output.quantity}
                   isOutput
-                  size={tileSize}
                 />
               </div>
             </div>
