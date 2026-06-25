@@ -10,6 +10,7 @@ import {
 import { gameState as defaultGameState } from "../../data/gameState";
 import { resolveGeneratorFuel } from "../../lib/generatorStation";
 import { resolveCompletedHideoutInstallations } from "../../lib/hideoutInstallation";
+import { applyPrinterContentMigration } from "../../lib/printerContentMigration";
 import {
   clearSavedGameState,
   cloneGameState,
@@ -19,7 +20,6 @@ import {
   writeSavedGameState,
 } from "../../lib/saveStorage";
 import { resolveCompletedThreeDPrinterCrafts } from "../../lib/threeDPrinterCrafting";
-import { grantInitialPrinterFilament } from "../../lib/threeDPrinterSupplies";
 import { resolveCompletedWorkbenchCrafts } from "../../lib/workbenchCrafting";
 import type { GameState } from "../../types/state";
 
@@ -43,28 +43,19 @@ function resolveTimedState(state: GameState, now: number) {
   return resolveCompletedThreeDPrinterCrafts(workbenchState, now);
 }
 
+function createInitialState() {
+  return applyPrinterContentMigration(cloneGameState(defaultGameState));
+}
+
 export function GameStateProvider({ children }: GameStateProviderProps) {
-  const [state, setInternalState] = useState(() =>
-    grantInitialPrinterFilament(cloneGameState(defaultGameState), true),
-  );
+  const [state, setInternalState] = useState(createInitialState);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("loading");
 
   useEffect(() => {
     const savedState = readSavedGameState();
-    const savedPrinter = savedState?.hideoutModules?.find(
-      (module) => module.id === "three_d_printer",
-    );
-    const shouldGrantInitialFilament =
-      savedPrinter?.printerFilamentSlot === undefined;
     const normalizedState = normalizeSavedGameState(savedState, defaultGameState);
-    const stateWithInitialFilament = grantInitialPrinterFilament(
-      normalizedState,
-      shouldGrantInitialFilament,
-    );
-    const resolvedState = resolveTimedState(
-      stateWithInitialFilament,
-      Date.now(),
-    );
+    const migratedState = applyPrinterContentMigration(normalizedState);
+    const resolvedState = resolveTimedState(migratedState, Date.now());
 
     setInternalState(resolvedState);
     writeSavedGameState(resolvedState);
@@ -99,9 +90,7 @@ export function GameStateProvider({ children }: GameStateProviderProps) {
 
   function resetState() {
     clearSavedGameState();
-    setInternalState(
-      grantInitialPrinterFilament(cloneGameState(defaultGameState), true),
-    );
+    setInternalState(createInitialState());
     setSaveStatus("ready");
   }
 
