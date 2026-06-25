@@ -4,10 +4,50 @@ import type { InventorySlot } from "../types/items";
 import type { GameState } from "../types/state";
 import { getItemById } from "./items";
 
-export const PRINTER_FILAMENT_ITEM_ID = "printer_filament_spool";
+export const BASIC_FILAMENT_ITEM_ID = "printer_filament_basic";
+export const LEGACY_FILAMENT_ITEM_ID = "printer_filament_spool";
+export const USB_STORAGE_CASE_ITEM_ID = "usb_storage_case";
+export const PRINTER_CONTENT_MIGRATION_VERSION = 1;
 
-function getFilamentCapacityUnits(itemId: string) {
-  return getItemById(itemId)?.filamentCapacityUnits ?? 0;
+const starterPrinterItemIds = [
+  BASIC_FILAMENT_ITEM_ID,
+  "printer_filament_industrial",
+  "printer_filament_reinforced",
+  "printer_filament_carbon",
+  "printer_usb_drummer",
+  "printer_usb_ghost",
+  "printer_usb_sentry",
+  USB_STORAGE_CASE_ITEM_ID,
+];
+
+function normalizeFilamentItemId(itemId: string) {
+  return itemId === LEGACY_FILAMENT_ITEM_ID
+    ? BASIC_FILAMENT_ITEM_ID
+    : itemId;
+}
+
+function getFilamentPrintCapacity(itemId: string) {
+  return getItemById(normalizeFilamentItemId(itemId))?.filamentPrintCapacity ?? 0;
+}
+
+function convertLegacyUnitsToPrints(
+  remainingUnits: number | undefined,
+  capacityUnits: number | undefined,
+  printCapacity: number,
+) {
+  const safeCapacityUnits = Math.max(1, capacityUnits ?? 100);
+  const safeRemainingUnits = Math.max(
+    0,
+    Math.min(safeCapacityUnits, remainingUnits ?? safeCapacityUnits),
+  );
+
+  return Math.max(
+    0,
+    Math.min(
+      printCapacity,
+      Math.ceil((safeRemainingUnits / safeCapacityUnits) * printCapacity),
+    ),
+  );
 }
 
 export function normalizePrinterFilamentSlot(
@@ -17,59 +57,66 @@ export function normalizePrinterFilamentSlot(
     return null;
   }
 
-  const configuredCapacity = getFilamentCapacityUnits(value.itemId);
-  const filamentCapacityUnits = Math.max(
-    0,
-    value.filamentCapacityUnits || configuredCapacity,
-  );
+  const itemId = normalizeFilamentItemId(value.itemId);
+  const filamentPrintCapacity = getFilamentPrintCapacity(itemId);
 
-  if (filamentCapacityUnits <= 0) {
+  if (filamentPrintCapacity <= 0) {
     return null;
   }
 
+  const filamentPrintsRemaining =
+    value.filamentPrintsRemaining ??
+    convertLegacyUnitsToPrints(
+      value.filamentRemainingUnits,
+      value.filamentCapacityUnits,
+      filamentPrintCapacity,
+    );
+
   return {
-    itemId: value.itemId,
-    filamentCapacityUnits,
-    filamentRemainingUnits: Math.min(
-      filamentCapacityUnits,
-      Math.max(0, value.filamentRemainingUnits),
+    itemId,
+    filamentPrintCapacity,
+    filamentPrintsRemaining: Math.max(
+      0,
+      Math.min(filamentPrintCapacity, filamentPrintsRemaining),
     ),
   };
 }
 
-export function getFilamentPercentage(
-  remainingUnits: number,
-  capacityUnits: number,
-) {
-  if (capacityUnits <= 0) {
-    return 0;
-  }
-
-  return Math.max(
-    0,
-    Math.min(100, Math.ceil((remainingUnits / capacityUnits) * 100)),
-  );
-}
-
-export function getInventoryFilamentPercentage(
+export function getInventoryFilamentState(
   itemId: string,
-  remainingUnits?: number,
+  printsRemaining?: number,
+  legacyRemainingUnits?: number,
 ) {
-  const capacityUnits = getFilamentCapacityUnits(itemId);
+  const normalizedItemId = normalizeFilamentItemId(itemId);
+  const filamentPrintCapacity = getFilamentPrintCapacity(normalizedItemId);
 
-  if (capacityUnits <= 0) {
+  if (filamentPrintCapacity <= 0) {
     return null;
   }
 
-  return getFilamentPercentage(
-    remainingUnits ?? capacityUnits,
-    capacityUnits,
-  );
+  const filamentPrintsRemaining =
+    printsRemaining ??
+    convertLegacyUnitsToPrints(
+      legacyRemainingUnits,
+      100,
+      filamentPrintCapacity,
+    );
+
+  return {
+    itemId: normalizedItemId,
+    filamentPrintCapacity,
+    filamentPrintsRemaining: Math.max(
+      0,
+      Math.min(filamentPrintCapacity, filamentPrintsRemaining),
+    ),
+  };
 }
 
 export function isPrinterUsbItem(itemId: string) {
-  const recipeIds = getItemById(itemId)?.printerRecipeIds;
-  return Array.isArray(recipeIds) && recipeIds.length > 0;
+  const item = getItemById(itemId);
+  return Boolean(
+    item?.tags.includes("printer-usb") && item.printerRecipeIds?.length,
+  );
 }
 
 export function getPrinterUsbRecipeIds(itemId: string | null | undefined) {
@@ -95,18 +142,12 @@ export function isPrinterRecipeUnlocked(
   return module.printerUsbItemId === recipe.requiredUsbItemId;
 }
 
-export function hasEnoughPrinterFilament(
-  module: HideoutModule,
-  recipe: HideoutCraftingRecipe,
-) {
+export function hasEnoughPrinterFilament(module: HideoutModule) {
   const filamentSlot = normalizePrinterFilamentSlot(
     module.printerFilamentSlot,
   );
-  const requiredUnits = recipe.filamentCostUnits ?? 0;
 
-  return Boolean(
-    filamentSlot && filamentSlot.filamentRemainingUnits >= requiredUnits,
-  );
+  return Boolean(filamentSlot && filamentSlot.filamentPrintsRemaining >= 1);
 }
 
 function takeSingleInventorySlot(
@@ -175,23 +216,22 @@ export function insertPrinterFilament(state: GameState): GameState | null {
 
   const taken = takeSingleInventorySlot(
     state.stash,
-    (slot) => getFilamentCapacityUnits(slot.itemId) > 0,
+    (slot) => getFilamentPrintCapacity(slot.itemId) > 0,
   );
 
   if (!taken) {
     return null;
   }
 
-  const filamentCapacityUnits = getFilamentCapacityUnits(
+  const filamentState = getInventoryFilamentState(
     taken.sourceSlot.itemId,
+    taken.sourceSlot.filamentPrintsRemaining,
+    taken.sourceSlot.filamentRemainingUnits,
   );
-  const filamentRemainingUnits = Math.min(
-    filamentCapacityUnits,
-    Math.max(
-      0,
-      taken.sourceSlot.filamentRemainingUnits ?? filamentCapacityUnits,
-    ),
-  );
+
+  if (!filamentState) {
+    return null;
+  }
 
   return {
     ...state,
@@ -200,11 +240,7 @@ export function insertPrinterFilament(state: GameState): GameState | null {
       module.id === "three_d_printer"
         ? {
             ...module,
-            printerFilamentSlot: {
-              itemId: taken.sourceSlot.itemId,
-              filamentRemainingUnits,
-              filamentCapacityUnits,
-            },
+            printerFilamentSlot: filamentState,
           }
         : module,
     ),
@@ -226,7 +262,7 @@ export function removePrinterFilament(state: GameState): GameState | null {
   return {
     ...state,
     stash: addSingleItemToStash(state.stash, filamentSlot.itemId, {
-      filamentRemainingUnits: filamentSlot.filamentRemainingUnits,
+      filamentPrintsRemaining: filamentSlot.filamentPrintsRemaining,
     }),
     hideoutModules: state.hideoutModules.map((module) =>
       module.id === "three_d_printer"
@@ -302,43 +338,73 @@ export function removePrinterUsb(state: GameState): GameState | null {
   };
 }
 
-export function grantInitialPrinterFilament(
-  state: GameState,
-  shouldGrant: boolean,
-): GameState {
-  if (!shouldGrant) {
+function hasItemInSlots(slots: InventorySlot[], itemId: string): boolean {
+  return slots.some(
+    (slot) =>
+      slot.itemId === itemId ||
+      hasItemInSlots(slot.containedSlots ?? [], itemId),
+  );
+}
+
+function normalizeLegacyInventorySlot(slot: InventorySlot): InventorySlot {
+  const filamentState = getInventoryFilamentState(
+    slot.itemId,
+    slot.filamentPrintsRemaining,
+    slot.filamentRemainingUnits,
+  );
+
+  return {
+    ...slot,
+    itemId: filamentState?.itemId ?? slot.itemId,
+    filamentPrintsRemaining: filamentState?.filamentPrintsRemaining,
+    filamentRemainingUnits: undefined,
+    containedSlots: slot.containedSlots?.map(normalizeLegacyInventorySlot),
+  };
+}
+
+export function applyPrinterContentMigration(state: GameState): GameState {
+  if (
+    (state.contentMigrationVersion ?? 0) >=
+    PRINTER_CONTENT_MIGRATION_VERSION
+  ) {
     return state;
   }
 
-  const alreadyHasFilament = state.stash.some(
-    (slot) => getFilamentCapacityUnits(slot.itemId) > 0,
+  const normalizedStash = state.stash.map(normalizeLegacyInventorySlot);
+  const normalizedModules = state.hideoutModules.map((module) =>
+    module.id === "three_d_printer"
+      ? {
+          ...module,
+          printerFilamentSlot: normalizePrinterFilamentSlot(
+            module.printerFilamentSlot,
+          ),
+          printerUsbItemId: module.printerUsbItemId ?? null,
+        }
+      : module,
   );
-  const printer = state.hideoutModules.find(
-    (module) => module.id === "three_d_printer",
-  );
+  const nextStash = [...normalizedStash];
 
-  if (alreadyHasFilament || printer?.printerFilamentSlot) {
-    return state;
-  }
+  starterPrinterItemIds.forEach((itemId, index) => {
+    if (hasItemInSlots(nextStash, itemId)) {
+      return;
+    }
 
-  const filamentCapacityUnits = getFilamentCapacityUnits(
-    PRINTER_FILAMENT_ITEM_ID,
-  );
+    const filamentPrintCapacity = getFilamentPrintCapacity(itemId);
 
-  if (filamentCapacityUnits <= 0) {
-    return state;
-  }
+    nextStash.push({
+      slotId: `printer_content_v1_${index + 1}`,
+      itemId,
+      quantity: 1,
+      filamentPrintsRemaining:
+        filamentPrintCapacity > 0 ? filamentPrintCapacity : undefined,
+      containedSlots: itemId === USB_STORAGE_CASE_ITEM_ID ? [] : undefined,
+    });
+  });
 
   return {
     ...state,
-    stash: [
-      ...state.stash,
-      {
-        slotId: "temp_printer_filament_1",
-        itemId: PRINTER_FILAMENT_ITEM_ID,
-        quantity: 1,
-        filamentRemainingUnits: filamentCapacityUnits,
-      },
-    ],
+    stash: nextStash,
+    hideoutModules: normalizedModules,
+    contentMigrationVersion: PRINTER_CONTENT_MIGRATION_VERSION,
   };
 }
