@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { gameState as defaultGameState } from "../../data/gameState";
+import { resolveGeneratorFuel } from "../../lib/generatorStation";
 import { resolveCompletedHideoutInstallations } from "../../lib/hideoutInstallation";
 import {
   clearSavedGameState,
@@ -35,7 +36,8 @@ type GameStateProviderProps = {
 };
 
 function resolveTimedState(state: GameState, now: number) {
-  const installationState = resolveCompletedHideoutInstallations(state, now);
+  const generatorState = resolveGeneratorFuel(state, now);
+  const installationState = resolveCompletedHideoutInstallations(generatorState, now);
   const workbenchState = resolveCompletedWorkbenchCrafts(installationState, now);
   return resolveCompletedThreeDPrinterCrafts(workbenchState, now);
 }
