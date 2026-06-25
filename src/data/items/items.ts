@@ -5,6 +5,7 @@ import { generatorFuelItems } from "./generatorFuelItems";
 import { hideoutMaterials } from "./hideoutMaterials";
 import { magazines } from "./magazines";
 import { medicalItems } from "./medical";
+import { printerCraftedItems } from "./printerCraftedItems";
 import { questItems } from "./questItems";
 import { threeDPrinterSupplies } from "./threeDPrinterSupplies";
 import { valuables } from "./valuables";
@@ -23,6 +24,7 @@ export const gameItems: GameItem[] = [
   ...hideoutMaterials,
   ...generatorFuelItems,
   ...threeDPrinterSupplies,
+  ...printerCraftedItems,
   ...workbenchMaterials,
   ...questItems,
 ];
