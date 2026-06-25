@@ -301,3 +301,44 @@ export function removePrinterUsb(state: GameState): GameState | null {
     ),
   };
 }
+
+export function grantInitialPrinterFilament(
+  state: GameState,
+  shouldGrant: boolean,
+): GameState {
+  if (!shouldGrant) {
+    return state;
+  }
+
+  const alreadyHasFilament = state.stash.some(
+    (slot) => getFilamentCapacityUnits(slot.itemId) > 0,
+  );
+  const printer = state.hideoutModules.find(
+    (module) => module.id === "three_d_printer",
+  );
+
+  if (alreadyHasFilament || printer?.printerFilamentSlot) {
+    return state;
+  }
+
+  const filamentCapacityUnits = getFilamentCapacityUnits(
+    PRINTER_FILAMENT_ITEM_ID,
+  );
+
+  if (filamentCapacityUnits <= 0) {
+    return state;
+  }
+
+  return {
+    ...state,
+    stash: [
+      ...state.stash,
+      {
+        slotId: "temp_printer_filament_1",
+        itemId: PRINTER_FILAMENT_ITEM_ID,
+        quantity: 1,
+        filamentRemainingUnits: filamentCapacityUnits,
+      },
+    ],
+  };
+}
