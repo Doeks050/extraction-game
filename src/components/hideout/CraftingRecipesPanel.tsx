@@ -19,6 +19,11 @@ type CraftingRecipesPanelProps = {
   durationMultiplier?: number;
   activeBonusLabel?: string;
   recipeTitleClassName?: string;
+  isRecipeAvailable?: (recipe: HideoutCraftingRecipe) => boolean;
+  getRecipeUnavailableMessage?: (
+    recipe: HideoutCraftingRecipe,
+  ) => string | undefined;
+  getRecipeMetaLabel?: (recipe: HideoutCraftingRecipe) => string | undefined;
 };
 
 type RecipeItemTileProps = {
@@ -155,6 +160,9 @@ export function CraftingRecipesPanel({
   durationMultiplier = 1,
   activeBonusLabel,
   recipeTitleClassName,
+  isRecipeAvailable,
+  getRecipeUnavailableMessage,
+  getRecipeMetaLabel,
 }: CraftingRecipesPanelProps) {
   const [now, setNow] = useState<number | null>(null);
 
@@ -215,6 +223,11 @@ export function CraftingRecipesPanel({
           const isActive = module.craftingRecipeId === recipe.id;
           const isBusy = Boolean(module.craftingRecipeId || module.craftingEndsAt);
           const levelLocked = module.level < recipe.requiredLevel;
+          const customAvailable = isRecipeAvailable
+            ? isRecipeAvailable(recipe)
+            : true;
+          const customUnavailableMessage = getRecipeUnavailableMessage?.(recipe);
+          const metaLabel = getRecipeMetaLabel?.(recipe);
           const requirements = inputs.map((input) => {
             const owned = countInventoryItem(stash, input.itemId);
 
@@ -232,11 +245,17 @@ export function CraftingRecipesPanel({
             isActive && module.craftingEndsAt && now !== null
               ? Math.max(0, Math.ceil((module.craftingEndsAt - now) / 1000))
               : baseDurationSeconds;
-          const canCraft = isAvailable && !isBusy && !levelLocked && hasItems;
-          const recipeReady = isAvailable && !levelLocked && hasItems;
+          const canCraft =
+            isAvailable &&
+            customAvailable &&
+            !isBusy &&
+            !levelLocked &&
+            hasItems;
+          const recipeReady =
+            isAvailable && customAvailable && !levelLocked && hasItems;
           const recipeClass = isActive
             ? "border-orange-500/70 bg-orange-500/10"
-            : !isAvailable
+            : !isAvailable || !customAvailable
               ? "border-red-950 bg-black/45"
               : recipeReady
                 ? "border-emerald-500/60 bg-emerald-500/10"
@@ -245,22 +264,32 @@ export function CraftingRecipesPanel({
             ? recipeTitleClassName
             : isActive
               ? "text-orange-300"
-              : !isAvailable
+              : !isAvailable || !customAvailable
                 ? "text-red-400"
                 : recipeReady
                   ? "text-emerald-300"
                   : "text-zinc-500";
+          const disabledTitle = !isAvailable
+            ? unavailableMessage
+            : customUnavailableMessage;
 
           return (
             <div
               key={recipe.id}
               className={`flex h-[100px] min-w-0 flex-col overflow-hidden border p-2 ${recipeClass}`}
             >
-              <p
-                className={`mb-2 h-3 shrink-0 truncate text-[9px] font-black uppercase leading-3 tracking-[0.12em] ${titleClass}`}
-              >
-                {recipe.name}
-              </p>
+              <div className="mb-2 flex h-3 shrink-0 items-center justify-between gap-2">
+                <p
+                  className={`min-w-0 truncate text-[9px] font-black uppercase leading-3 tracking-[0.12em] ${titleClass}`}
+                >
+                  {recipe.name}
+                </p>
+                {metaLabel ? (
+                  <span className="shrink-0 text-[7px] font-black uppercase text-orange-300">
+                    {metaLabel}
+                  </span>
+                ) : null}
+              </div>
 
               <div className="flex min-h-0 flex-1 items-center justify-between gap-1 overflow-hidden">
                 <div className="flex min-w-0 items-center gap-0.5">
@@ -286,7 +315,7 @@ export function CraftingRecipesPanel({
                   disabled={!canCraft}
                   active={isActive}
                   ready={canCraft}
-                  disabledTitle={!isAvailable ? unavailableMessage : undefined}
+                  disabledTitle={disabledTitle}
                   onClick={() => onCraft(recipe.id)}
                 />
 
