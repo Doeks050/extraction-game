@@ -14,7 +14,7 @@ export const hideoutModules: HideoutModule[] = [
     level: 1,
     status: "idle",
     detail: "No fuel",
-    generatorFuelSlots: [null, null],
+    generatorFuelSlots: [null],
     generatorPoweredOn: false,
   },
   {
