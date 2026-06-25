@@ -47,6 +47,8 @@ export type GameItem = {
   image?: string;
   stats?: ItemStatBlock;
   fuelCapacitySeconds?: number;
+  filamentCapacityUnits?: number;
+  printerRecipeIds?: string[];
 };
 
 export type InventoryGridPosition = {
@@ -60,6 +62,7 @@ export type InventorySlot = {
   quantity: number;
   currentDurability?: number;
   fuelRemainingSeconds?: number;
+  filamentRemainingUnits?: number;
   gridPosition?: InventoryGridPosition;
   isRotated?: boolean;
 };
