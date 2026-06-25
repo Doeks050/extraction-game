@@ -4,6 +4,11 @@ import type { GameState } from "../types/state";
 import { isGeneratorPowered } from "./generatorStation";
 import { consumeInventoryRequirements } from "./hideoutInstallation";
 import { getItemById } from "./items";
+import {
+  hasEnoughPrinterFilament,
+  isPrinterRecipeUnlocked,
+  normalizePrinterFilamentSlot,
+} from "./threeDPrinterSupplies";
 
 function addItemToStash(
   stash: InventorySlot[],
@@ -69,7 +74,8 @@ export function startThreeDPrinterCraft(
     !recipe ||
     !printer ||
     !isGeneratorPowered(state) ||
-    printer.level < recipe.requiredLevel ||
+    !isPrinterRecipeUnlocked(printer, recipe) ||
+    !hasEnoughPrinterFilament(printer, recipe) ||
     printer.status !== "idle" ||
     printer.craftingRecipeId ||
     printer.craftingEndsAt
@@ -78,10 +84,22 @@ export function startThreeDPrinterCraft(
   }
 
   const nextStash = consumeInventoryRequirements(state.stash, recipe.inputs);
+  const filamentSlot = normalizePrinterFilamentSlot(
+    printer.printerFilamentSlot,
+  );
 
-  if (!nextStash) {
+  if (!nextStash || !filamentSlot) {
     return null;
   }
+
+  const filamentCostUnits = recipe.filamentCostUnits ?? 0;
+  const nextFilamentSlot = {
+    ...filamentSlot,
+    filamentRemainingUnits: Math.max(
+      0,
+      filamentSlot.filamentRemainingUnits - filamentCostUnits,
+    ),
+  };
 
   return {
     ...state,
@@ -94,6 +112,7 @@ export function startThreeDPrinterCraft(
             detail: `Printing ${recipe.name}`,
             craftingRecipeId: recipe.id,
             craftingEndsAt: now + recipe.durationSeconds * 1000,
+            printerFilamentSlot: nextFilamentSlot,
           }
         : module,
     ),
