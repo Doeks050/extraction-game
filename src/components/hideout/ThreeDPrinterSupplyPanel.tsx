@@ -1,12 +1,12 @@
 "use client";
 
+import { getItemById } from "../../lib/items";
 import {
-  getFilamentPercentage,
+  getInventoryFilamentState,
   getPrinterUsbRecipeIds,
   isPrinterUsbItem,
   normalizePrinterFilamentSlot,
 } from "../../lib/threeDPrinterSupplies";
-import { getItemById } from "../../lib/items";
 import type { HideoutModule } from "../../types/game";
 import type { InventorySlot } from "../../types/items";
 import { ItemImage } from "../items/ItemImage";
@@ -15,9 +15,9 @@ import { Panel } from "../ui/Panel";
 type ThreeDPrinterSupplyPanelProps = {
   module: HideoutModule;
   stash: InventorySlot[];
-  onInsertFilament: () => void;
+  onInsertFilament: (itemId: string) => void;
   onRemoveFilament: () => void;
-  onInsertUsb: () => void;
+  onInsertUsb: (itemId: string) => void;
   onRemoveUsb: () => void;
 };
 
@@ -43,15 +43,22 @@ export function ThreeDPrinterSupplyPanel({
   const filamentItem = filamentSlot
     ? getItemById(filamentSlot.itemId)
     : undefined;
-  const filamentPercentage = filamentSlot
-    ? getFilamentPercentage(
-        filamentSlot.filamentRemainingUnits,
-        filamentSlot.filamentCapacityUnits,
-      )
+  const filamentRatio = filamentSlot
+    ? filamentSlot.filamentPrintsRemaining /
+      filamentSlot.filamentPrintCapacity
     : 0;
-  const filamentInStash = stash.filter(
-    (slot) => Boolean(getItemById(slot.itemId)?.filamentCapacityUnits),
-  ).length;
+  const availableFilaments = stash.flatMap((slot) => {
+    const filamentState = getInventoryFilamentState(
+      slot.itemId,
+      slot.filamentPrintsRemaining,
+      slot.filamentRemainingUnits,
+    );
+    const item = filamentState ? getItemById(filamentState.itemId) : undefined;
+
+    return filamentState && item
+      ? [{ slot, item, filamentState }]
+      : [];
+  });
 
   const usbItem = module.printerUsbItemId
     ? getItemById(module.printerUsbItemId)
@@ -59,7 +66,13 @@ export function ThreeDPrinterSupplyPanel({
   const usbRecipeCount = getPrinterUsbRecipeIds(
     module.printerUsbItemId,
   ).length;
-  const usbInStash = stash.filter((slot) => isPrinterUsbItem(slot.itemId)).length;
+  const availableUsbItems = stash.flatMap((slot) => {
+    const item = isPrinterUsbItem(slot.itemId)
+      ? getItemById(slot.itemId)
+      : undefined;
+
+    return item ? [{ slot, item }] : [];
+  });
   const isBusy = Boolean(module.craftingRecipeId || module.craftingEndsAt);
 
   return (
@@ -69,18 +82,11 @@ export function ThreeDPrinterSupplyPanel({
       className="p-2"
     >
       <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          disabled={isBusy || (!filamentSlot && filamentInStash === 0)}
-          onClick={filamentSlot ? onRemoveFilament : onInsertFilament}
-          className={`min-h-28 border p-2 text-left transition active:scale-[0.98] ${
+        <div
+          className={`min-h-32 border p-2 ${
             filamentSlot
               ? "border-orange-500/55 bg-orange-500/8"
               : "border-zinc-800 bg-black/45"
-          } ${
-            isBusy || (!filamentSlot && filamentInStash === 0)
-              ? "cursor-not-allowed opacity-65"
-              : "cursor-pointer"
           }`}
         >
           <div className="flex items-center justify-between gap-2">
@@ -88,12 +94,17 @@ export function ThreeDPrinterSupplyPanel({
               Filament Slot
             </p>
             <p className="text-[7px] font-black uppercase text-zinc-600">
-              Stash {filamentInStash}
+              Stash {availableFilaments.length}
             </p>
           </div>
 
           {filamentSlot && filamentItem ? (
-            <div className="mt-2 grid grid-cols-[48px_1fr] items-center gap-2">
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={onRemoveFilament}
+              className="mt-2 grid w-full grid-cols-[48px_1fr] items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-65"
+            >
               <ItemImage
                 src={filamentItem.image}
                 alt={filamentItem.name}
@@ -103,55 +114,62 @@ export function ThreeDPrinterSupplyPanel({
               />
 
               <div className="min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-[8px] font-black uppercase text-zinc-200">
-                    {filamentItem.name}
-                  </p>
-                  <p className="shrink-0 text-sm font-black text-orange-300">
-                    {filamentPercentage}%
-                  </p>
-                </div>
+                <p className="truncate text-[8px] font-black uppercase text-zinc-200">
+                  {filamentItem.name}
+                </p>
+                <p className="mt-1 text-sm font-black text-orange-300">
+                  {filamentSlot.filamentPrintsRemaining} / {filamentSlot.filamentPrintCapacity}
+                </p>
+                <p className="text-[7px] font-black uppercase text-zinc-500">
+                  prints remaining
+                </p>
 
                 <div className="mt-1.5 h-2 border border-zinc-800 bg-black">
                   <div
                     className="h-full bg-orange-500"
-                    style={{ width: `${filamentPercentage}%` }}
+                    style={{ width: `${filamentRatio * 100}%` }}
                   />
                 </div>
-
-                <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
-                  {isBusy ? "Printing" : "Tap to remove"}
-                </p>
               </div>
+            </button>
+          ) : availableFilaments.length > 0 ? (
+            <div className="mt-2 grid gap-1">
+              {availableFilaments.map(({ slot, item, filamentState }) => (
+                <button
+                  key={slot.slotId}
+                  type="button"
+                  disabled={isBusy}
+                  onClick={() => onInsertFilament(slot.itemId)}
+                  className="flex min-h-8 items-center justify-between gap-2 border border-zinc-800 bg-black/55 px-2 text-left active:border-orange-500 disabled:cursor-not-allowed disabled:opacity-65"
+                >
+                  <span className="truncate text-[7px] font-black uppercase text-zinc-300">
+                    {item.name}
+                  </span>
+                  <span className="shrink-0 text-[7px] font-black uppercase text-orange-300">
+                    {filamentState.filamentPrintsRemaining} prints
+                  </span>
+                </button>
+              ))}
             </div>
           ) : (
-            <div className="mt-2 flex h-16 items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center">
+            <div className="mt-2 flex h-20 items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center">
               <div>
                 <p className="text-[8px] font-black uppercase text-zinc-400">
                   Empty
                 </p>
                 <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
-                  {filamentInStash > 0
-                    ? "Tap to insert spool"
-                    : "No filament in stash"}
+                  No filament in stash
                 </p>
               </div>
             </div>
           )}
-        </button>
+        </div>
 
-        <button
-          type="button"
-          disabled={isBusy || (!usbItem && usbInStash === 0)}
-          onClick={usbItem ? onRemoveUsb : onInsertUsb}
-          className={`min-h-28 border p-2 text-left transition active:scale-[0.98] ${
+        <div
+          className={`min-h-32 border p-2 ${
             usbItem
               ? "border-cyan-500/55 bg-cyan-500/8"
               : "border-zinc-800 bg-black/45"
-          } ${
-            isBusy || (!usbItem && usbInStash === 0)
-              ? "cursor-not-allowed opacity-65"
-              : "cursor-pointer"
           }`}
         >
           <div className="flex items-center justify-between gap-2">
@@ -159,12 +177,17 @@ export function ThreeDPrinterSupplyPanel({
               Recipe USB
             </p>
             <p className="text-[7px] font-black uppercase text-zinc-600">
-              Stash {usbInStash}
+              Stash {availableUsbItems.length}
             </p>
           </div>
 
           {usbItem ? (
-            <div className="mt-2 grid grid-cols-[48px_1fr] items-center gap-2">
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={onRemoveUsb}
+              className="mt-2 grid w-full grid-cols-[48px_1fr] items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-65"
+            >
               <ItemImage
                 src={usbItem.image}
                 alt={usbItem.name}
@@ -178,28 +201,45 @@ export function ThreeDPrinterSupplyPanel({
                   {usbItem.name}
                 </p>
                 <p className="mt-1 text-[8px] font-black uppercase text-cyan-300">
-                  {usbRecipeCount} rare recipe{usbRecipeCount === 1 ? "" : "s"}
+                  {usbRecipeCount} recipes unlocked
                 </p>
                 <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
                   {isBusy ? "USB in use" : "Tap to remove"}
                 </p>
               </div>
+            </button>
+          ) : availableUsbItems.length > 0 ? (
+            <div className="mt-2 grid gap-1">
+              {availableUsbItems.map(({ slot, item }) => (
+                <button
+                  key={slot.slotId}
+                  type="button"
+                  disabled={isBusy}
+                  onClick={() => onInsertUsb(item.id)}
+                  className="flex min-h-8 items-center justify-between gap-2 border border-zinc-800 bg-black/55 px-2 text-left active:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-65"
+                >
+                  <span className="truncate text-[7px] font-black uppercase text-zinc-300">
+                    {item.name}
+                  </span>
+                  <span className="shrink-0 text-[7px] font-black uppercase text-cyan-300">
+                    {item.printerRecipeIds?.length ?? 0} recipes
+                  </span>
+                </button>
+              ))}
             </div>
           ) : (
-            <div className="mt-2 flex h-16 items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center">
+            <div className="mt-2 flex h-20 items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center">
               <div>
                 <p className="text-[8px] font-black uppercase text-zinc-400">
                   Empty
                 </p>
                 <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
-                  {usbInStash > 0
-                    ? "Tap to insert recipe USB"
-                    : "No recipe USB in stash"}
+                  No recipe USB in stash
                 </p>
               </div>
             </div>
           )}
-        </button>
+        </div>
       </div>
     </Panel>
   );
