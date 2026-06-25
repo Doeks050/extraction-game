@@ -4,11 +4,7 @@ import { growRoomLevelOneRequirements } from "../../data/hideout/growRoomRequire
 import { miningRigLevelOneRequirements } from "../../data/hideout/miningRigRequirements";
 import { threeDPrinterLevelOneRequirements } from "../../data/hideout/threeDPrinterRequirements";
 import { workbenchLevelOneRequirements } from "../../data/hideout/workbenchRequirements";
-import {
-  getHideoutModuleProgress,
-  getHideoutModuleRoute,
-  hideoutStatusLabels,
-} from "../../lib/hideout";
+import { getHideoutModuleRoute } from "../../lib/hideout";
 import { getItemById } from "../../lib/items";
 import type { HideoutModule } from "../../types/game";
 import { ItemImage } from "../items/ItemImage";
@@ -55,7 +51,6 @@ function getModuleRequirements(module: HideoutModule) {
 }
 
 export function HideoutModuleCard({ module }: HideoutModuleCardProps) {
-  const progress = getHideoutModuleProgress(module);
   const requirements = getModuleRequirements(module).flatMap((requirement) => {
     const item = getItemById(requirement.itemId);
 
@@ -66,14 +61,9 @@ export function HideoutModuleCard({ module }: HideoutModuleCardProps) {
     <Link href={getHideoutModuleRoute(module)} className="block active:scale-[0.98]">
       <Panel className="p-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="truncate text-[11px] font-black uppercase text-zinc-100">
-              {module.name}
-            </p>
-            <p className="mt-1 truncate text-[9px] font-bold uppercase text-zinc-500">
-              {module.detail}
-            </p>
-          </div>
+          <p className="min-w-0 truncate text-[11px] font-black uppercase text-zinc-100">
+            {module.name}
+          </p>
 
           <p className="shrink-0 border border-orange-500/40 bg-orange-500/10 px-1.5 py-0.5 text-[8px] font-black uppercase text-orange-300">
             Lv {module.level}
@@ -106,16 +96,6 @@ export function HideoutModuleCard({ module }: HideoutModuleCardProps) {
             ))}
           </div>
         ) : null}
-
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <div className="h-1.5 flex-1 border border-zinc-800 bg-black">
-            <div className="h-full bg-orange-500" style={{ width: `${progress}%` }} />
-          </div>
-
-          <p className="text-[8px] font-black uppercase text-zinc-500">
-            {hideoutStatusLabels[module.status]}
-          </p>
-        </div>
       </Panel>
     </Link>
   );
