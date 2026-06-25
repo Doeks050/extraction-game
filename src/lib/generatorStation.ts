@@ -1,13 +1,18 @@
+import { getGeneratorFuelSlotCount } from "../data/hideout/generatorConfig";
 import type { InventorySlot } from "../types/items";
 import type { GameState } from "../types/state";
 import { getItemById } from "./items";
 
 export const GENERATOR_FUEL_ITEM_ID = "part_fuel_jerrycan";
-export const GENERATOR_LEVEL_ONE_SLOT_COUNT = 2;
 
-function normalizeFuelSlots(slots: Array<string | null> | undefined) {
+export function normalizeGeneratorFuelSlots(
+  level: number,
+  slots: Array<string | null> | undefined,
+) {
+  const slotCount = getGeneratorFuelSlotCount(level);
+
   return Array.from(
-    { length: GENERATOR_LEVEL_ONE_SLOT_COUNT },
+    { length: slotCount },
     (_, index) => slots?.[index] ?? null,
   );
 }
@@ -76,13 +81,14 @@ function getGeneratorDetail(
   fuelSlots: Array<string | null>,
 ) {
   const loadedCount = fuelSlots.filter(Boolean).length;
+  const slotCount = fuelSlots.length;
 
   if (poweredOn && loadedCount > 0) {
     return "Power online";
   }
 
   if (loadedCount > 0) {
-    return `${loadedCount} / ${GENERATOR_LEVEL_ONE_SLOT_COUNT} fuel loaded`;
+    return `${loadedCount} / ${slotCount} fuel loaded`;
   }
 
   return "No fuel";
@@ -96,19 +102,16 @@ export function insertGeneratorFuel(
     (module) => module.id === "generator",
   );
 
-  if (
-    !generator ||
-    generator.level < 1 ||
-    generator.generatorPoweredOn ||
-    slotIndex < 0 ||
-    slotIndex >= GENERATOR_LEVEL_ONE_SLOT_COUNT
-  ) {
+  if (!generator || generator.level < 1 || generator.generatorPoweredOn) {
     return null;
   }
 
-  const fuelSlots = normalizeFuelSlots(generator.generatorFuelSlots);
+  const fuelSlots = normalizeGeneratorFuelSlots(
+    generator.level,
+    generator.generatorFuelSlots,
+  );
 
-  if (fuelSlots[slotIndex]) {
+  if (slotIndex < 0 || slotIndex >= fuelSlots.length || fuelSlots[slotIndex]) {
     return null;
   }
 
@@ -145,16 +148,19 @@ export function removeGeneratorFuel(
     (module) => module.id === "generator",
   );
 
-  if (
-    !generator ||
-    generator.generatorPoweredOn ||
-    slotIndex < 0 ||
-    slotIndex >= GENERATOR_LEVEL_ONE_SLOT_COUNT
-  ) {
+  if (!generator || generator.generatorPoweredOn) {
     return null;
   }
 
-  const fuelSlots = normalizeFuelSlots(generator.generatorFuelSlots);
+  const fuelSlots = normalizeGeneratorFuelSlots(
+    generator.level,
+    generator.generatorFuelSlots,
+  );
+
+  if (slotIndex < 0 || slotIndex >= fuelSlots.length) {
+    return null;
+  }
+
   const itemId = fuelSlots[slotIndex];
 
   if (!itemId) {
@@ -189,7 +195,10 @@ export function toggleGeneratorPower(state: GameState): GameState | null {
     return null;
   }
 
-  const fuelSlots = normalizeFuelSlots(generator.generatorFuelSlots);
+  const fuelSlots = normalizeGeneratorFuelSlots(
+    generator.level,
+    generator.generatorFuelSlots,
+  );
   const hasFuel = fuelSlots.some(Boolean);
   const nextPoweredOn = !generator.generatorPoweredOn;
 
