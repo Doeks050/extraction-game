@@ -4,6 +4,7 @@ import type { GameState } from "../types/state";
 import { getItemById } from "./items";
 
 export const GENERATOR_FUEL_ITEM_ID = "part_fuel_jerrycan";
+export const WORKBENCH_POWERED_DURATION_MULTIPLIER = 0.75;
 
 export function normalizeGeneratorFuelSlots(
   level: number,
@@ -15,6 +16,21 @@ export function normalizeGeneratorFuelSlots(
     { length: slotCount },
     (_, index) => slots?.[index] ?? null,
   );
+}
+
+export function isGeneratorPowered(state: GameState) {
+  const generator = state.hideoutModules.find(
+    (module) => module.id === "generator",
+  );
+
+  if (!generator || generator.level < 1 || !generator.generatorPoweredOn) {
+    return false;
+  }
+
+  return normalizeGeneratorFuelSlots(
+    generator.level,
+    generator.generatorFuelSlots,
+  ).some(Boolean);
 }
 
 function consumeOneItem(stash: InventorySlot[], itemId: string) {
