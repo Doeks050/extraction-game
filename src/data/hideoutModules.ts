@@ -30,6 +30,8 @@ export const hideoutModules: HideoutModule[] = [
     level: 1,
     status: "idle",
     detail: "No print job",
+    printerFilamentSlot: null,
+    printerUsbItemId: null,
   },
   {
     id: "mining_rig",
