@@ -92,13 +92,17 @@ export function startThreeDPrinterCraft(
     return null;
   }
 
-  const nextFilamentSlot = {
-    ...filamentSlot,
-    filamentPrintsRemaining: Math.max(
-      0,
-      filamentSlot.filamentPrintsRemaining - 1,
-    ),
-  };
+  const remainingPrints = Math.max(
+    0,
+    filamentSlot.filamentPrintsRemaining - 1,
+  );
+  const nextFilamentSlot =
+    remainingPrints > 0
+      ? {
+          ...filamentSlot,
+          filamentPrintsRemaining: remainingPrints,
+        }
+      : null;
 
   return {
     ...state,
