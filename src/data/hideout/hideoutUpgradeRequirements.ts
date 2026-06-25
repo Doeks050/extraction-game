@@ -2,13 +2,15 @@ import { generatorLevelOneRequirements } from "./generatorRequirements";
 import { growRoomLevelOneRequirements } from "./growRoomRequirements";
 import { miningRigLevelOneRequirements } from "./miningRigRequirements";
 import { threeDPrinterLevelOneRequirements } from "./threeDPrinterRequirements";
-import { workbenchLevelOneRequirements } from "./workbenchRequirements";
-import type { HideoutRequirement } from "../../types/hideout";
+import {
+  workbenchLevelOneRequirements,
+  type HideoutItemRequirement,
+} from "./workbenchRequirements";
 import type { HideoutModule } from "../../types/game";
 
 const requirementsByModuleAndCurrentLevel: Record<
   string,
-  Record<number, HideoutRequirement[]>
+  Record<number, HideoutItemRequirement[]>
 > = {
   workshop: {
     0: workbenchLevelOneRequirements,
