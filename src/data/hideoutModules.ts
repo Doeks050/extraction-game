@@ -14,6 +14,8 @@ export const hideoutModules: HideoutModule[] = [
     level: 1,
     status: "idle",
     detail: "No fuel",
+    generatorFuelSlots: [null, null],
+    generatorPoweredOn: false,
   },
   {
     id: "grow_room",
