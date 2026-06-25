@@ -76,8 +76,10 @@ export type GeneratorFuelSlot = {
 
 export type PrinterFilamentSlot = {
   itemId: string;
-  filamentRemainingUnits: number;
-  filamentCapacityUnits: number;
+  filamentPrintsRemaining: number;
+  filamentPrintCapacity: number;
+  filamentRemainingUnits?: number;
+  filamentCapacityUnits?: number;
 };
 
 export type HideoutModule = {
