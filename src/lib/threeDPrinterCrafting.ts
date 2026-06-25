@@ -1,6 +1,7 @@
 import { getThreeDPrinterRecipeById } from "../data/hideout/threeDPrinterRecipes";
 import type { InventorySlot } from "../types/items";
 import type { GameState } from "../types/state";
+import { isGeneratorPowered } from "./generatorStation";
 import { consumeInventoryRequirements } from "./hideoutInstallation";
 import { getItemById } from "./items";
 
@@ -67,6 +68,7 @@ export function startThreeDPrinterCraft(
   if (
     !recipe ||
     !printer ||
+    !isGeneratorPowered(state) ||
     printer.level < recipe.requiredLevel ||
     printer.status !== "idle" ||
     printer.craftingRecipeId ||
