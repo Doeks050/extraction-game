@@ -10,4 +10,5 @@ export type GameState = {
   loadout: CurrentLoadout;
   tasks: GameTask[];
   contentMigrationVersion?: number;
+  marketPurchaseKeys?: string[];
 };
