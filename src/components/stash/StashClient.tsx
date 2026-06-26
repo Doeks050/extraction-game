@@ -66,7 +66,7 @@ export function StashClient({
               Inventory Grid
             </p>
             <p className="mt-0.5 text-[7px] font-black uppercase tracking-[0.12em] text-zinc-600">
-              Tap for info · Hold and drag to move · Rotation is automatic
+              Tap for info · Hold and drag to move · Drag USB onto USB Case to store
             </p>
           </div>
 
@@ -75,6 +75,7 @@ export function StashClient({
               slots={hydratedSlots}
               onSelectSlot={(slot) => setSelectedSlotId(slot.slotId)}
               onMoveSlot={onMoveSlot}
+              onStoreUsb={onStoreUsb}
             />
           </div>
         </div>
