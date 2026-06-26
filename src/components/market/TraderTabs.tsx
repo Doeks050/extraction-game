@@ -13,7 +13,7 @@ export function TraderTabs({
   onTraderChange,
 }: TraderTabsProps) {
   return (
-    <div className="grid grid-cols-2 gap-1.5">
+    <div className={`grid gap-1.5 ${traders.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
       {traders.map((trader) => {
         const isActive = trader.id === activeTraderId;
 
@@ -21,9 +21,10 @@ export function TraderTabs({
           <button
             key={trader.id}
             type="button"
+            disabled={trader.status === "locked"}
             onClick={() => onTraderChange(trader.id)}
             className={[
-              "h-12 border p-1 text-left active:scale-[0.98]",
+              "h-12 border p-1.5 text-left active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45",
               isActive
                 ? "border-orange-500 bg-orange-500/15"
                 : "border-zinc-800 bg-zinc-950",
@@ -43,7 +44,7 @@ export function TraderTabs({
                 {trader.role}
               </p>
               <p className="text-[8px] font-black uppercase text-zinc-500">
-                {getTraderStockCount(trader)} items
+                {getTraderStockCount(trader)} offers
               </p>
             </div>
           </button>
