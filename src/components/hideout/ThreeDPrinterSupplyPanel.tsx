@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { getItemById } from "../../lib/items";
 import {
   getInventoryFilamentState,
@@ -37,6 +38,7 @@ export function ThreeDPrinterSupplyPanel({
   onInsertUsb,
   onRemoveUsb,
 }: ThreeDPrinterSupplyPanelProps) {
+  const [isFilamentSelectorOpen, setIsFilamentSelectorOpen] = useState(false);
   const filamentSlot = normalizePrinterFilamentSlot(
     module.printerFilamentSlot,
   );
@@ -74,6 +76,11 @@ export function ThreeDPrinterSupplyPanel({
     return item ? [{ slot, item }] : [];
   });
   const isBusy = Boolean(module.craftingRecipeId || module.craftingEndsAt);
+
+  function handleSelectFilament(itemId: string) {
+    onInsertFilament(itemId);
+    setIsFilamentSelectorOpen(false);
+  }
 
   return (
     <Panel
@@ -132,36 +139,24 @@ export function ThreeDPrinterSupplyPanel({
                 </div>
               </div>
             </button>
-          ) : availableFilaments.length > 0 ? (
-            <div className="mt-2 grid gap-1">
-              {availableFilaments.map(({ slot, item, filamentState }) => (
-                <button
-                  key={slot.slotId}
-                  type="button"
-                  disabled={isBusy}
-                  onClick={() => onInsertFilament(slot.itemId)}
-                  className="flex min-h-8 items-center justify-between gap-2 border border-zinc-800 bg-black/55 px-2 text-left active:border-orange-500 disabled:cursor-not-allowed disabled:opacity-65"
-                >
-                  <span className="truncate text-[7px] font-black uppercase text-zinc-300">
-                    {item.name}
-                  </span>
-                  <span className="shrink-0 text-[7px] font-black uppercase text-orange-300">
-                    {filamentState.filamentPrintsRemaining} prints
-                  </span>
-                </button>
-              ))}
-            </div>
           ) : (
-            <div className="mt-2 flex h-20 items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center">
+            <button
+              type="button"
+              disabled={isBusy || availableFilaments.length === 0}
+              onClick={() => setIsFilamentSelectorOpen(true)}
+              className="mt-2 flex h-20 w-full items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center active:border-orange-500 disabled:cursor-not-allowed disabled:opacity-65"
+            >
               <div>
                 <p className="text-[8px] font-black uppercase text-zinc-400">
                   Empty
                 </p>
                 <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
-                  No filament in stash
+                  {availableFilaments.length > 0
+                    ? "Tap to choose filament"
+                    : "No filament in stash"}
                 </p>
               </div>
-            </div>
+            </button>
           )}
         </div>
 
@@ -241,6 +236,66 @@ export function ThreeDPrinterSupplyPanel({
           )}
         </div>
       </div>
+
+      {isFilamentSelectorOpen && !filamentSlot ? (
+        <div className="mt-2 border border-orange-500/45 bg-zinc-950 p-2">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-orange-300">
+                Choose Filament
+              </p>
+              <p className="mt-0.5 text-[7px] font-bold uppercase text-zinc-600">
+                Select one spool from your stash
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsFilamentSelectorOpen(false)}
+              className="h-7 border border-zinc-800 bg-black px-2 text-[7px] font-black uppercase text-zinc-400 active:border-orange-500 active:text-orange-300"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <div className="mt-2 grid gap-1.5">
+            {availableFilaments.map(({ slot, item, filamentState }) => (
+              <button
+                key={slot.slotId}
+                type="button"
+                onClick={() => handleSelectFilament(slot.itemId)}
+                className="grid min-h-12 grid-cols-[42px_1fr_auto] items-center gap-2 border border-zinc-800 bg-black/55 p-1.5 text-left active:border-orange-500"
+              >
+                <ItemImage
+                  src={item.image}
+                  alt={item.name}
+                  fallback={getFallback(item.name)}
+                  className="h-9 w-10"
+                  imageClassName="p-0.5"
+                />
+
+                <div className="min-w-0">
+                  <p className="truncate text-[8px] font-black uppercase text-zinc-200">
+                    {item.name}
+                  </p>
+                  <p className="mt-0.5 text-[7px] font-bold uppercase text-zinc-600">
+                    {item.rarity}
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-sm font-black text-orange-300">
+                    {filamentState.filamentPrintsRemaining}
+                  </p>
+                  <p className="text-[6px] font-black uppercase text-zinc-600">
+                    prints
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </Panel>
   );
 }
