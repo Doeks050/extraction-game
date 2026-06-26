@@ -39,6 +39,7 @@ export function ThreeDPrinterSupplyPanel({
   onRemoveUsb,
 }: ThreeDPrinterSupplyPanelProps) {
   const [isFilamentSelectorOpen, setIsFilamentSelectorOpen] = useState(false);
+  const [isUsbSelectorOpen, setIsUsbSelectorOpen] = useState(false);
   const filamentSlot = normalizePrinterFilamentSlot(
     module.printerFilamentSlot,
   );
@@ -77,9 +78,24 @@ export function ThreeDPrinterSupplyPanel({
   });
   const isBusy = Boolean(module.craftingRecipeId || module.craftingEndsAt);
 
+  function handleOpenFilamentSelector() {
+    setIsUsbSelectorOpen(false);
+    setIsFilamentSelectorOpen(true);
+  }
+
+  function handleOpenUsbSelector() {
+    setIsFilamentSelectorOpen(false);
+    setIsUsbSelectorOpen(true);
+  }
+
   function handleSelectFilament(itemId: string) {
     onInsertFilament(itemId);
     setIsFilamentSelectorOpen(false);
+  }
+
+  function handleSelectUsb(itemId: string) {
+    onInsertUsb(itemId);
+    setIsUsbSelectorOpen(false);
   }
 
   return (
@@ -143,7 +159,7 @@ export function ThreeDPrinterSupplyPanel({
             <button
               type="button"
               disabled={isBusy || availableFilaments.length === 0}
-              onClick={() => setIsFilamentSelectorOpen(true)}
+              onClick={handleOpenFilamentSelector}
               className="mt-2 flex h-20 w-full items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center active:border-orange-500 disabled:cursor-not-allowed disabled:opacity-65"
             >
               <div>
@@ -203,36 +219,24 @@ export function ThreeDPrinterSupplyPanel({
                 </p>
               </div>
             </button>
-          ) : availableUsbItems.length > 0 ? (
-            <div className="mt-2 grid gap-1">
-              {availableUsbItems.map(({ slot, item }) => (
-                <button
-                  key={slot.slotId}
-                  type="button"
-                  disabled={isBusy}
-                  onClick={() => onInsertUsb(item.id)}
-                  className="flex min-h-8 items-center justify-between gap-2 border border-zinc-800 bg-black/55 px-2 text-left active:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-65"
-                >
-                  <span className="truncate text-[7px] font-black uppercase text-zinc-300">
-                    {item.name}
-                  </span>
-                  <span className="shrink-0 text-[7px] font-black uppercase text-cyan-300">
-                    {item.printerRecipeIds?.length ?? 0} recipes
-                  </span>
-                </button>
-              ))}
-            </div>
           ) : (
-            <div className="mt-2 flex h-20 items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center">
+            <button
+              type="button"
+              disabled={isBusy || availableUsbItems.length === 0}
+              onClick={handleOpenUsbSelector}
+              className="mt-2 flex h-20 w-full items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center active:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-65"
+            >
               <div>
                 <p className="text-[8px] font-black uppercase text-zinc-400">
                   Empty
                 </p>
                 <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
-                  No recipe USB in stash
+                  {availableUsbItems.length > 0
+                    ? "Tap to choose recipe USB"
+                    : "No recipe USB in stash"}
                 </p>
               </div>
-            </div>
+            </button>
           )}
         </div>
       </div>
@@ -289,6 +293,66 @@ export function ThreeDPrinterSupplyPanel({
                   </p>
                   <p className="text-[6px] font-black uppercase text-zinc-600">
                     prints
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {isUsbSelectorOpen && !usbItem ? (
+        <div className="mt-2 border border-cyan-500/45 bg-zinc-950 p-2">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-cyan-300">
+                Choose Recipe USB
+              </p>
+              <p className="mt-0.5 text-[7px] font-bold uppercase text-zinc-600">
+                Select one USB stick from your stash
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsUsbSelectorOpen(false)}
+              className="h-7 border border-zinc-800 bg-black px-2 text-[7px] font-black uppercase text-zinc-400 active:border-cyan-500 active:text-cyan-300"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <div className="mt-2 grid gap-1.5">
+            {availableUsbItems.map(({ slot, item }) => (
+              <button
+                key={slot.slotId}
+                type="button"
+                onClick={() => handleSelectUsb(item.id)}
+                className="grid min-h-12 grid-cols-[42px_1fr_auto] items-center gap-2 border border-zinc-800 bg-black/55 p-1.5 text-left active:border-cyan-500"
+              >
+                <ItemImage
+                  src={item.image}
+                  alt={item.name}
+                  fallback={getFallback(item.name)}
+                  className="h-9 w-10"
+                  imageClassName="p-0.5"
+                />
+
+                <div className="min-w-0">
+                  <p className="truncate text-[8px] font-black uppercase text-zinc-200">
+                    {item.name}
+                  </p>
+                  <p className="mt-0.5 text-[7px] font-bold uppercase text-zinc-600">
+                    {item.rarity}
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-sm font-black text-cyan-300">
+                    {item.printerRecipeIds?.length ?? 0}
+                  </p>
+                  <p className="text-[6px] font-black uppercase text-zinc-600">
+                    recipes
                   </p>
                 </div>
               </button>
