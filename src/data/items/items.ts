@@ -13,7 +13,7 @@ import { weapons } from "./weapons";
 import { workbenchMaterials } from "./workbenchMaterials";
 import type { GameItem } from "../../types/items";
 
-export const gameItems: GameItem[] = [
+const rawGameItems: GameItem[] = [
   ...weapons,
   ...ammoItems,
   ...magazines,
@@ -28,3 +28,12 @@ export const gameItems: GameItem[] = [
   ...workbenchMaterials,
   ...questItems,
 ];
+
+export const gameItems: GameItem[] = rawGameItems.map((item) =>
+  item.category === "ammo"
+    ? item
+    : {
+        ...item,
+        maxStack: 1,
+      },
+);
