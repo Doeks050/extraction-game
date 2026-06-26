@@ -126,32 +126,34 @@ export function ThreeDPrinterSupplyPanel({
               type="button"
               disabled={isBusy}
               onClick={onRemoveFilament}
-              className="mt-1.5 grid w-full grid-cols-[36px_1fr] items-center gap-1.5 text-left disabled:cursor-not-allowed disabled:opacity-65"
+              className="mt-1.5 flex h-14 w-full items-center justify-center overflow-hidden px-1 text-center disabled:cursor-not-allowed disabled:opacity-65"
             >
-              <ItemImage
-                src={filamentItem.image}
-                alt={filamentItem.name}
-                fallback={getFallback(filamentItem.name)}
-                className="h-10 w-9"
-                imageClassName="p-0.5"
-              />
+              <div className="flex max-w-full items-center justify-center gap-1.5">
+                <ItemImage
+                  src={filamentItem.image}
+                  alt={filamentItem.name}
+                  fallback={getFallback(filamentItem.name)}
+                  className="h-9 w-9 shrink-0"
+                  imageClassName="p-0.5"
+                />
 
-              <div className="min-w-0">
-                <p className="truncate text-[7px] font-black uppercase text-zinc-200">
-                  {filamentItem.name}
-                </p>
-                <p className="text-[10px] font-black text-orange-300">
-                  {filamentSlot.filamentPrintsRemaining} / {filamentSlot.filamentPrintCapacity}
-                </p>
-                <p className="text-[6px] font-black uppercase text-zinc-500">
-                  prints remaining
-                </p>
+                <div className="w-[82px] min-w-0 text-center">
+                  <p className="truncate text-[7px] font-black uppercase text-zinc-200">
+                    {filamentItem.name}
+                  </p>
+                  <p className="text-[10px] font-black text-orange-300">
+                    {filamentSlot.filamentPrintsRemaining} / {filamentSlot.filamentPrintCapacity}
+                  </p>
+                  <p className="text-[6px] font-black uppercase text-zinc-500">
+                    prints remaining
+                  </p>
 
-                <div className="mt-1 h-1.5 border border-zinc-800 bg-black">
-                  <div
-                    className="h-full bg-orange-500"
-                    style={{ width: `${filamentRatio * 100}%` }}
-                  />
+                  <div className="mx-auto mt-1 h-1.5 w-full border border-zinc-800 bg-black">
+                    <div
+                      className="h-full bg-orange-500"
+                      style={{ width: `${filamentRatio * 100}%` }}
+                    />
+                  </div>
                 </div>
               </div>
             </button>
@@ -197,26 +199,28 @@ export function ThreeDPrinterSupplyPanel({
               type="button"
               disabled={isBusy}
               onClick={onRemoveUsb}
-              className="mt-1.5 grid w-full grid-cols-[36px_1fr] items-center gap-1.5 text-left disabled:cursor-not-allowed disabled:opacity-65"
+              className="mt-1.5 flex h-14 w-full items-center justify-center overflow-hidden px-1 text-center disabled:cursor-not-allowed disabled:opacity-65"
             >
-              <ItemImage
-                src={usbItem.image}
-                alt={usbItem.name}
-                fallback={getFallback(usbItem.name)}
-                className="h-10 w-9"
-                imageClassName="p-0.5"
-              />
+              <div className="flex max-w-full items-center justify-center gap-1.5">
+                <ItemImage
+                  src={usbItem.image}
+                  alt={usbItem.name}
+                  fallback={getFallback(usbItem.name)}
+                  className="h-9 w-9 shrink-0"
+                  imageClassName="p-0.5"
+                />
 
-              <div className="min-w-0">
-                <p className="truncate text-[7px] font-black uppercase text-zinc-200">
-                  {usbItem.name}
-                </p>
-                <p className="mt-0.5 text-[7px] font-black uppercase text-cyan-300">
-                  {usbRecipeCount} recipes
-                </p>
-                <p className="mt-0.5 text-[6px] font-bold uppercase text-zinc-600">
-                  {isBusy ? "USB in use" : "Tap to remove"}
-                </p>
+                <div className="w-[82px] min-w-0 text-center">
+                  <p className="truncate text-[7px] font-black uppercase text-zinc-200">
+                    {usbItem.name}
+                  </p>
+                  <p className="mt-0.5 text-[7px] font-black uppercase text-cyan-300">
+                    {usbRecipeCount} recipes
+                  </p>
+                  <p className="mt-0.5 text-[6px] font-bold uppercase text-zinc-600">
+                    {isBusy ? "USB in use" : "Tap to remove"}
+                  </p>
+                </div>
               </div>
             </button>
           ) : (
