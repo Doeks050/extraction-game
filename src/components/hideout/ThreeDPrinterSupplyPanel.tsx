@@ -104,19 +104,19 @@ export function ThreeDPrinterSupplyPanel({
       titleClassName="text-orange-300"
       className="p-2"
     >
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-1.5">
         <div
-          className={`min-h-32 border p-2 ${
+          className={`min-h-24 border p-1.5 ${
             filamentSlot
               ? "border-orange-500/55 bg-orange-500/8"
               : "border-zinc-800 bg-black/45"
           }`}
         >
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-orange-300">
+          <div className="flex items-center justify-between gap-1">
+            <p className="text-[7px] font-black uppercase tracking-[0.14em] text-orange-300">
               Filament Slot
             </p>
-            <p className="text-[7px] font-black uppercase text-zinc-600">
+            <p className="text-[6px] font-black uppercase text-zinc-600">
               Stash {availableFilaments.length}
             </p>
           </div>
@@ -126,28 +126,28 @@ export function ThreeDPrinterSupplyPanel({
               type="button"
               disabled={isBusy}
               onClick={onRemoveFilament}
-              className="mt-2 grid w-full grid-cols-[48px_1fr] items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-65"
+              className="mt-1.5 grid w-full grid-cols-[36px_1fr] items-center gap-1.5 text-left disabled:cursor-not-allowed disabled:opacity-65"
             >
               <ItemImage
                 src={filamentItem.image}
                 alt={filamentItem.name}
                 fallback={getFallback(filamentItem.name)}
-                className="h-14 w-12"
+                className="h-10 w-9"
                 imageClassName="p-0.5"
               />
 
               <div className="min-w-0">
-                <p className="truncate text-[8px] font-black uppercase text-zinc-200">
+                <p className="truncate text-[7px] font-black uppercase text-zinc-200">
                   {filamentItem.name}
                 </p>
-                <p className="mt-1 text-sm font-black text-orange-300">
+                <p className="text-[10px] font-black text-orange-300">
                   {filamentSlot.filamentPrintsRemaining} / {filamentSlot.filamentPrintCapacity}
                 </p>
-                <p className="text-[7px] font-black uppercase text-zinc-500">
+                <p className="text-[6px] font-black uppercase text-zinc-500">
                   prints remaining
                 </p>
 
-                <div className="mt-1.5 h-2 border border-zinc-800 bg-black">
+                <div className="mt-1 h-1.5 border border-zinc-800 bg-black">
                   <div
                     className="h-full bg-orange-500"
                     style={{ width: `${filamentRatio * 100}%` }}
@@ -160,13 +160,13 @@ export function ThreeDPrinterSupplyPanel({
               type="button"
               disabled={isBusy || availableFilaments.length === 0}
               onClick={handleOpenFilamentSelector}
-              className="mt-2 flex h-20 w-full items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center active:border-orange-500 disabled:cursor-not-allowed disabled:opacity-65"
+              className="mt-1.5 flex h-14 w-full items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center active:border-orange-500 disabled:cursor-not-allowed disabled:opacity-65"
             >
               <div>
-                <p className="text-[8px] font-black uppercase text-zinc-400">
+                <p className="text-[7px] font-black uppercase text-zinc-400">
                   Empty
                 </p>
-                <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
+                <p className="mt-0.5 text-[6px] font-bold uppercase text-zinc-600">
                   {availableFilaments.length > 0
                     ? "Tap to choose filament"
                     : "No filament in stash"}
@@ -177,17 +177,17 @@ export function ThreeDPrinterSupplyPanel({
         </div>
 
         <div
-          className={`min-h-32 border p-2 ${
+          className={`min-h-24 border p-1.5 ${
             usbItem
               ? "border-cyan-500/55 bg-cyan-500/8"
               : "border-zinc-800 bg-black/45"
           }`}
         >
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-cyan-300">
+          <div className="flex items-center justify-between gap-1">
+            <p className="text-[7px] font-black uppercase tracking-[0.14em] text-cyan-300">
               Recipe USB
             </p>
-            <p className="text-[7px] font-black uppercase text-zinc-600">
+            <p className="text-[6px] font-black uppercase text-zinc-600">
               Stash {availableUsbItems.length}
             </p>
           </div>
@@ -197,24 +197,24 @@ export function ThreeDPrinterSupplyPanel({
               type="button"
               disabled={isBusy}
               onClick={onRemoveUsb}
-              className="mt-2 grid w-full grid-cols-[48px_1fr] items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-65"
+              className="mt-1.5 grid w-full grid-cols-[36px_1fr] items-center gap-1.5 text-left disabled:cursor-not-allowed disabled:opacity-65"
             >
               <ItemImage
                 src={usbItem.image}
                 alt={usbItem.name}
                 fallback={getFallback(usbItem.name)}
-                className="h-14 w-12"
+                className="h-10 w-9"
                 imageClassName="p-0.5"
               />
 
               <div className="min-w-0">
-                <p className="truncate text-[8px] font-black uppercase text-zinc-200">
+                <p className="truncate text-[7px] font-black uppercase text-zinc-200">
                   {usbItem.name}
                 </p>
-                <p className="mt-1 text-[8px] font-black uppercase text-cyan-300">
-                  {usbRecipeCount} recipes unlocked
+                <p className="mt-0.5 text-[7px] font-black uppercase text-cyan-300">
+                  {usbRecipeCount} recipes
                 </p>
-                <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
+                <p className="mt-0.5 text-[6px] font-bold uppercase text-zinc-600">
                   {isBusy ? "USB in use" : "Tap to remove"}
                 </p>
               </div>
@@ -224,15 +224,15 @@ export function ThreeDPrinterSupplyPanel({
               type="button"
               disabled={isBusy || availableUsbItems.length === 0}
               onClick={handleOpenUsbSelector}
-              className="mt-2 flex h-20 w-full items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center active:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-65"
+              className="mt-1.5 flex h-14 w-full items-center justify-center border border-dashed border-zinc-800 bg-black/35 text-center active:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-65"
             >
               <div>
-                <p className="text-[8px] font-black uppercase text-zinc-400">
+                <p className="text-[7px] font-black uppercase text-zinc-400">
                   Empty
                 </p>
-                <p className="mt-1 text-[7px] font-bold uppercase text-zinc-600">
+                <p className="mt-0.5 text-[6px] font-bold uppercase text-zinc-600">
                   {availableUsbItems.length > 0
-                    ? "Tap to choose recipe USB"
+                    ? "Tap to choose USB"
                     : "No recipe USB in stash"}
                 </p>
               </div>
