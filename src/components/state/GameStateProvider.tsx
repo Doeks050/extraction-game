@@ -10,6 +10,7 @@ import {
 import { gameState as defaultGameState } from "../../data/gameState";
 import { resolveGeneratorFuel } from "../../lib/generatorStation";
 import { resolveCompletedHideoutInstallations } from "../../lib/hideoutInstallation";
+import { normalizeInventoryStacking } from "../../lib/inventoryStacking";
 import { applyPrinterContentMigration } from "../../lib/printerContentMigration";
 import {
   clearSavedGameState,
@@ -43,8 +44,16 @@ function resolveTimedState(state: GameState, now: number) {
   return resolveCompletedThreeDPrinterCrafts(workbenchState, now);
 }
 
+function normalizeStateStacking(state: GameState): GameState {
+  return {
+    ...state,
+    stash: normalizeInventoryStacking(state.stash),
+  };
+}
+
 function createInitialState() {
-  return applyPrinterContentMigration(cloneGameState(defaultGameState));
+  const initialState = normalizeStateStacking(cloneGameState(defaultGameState));
+  return applyPrinterContentMigration(initialState);
 }
 
 export function GameStateProvider({ children }: GameStateProviderProps) {
@@ -54,7 +63,8 @@ export function GameStateProvider({ children }: GameStateProviderProps) {
   useEffect(() => {
     const savedState = readSavedGameState();
     const normalizedState = normalizeSavedGameState(savedState, defaultGameState);
-    const migratedState = applyPrinterContentMigration(normalizedState);
+    const stackingState = normalizeStateStacking(normalizedState);
+    const migratedState = applyPrinterContentMigration(stackingState);
     const resolvedState = resolveTimedState(migratedState, Date.now());
 
     setInternalState(resolvedState);
@@ -82,9 +92,10 @@ export function GameStateProvider({ children }: GameStateProviderProps) {
   }, []);
 
   function setState(nextState: GameState) {
-    setInternalState(nextState);
+    const normalizedState = normalizeStateStacking(nextState);
+    setInternalState(normalizedState);
 
-    const didSave = writeSavedGameState(nextState);
+    const didSave = writeSavedGameState(normalizedState);
     setSaveStatus(didSave ? "ready" : "error");
   }
 
