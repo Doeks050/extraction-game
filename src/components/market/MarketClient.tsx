@@ -179,10 +179,14 @@ export function MarketClient({ traders }: MarketClientProps) {
       </div>
 
       <Panel
-        title="Current Weapon Stock"
+        title="Weapon Trader Stash"
         titleClassName="text-orange-300"
         className="min-h-0 overflow-y-auto p-2"
       >
+        <p className="mb-2 text-[7px] font-black uppercase tracking-[0.12em] text-zinc-600">
+          Tap a weapon to inspect the offer
+        </p>
+
         {now === null ? (
           <p className="py-8 text-center text-[9px] font-black uppercase text-zinc-600">
             Loading trader stock
