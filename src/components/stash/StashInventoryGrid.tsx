@@ -11,6 +11,11 @@ import {
   getStashGridRowCount,
   STASH_GRID_COLUMNS,
 } from "../../lib/stashGrid";
+import { isPrinterUsbItem } from "../../lib/threeDPrinterSupplies";
+import {
+  isUsbStorageCase,
+  USB_CASE_CAPACITY,
+} from "../../lib/usbCaseStorage";
 import { ItemImage } from "../items/ItemImage";
 
 const HOLD_DELAY_MS = 220;
@@ -33,6 +38,7 @@ type DragState = {
   currentY: number;
   targetColumn: number;
   targetRow: number;
+  targetCaseSlotId?: string;
   isRotated: boolean;
   isValid: boolean;
 };
@@ -57,6 +63,7 @@ type StashInventoryGridProps = {
     row: number,
     isRotated: boolean,
   ) => void;
+  onStoreUsb: (caseSlotId: string, usbSlotId: string) => void;
 };
 
 function getWeaponImageClassName(slot: HydratedInventorySlot) {
@@ -82,6 +89,7 @@ export function StashInventoryGrid({
   slots,
   onSelectSlot,
   onMoveSlot,
+  onStoreUsb,
 }: StashInventoryGridProps) {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -116,6 +124,40 @@ export function StashInventoryGrid({
     };
   }
 
+  function getUsbCaseDropTarget(
+    draggedSlot: HydratedInventorySlot,
+    pointerColumn: number,
+    pointerRow: number,
+  ) {
+    if (!isPrinterUsbItem(draggedSlot.itemId)) {
+      return undefined;
+    }
+
+    return slots.find((candidate) => {
+      if (
+        candidate.slotId === draggedSlot.slotId ||
+        !candidate.gridPosition ||
+        !isUsbStorageCase(candidate) ||
+        (candidate.containedSlots?.length ?? 0) >= USB_CASE_CAPACITY
+      ) {
+        return false;
+      }
+
+      const size = getSlotGridSize(candidate, candidate.item);
+      const startColumn = candidate.gridPosition.column;
+      const endColumn = startColumn + size.width;
+      const startRow = candidate.gridPosition.row;
+      const endRow = startRow + size.height;
+
+      return (
+        pointerColumn >= startColumn &&
+        pointerColumn < endColumn &&
+        pointerRow >= startRow &&
+        pointerRow < endRow
+      );
+    });
+  }
+
   function buildDragState(
     press: PressState,
     clientX: number,
@@ -131,6 +173,23 @@ export function StashInventoryGrid({
     const rawColumn = Math.floor((clientX - metrics.rect.left) / metrics.columnPitch);
     const rawRow = Math.floor((clientY - metrics.rect.top) / metrics.rowPitch);
     const currentRotation = Boolean(slot.isRotated);
+    const caseTarget = getUsbCaseDropTarget(slot, rawColumn, rawRow);
+
+    if (caseTarget?.gridPosition) {
+      return {
+        slotId: slot.slotId,
+        startX: press.startX,
+        startY: press.startY,
+        currentX: clientX,
+        currentY: clientY,
+        targetColumn: caseTarget.gridPosition.column,
+        targetRow: caseTarget.gridPosition.row,
+        targetCaseSlotId: caseTarget.slotId,
+        isRotated: currentRotation,
+        isValid: true,
+      };
+    }
+
     const currentSize = getSlotGridSize(slot, slot.item);
     const currentAnchorColumn = Math.min(press.anchorColumn, currentSize.width - 1);
     const currentAnchorRow = Math.min(press.anchorRow, currentSize.height - 1);
@@ -265,7 +324,9 @@ export function StashInventoryGrid({
 
     const activeDrag = dragStateRef.current;
 
-    if (activeDrag?.isValid) {
+    if (activeDrag?.targetCaseSlotId) {
+      onStoreUsb(activeDrag.targetCaseSlotId, activeDrag.slotId);
+    } else if (activeDrag?.isValid) {
       onMoveSlot(
         activeDrag.slotId,
         activeDrag.targetColumn,
@@ -312,7 +373,7 @@ export function StashInventoryGrid({
         />
       ))}
 
-      {dragState && previewSize ? (
+      {dragState && previewSize && !dragState.targetCaseSlotId ? (
         <div
           className={[
             "pointer-events-none z-20 border-2 bg-black/35",
@@ -331,6 +392,7 @@ export function StashInventoryGrid({
         }
 
         const isDragging = dragState?.slotId === slot.slotId;
+        const isCaseDropTarget = dragState?.targetCaseSlotId === slot.slotId;
         const displaySlot = isDragging && dragState
           ? {
               ...slot,
@@ -363,6 +425,9 @@ export function StashInventoryGrid({
             className={[
               "relative z-10 overflow-hidden border bg-black/80 p-1 text-left active:scale-[0.99]",
               rarityClassNames[slot.item.rarity],
+              isCaseDropTarget
+                ? "z-20 border-emerald-400 bg-emerald-500/15 ring-2 ring-emerald-400/70"
+                : "",
               isDragging
                 ? `${dragState.isValid ? "border-emerald-400" : "border-red-500"} z-30 opacity-90 shadow-2xl`
                 : "",
