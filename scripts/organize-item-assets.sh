@@ -136,6 +136,13 @@ for file in \
   move_asset "$WEAPONS/$file" "$WEAPONS/assault-rifles/5.56x45/$file"
 done
 
+for file in \
+  ak-104.png ak-203.png akm.png cz-bren-2-ms-7.62.png galil-ace-32.png \
+  kac-sr-47.png mk-47.png rd-704.png sam-7.png sig-556r.png sig-556xi.png \
+  type-56.png vz-58.png zastava-m70.png zastava-m92.png; do
+  move_asset "$WEAPONS/$file" "$WEAPONS/assault-rifles/7.62x39/$file"
+done
+
 for file in hk-417.png desert-tech-mdr-762.png scar-h.png hk-g3-dmr.png; do
   move_asset "$WEAPONS/$file" "$WEAPONS/assault-rifles/7.62x51/$file"
 done
