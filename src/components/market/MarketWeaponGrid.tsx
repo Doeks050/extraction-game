@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { getWeaponCaliberFromTags } from "../../data/weapons/calibers";
 import { getWeaponClassFromTags } from "../../data/weapons/weaponClasses";
 import { formatCredits } from "../../lib/items";
 import { getMarketItemValue } from "../../lib/market";
@@ -99,6 +100,7 @@ export function MarketWeaponGrid({
         const size = getSlotGridSize(slot, item);
         const isSold = soldItemIds.has(item.id);
         const price = getMarketItemValue(item);
+        const caliber = getWeaponCaliberFromTags(item.tags);
 
         return (
           <button
@@ -140,11 +142,11 @@ export function MarketWeaponGrid({
             </div>
 
             <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
-              <span className="bg-black/75 px-1 text-zinc-500">
-                {isSold ? "Sold out" : "Price"}
+              <span className="truncate bg-black/75 px-1 text-orange-400">
+                {`${formatCredits(price)} CR`}
               </span>
-              <span className={`truncate bg-black/75 px-1 ${isSold ? "text-red-400" : "text-orange-400"}`}>
-                {isSold ? "SOLD" : `${formatCredits(price)} CR`}
+              <span className="truncate bg-black/75 px-1 text-cyan-300">
+                {caliber}
               </span>
             </div>
 
