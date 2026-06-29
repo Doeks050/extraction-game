@@ -12,6 +12,8 @@ import {
 } from "../../lib/stashGrid";
 import type { GameItem, InventorySlot } from "../../types/items";
 
+// Shared trader stock grid. It intentionally keeps the old component name
+// because the first implementation only handled weapons.
 type MarketWeaponGridProps = {
   items: GameItem[];
   soldItemIds: Set<string>;
@@ -29,7 +31,30 @@ const rarityClassNames = {
   legendary: "border-orange-400/70 text-orange-300",
 };
 
-function getWeaponImageClassName(item: GameItem) {
+const categoryLabels = {
+  chest_gear: "GEAR",
+  helmet: "HELMET",
+  backpack: "PACK",
+  armor: "ARMOR",
+};
+
+function getItemMetaLabel(item: GameItem) {
+  if (item.category === "weapon") {
+    return getWeaponCaliberFromTags(item.tags);
+  }
+
+  if (item.stats?.armorClass) {
+    return `AC ${item.stats.armorClass}`;
+  }
+
+  if (item.stats?.capacity) {
+    return `${item.stats.capacity} SLOT`;
+  }
+
+  return categoryLabels[item.category as keyof typeof categoryLabels] ?? item.category;
+}
+
+function getItemImageClassName(item: GameItem) {
   const weaponClass = getWeaponClassFromTags(item.tags);
 
   if (weaponClass?.id === "pistol") {
@@ -44,7 +69,7 @@ function getWeaponImageClassName(item: GameItem) {
     return "h-[250%] w-[250%] max-h-none max-w-none object-contain opacity-95";
   }
 
-  return "h-full w-full max-h-full max-w-full object-contain opacity-95";
+  return "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95";
 }
 
 export function MarketWeaponGrid({
@@ -100,7 +125,7 @@ export function MarketWeaponGrid({
         const size = getSlotGridSize(slot, item);
         const isSold = soldItemIds.has(item.id);
         const price = getMarketItemValue(item);
-        const caliber = getWeaponCaliberFromTags(item.tags);
+        const metaLabel = getItemMetaLabel(item);
 
         return (
           <button
@@ -126,7 +151,7 @@ export function MarketWeaponGrid({
                   src={item.image}
                   alt={item.name}
                   draggable={false}
-                  className={getWeaponImageClassName(item)}
+                  className={getItemImageClassName(item)}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-sm font-black uppercase text-zinc-500">
@@ -146,7 +171,7 @@ export function MarketWeaponGrid({
                 {`${formatCredits(price)} CR`}
               </span>
               <span className="truncate bg-black/75 px-1 text-cyan-300">
-                {caliber}
+                {metaLabel}
               </span>
             </div>
 
