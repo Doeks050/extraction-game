@@ -223,7 +223,11 @@ function getItemImageClassName(item: GameItem) {
     return "h-auto w-full max-w-none object-contain opacity-95";
   }
 
-  return "h-full w-full max-h-full max-w-full object-contain p-3 opacity-95";
+  if (item.id === "tool_toolbox") {
+    return "h-[82%] w-[82%] max-h-none max-w-none object-contain object-center opacity-95";
+  }
+
+  return "h-[88%] w-[88%] max-h-none max-w-none object-contain object-center opacity-95";
 }
 
 export function MarketWeaponDetailPanel({
