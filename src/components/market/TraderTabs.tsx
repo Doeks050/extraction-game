@@ -1,4 +1,4 @@
-import { getTraderStockCount } from "../../lib/market";
+import { getTraderStockLabel } from "../../lib/market";
 import type { MarketTrader } from "../../types/market";
 
 type TraderTabsProps = {
@@ -44,7 +44,7 @@ export function TraderTabs({
                 {trader.role}
               </p>
               <p className="text-[8px] font-black uppercase text-zinc-500">
-                {getTraderStockCount(trader)} offers
+                {getTraderStockLabel(trader)} offers
               </p>
             </div>
           </button>
