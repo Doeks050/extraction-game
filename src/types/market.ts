@@ -17,5 +17,6 @@ export type MarketTrader = {
   description: string;
   stockItemIds: string[];
   stockSize: number;
+  minStockSize?: number;
   refreshSeconds: number;
 };
