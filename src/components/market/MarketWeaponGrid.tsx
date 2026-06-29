@@ -32,10 +32,19 @@ const rarityClassNames = {
 };
 
 const categoryLabels = {
+  ammo: "AMMO",
+  magazine: "MAG",
+  attachment: "ATTACH",
   chest_gear: "GEAR",
   helmet: "HELMET",
   backpack: "PACK",
-  armor: "ARMOR",
+  medical: "MED",
+  valuable: "VALUE",
+  hideout_material: "MATERIAL",
+  data: "DATA",
+  container: "CASE",
+  quest: "QUEST",
+  key: "KEY",
 };
 
 function getItemMetaLabel(item: GameItem) {
@@ -49,6 +58,14 @@ function getItemMetaLabel(item: GameItem) {
 
   if (item.stats?.capacity) {
     return `${item.stats.capacity} SLOT`;
+  }
+
+  if (item.filamentPrintCapacity) {
+    return `${item.filamentPrintCapacity} PRINT`;
+  }
+
+  if (item.containerGridSize) {
+    return `${item.containerGridSize.width}X${item.containerGridSize.height}`;
   }
 
   return categoryLabels[item.category as keyof typeof categoryLabels] ?? item.category;
