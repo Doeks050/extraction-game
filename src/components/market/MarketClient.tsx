@@ -20,6 +20,34 @@ type MarketClientProps = {
   traders: MarketTrader[];
 };
 
+function getTraderPanelTitle(trader: MarketTrader) {
+  return `${trader.name} Stash`;
+}
+
+function getTraderInspectHint(trader: MarketTrader) {
+  if (trader.kind === "weapon") {
+    return "Tap a weapon to inspect the offer";
+  }
+
+  if (trader.kind === "gear") {
+    return "Tap gear to inspect the offer";
+  }
+
+  return "Tap an item to inspect the offer";
+}
+
+function getTraderEmptyText(trader: MarketTrader) {
+  if (trader.kind === "weapon") {
+    return "No weapons available";
+  }
+
+  if (trader.kind === "gear") {
+    return "No gear available";
+  }
+
+  return "No items available";
+}
+
 export function MarketClient({ traders }: MarketClientProps) {
   const { state, setState } = useGameState();
   const [now, setNow] = useState<number | null>(null);
@@ -122,7 +150,7 @@ export function MarketClient({ traders }: MarketClientProps) {
           slotId: `market_${Date.now()}_${selectedItem.id}`,
           itemId: selectedItem.id,
           quantity: 1,
-          currentDurability: 100,
+          currentDurability: selectedItem.category === "weapon" ? 100 : undefined,
         },
       ],
       marketPurchaseKeys: [...retainedPurchaseKeys, purchaseKey].slice(-100),
@@ -179,12 +207,12 @@ export function MarketClient({ traders }: MarketClientProps) {
       </div>
 
       <Panel
-        title="Weapon Trader Stash"
+        title={getTraderPanelTitle(activeTrader)}
         titleClassName="text-orange-300"
         className="min-h-0 overflow-y-auto p-2"
       >
         <p className="mb-2 text-[7px] font-black uppercase tracking-[0.12em] text-zinc-600">
-          Tap a weapon to inspect the offer
+          {getTraderInspectHint(activeTrader)}
         </p>
 
         {now === null ? (
@@ -199,7 +227,7 @@ export function MarketClient({ traders }: MarketClientProps) {
           />
         ) : (
           <p className="py-8 text-center text-[9px] font-black uppercase text-zinc-600">
-            No weapons available
+            {getTraderEmptyText(activeTrader)}
           </p>
         )}
       </Panel>
