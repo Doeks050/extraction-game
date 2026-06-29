@@ -11,6 +11,7 @@ import {
   STASH_GRID_COLUMNS,
 } from "../../lib/stashGrid";
 import type { GameItem, InventorySlot } from "../../types/items";
+import { ItemImage } from "../items/ItemImage";
 
 // Shared trader stock grid. It intentionally keeps the old component name
 // because the first implementation only handled weapons.
@@ -71,30 +72,22 @@ function getItemMetaLabel(item: GameItem) {
   return categoryLabels[item.category as keyof typeof categoryLabels] ?? item.category;
 }
 
-function getItemImageClassName(item: GameItem, isOneSlotItem: boolean) {
+function getWeaponImageClassName(item: GameItem) {
   const weaponClass = getWeaponClassFromTags(item.tags);
 
   if (weaponClass?.id === "pistol") {
-    return "h-[125%] w-auto max-w-[125%] object-contain opacity-95";
+    return "h-[120%] w-auto max-w-[120%] object-contain opacity-95";
   }
 
   if (weaponClass?.id === "assault_rifle") {
-    return "h-[205%] w-[205%] max-h-none max-w-none object-contain opacity-95";
+    return "h-[200%] w-[200%] max-h-none max-w-none object-contain opacity-95";
   }
 
   if (weaponClass?.id === "dmr") {
-    return "h-[255%] w-[255%] max-h-none max-w-none object-contain opacity-95";
+    return "h-[250%] w-[250%] max-h-none max-w-none object-contain opacity-95";
   }
 
-  if (item.id === "tool_toolbox") {
-    return "h-[82%] w-[82%] max-h-none max-w-none object-contain object-center opacity-95";
-  }
-
-  if (isOneSlotItem) {
-    return "h-[110%] w-[110%] max-h-none max-w-none object-contain opacity-95";
-  }
-
-  return "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95";
+  return "h-full w-full max-h-full max-w-full object-contain opacity-95";
 }
 
 export function MarketWeaponGrid({
@@ -148,8 +141,8 @@ export function MarketWeaponGrid({
         }
 
         const size = getSlotGridSize(slot, item);
-        const isOneSlotItem = size.width === 1 && size.height === 1;
-        const shouldHideTextOverlays = isOneSlotItem;
+        const isSingleSlot = size.width === 1 && size.height === 1;
+        const isWeapon = item.category === "weapon";
         const isSold = soldItemIds.has(item.id);
         const price = getMarketItemValue(item);
         const metaLabel = getItemMetaLabel(item);
@@ -172,27 +165,36 @@ export function MarketWeaponGrid({
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
-            <div
-              className={[
-                "absolute flex items-center justify-center overflow-hidden",
-                shouldHideTextOverlays ? "inset-0" : "inset-x-2 bottom-3 top-4",
-              ].join(" ")}
-            >
-              {item.image ? (
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  draggable={false}
-                  className={getItemImageClassName(item, isOneSlotItem)}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm font-black uppercase text-zinc-500">
-                  {item.name.slice(0, 2)}
-                </div>
-              )}
-            </div>
+            {isWeapon ? (
+              <div className="absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden">
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    draggable={false}
+                    className={getWeaponImageClassName(item)}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm font-black uppercase text-zinc-500">
+                    {item.name.slice(0, 2)}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <ItemImage
+                src={item.image}
+                alt={item.name}
+                fallback={item.name.slice(0, 2)}
+                className={
+                  isSingleSlot
+                    ? "absolute inset-0.5 flex items-center justify-center"
+                    : "absolute inset-2 flex items-center justify-center"
+                }
+                imageClassName={isSingleSlot ? "p-0.5 opacity-100" : "p-1 opacity-95"}
+              />
+            )}
 
-            {!shouldHideTextOverlays ? (
+            {!isSingleSlot ? (
               <>
                 <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
                   <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
@@ -213,7 +215,7 @@ export function MarketWeaponGrid({
 
             {isSold ? (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30">
-                {!shouldHideTextOverlays ? (
+                {!isSingleSlot ? (
                   <span className="rotate-[-10deg] border border-red-500/70 bg-black/85 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-red-400">
                     Sold
                   </span>
