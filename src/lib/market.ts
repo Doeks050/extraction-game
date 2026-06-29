@@ -1,4 +1,5 @@
 import { gameItems } from "../data/items/items";
+import { getWeaponClassFromTags } from "../data/weapons/weaponClasses";
 import type { GameItem } from "../types/items";
 import type { MarketMode, MarketTrader } from "../types/market";
 
@@ -23,6 +24,72 @@ function createRandom(seed: number) {
     result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
     return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+function shuffleItems(items: GameItem[], random: () => number) {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const targetIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[targetIndex]] = [
+      shuffled[targetIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+}
+
+function getTraderStockRange(trader: MarketTrader, poolSize: number) {
+  const maxStockSize = Math.max(0, Math.min(trader.stockSize, poolSize));
+  const configuredMinStockSize = trader.minStockSize ?? maxStockSize;
+  const minStockSize = Math.max(
+    0,
+    Math.min(configuredMinStockSize, maxStockSize),
+  );
+
+  return {
+    min: minStockSize,
+    max: maxStockSize,
+  };
+}
+
+function getRandomStockSize(
+  trader: MarketTrader,
+  poolSize: number,
+  random: () => number,
+) {
+  const stockRange = getTraderStockRange(trader, poolSize);
+
+  if (stockRange.max <= stockRange.min) {
+    return stockRange.max;
+  }
+
+  return stockRange.min + Math.floor(random() * (stockRange.max - stockRange.min + 1));
+}
+
+function isPistol(item: GameItem) {
+  return getWeaponClassFromTags(item.tags)?.id === "pistol";
+}
+
+function pickSparseWeaponStock(
+  shuffled: GameItem[],
+  stockSize: number,
+): GameItem[] {
+  if (stockSize !== 2) {
+    return shuffled.slice(0, stockSize);
+  }
+
+  const pistol = shuffled.find(isPistol);
+  const longGun = shuffled.find((item) => !isPistol(item));
+
+  if (!pistol || !longGun) {
+    return shuffled.slice(0, stockSize);
+  }
+
+  return shuffled.indexOf(pistol) < shuffled.indexOf(longGun)
+    ? [pistol, longGun]
+    : [longGun, pistol];
 }
 
 export function getTraderRotationId(trader: MarketTrader, now: number) {
@@ -66,17 +133,14 @@ export function getTraderItems(
   const pool = getTraderItemPool(trader);
   const rotationId = getTraderRotationId(trader, now);
   const random = createRandom(hashString(`${trader.id}:${rotationId}`));
-  const shuffled = [...pool];
+  const stockSize = getRandomStockSize(trader, pool.length, random);
+  const shuffled = shuffleItems(pool, random);
 
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const targetIndex = Math.floor(random() * (index + 1));
-    [shuffled[index], shuffled[targetIndex]] = [
-      shuffled[targetIndex],
-      shuffled[index],
-    ];
+  if (trader.kind === "weapon") {
+    return pickSparseWeaponStock(shuffled, stockSize);
   }
 
-  return shuffled.slice(0, Math.max(0, trader.stockSize));
+  return shuffled.slice(0, stockSize);
 }
 
 export function getMarketItemValue(item: GameItem, mode: MarketMode = "buy") {
@@ -89,4 +153,15 @@ export function getMarketItemValue(item: GameItem, mode: MarketMode = "buy") {
 
 export function getTraderStockCount(trader: MarketTrader) {
   return Math.min(trader.stockSize, getTraderItemPool(trader).length);
+}
+
+export function getTraderStockLabel(trader: MarketTrader) {
+  const poolSize = getTraderItemPool(trader).length;
+  const stockRange = getTraderStockRange(trader, poolSize);
+
+  if (stockRange.min === stockRange.max) {
+    return `${stockRange.max}`;
+  }
+
+  return `${stockRange.min}-${stockRange.max}`;
 }
