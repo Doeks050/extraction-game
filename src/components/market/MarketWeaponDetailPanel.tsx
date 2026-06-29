@@ -17,11 +17,13 @@ type MarketWeaponDetailPanelProps = {
   onBuy: () => void;
 };
 
-type StatBarProps = {
+type MarketStat = {
   label: string;
   value: number;
   displayValue?: string;
 };
+
+type StatBarProps = MarketStat;
 
 const categoryLabels = {
   weapon: "Weapon",
@@ -149,7 +151,7 @@ function getMarketStatTitle(item: GameItem) {
   return "Item Info";
 }
 
-function getMarketStats(item: GameItem) {
+function getMarketStats(item: GameItem): MarketStat[] {
   const stats = item.stats ?? {};
 
   if (item.category === "weapon") {
@@ -162,7 +164,7 @@ function getMarketStats(item: GameItem) {
     ];
   }
 
-  const itemStats = [];
+  const itemStats: MarketStat[] = [];
 
   if (stats.armorClass) {
     itemStats.push({
