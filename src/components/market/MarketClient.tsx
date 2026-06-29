@@ -231,6 +231,7 @@ export function MarketClient({ traders }: MarketClientProps) {
           <MarketWeaponGrid
             items={traderItems}
             soldItemIds={soldItemIds}
+            traderKind={activeTrader.kind}
             onSelectItem={handleSelectItem}
           />
         ) : (
