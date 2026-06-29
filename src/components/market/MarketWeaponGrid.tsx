@@ -71,7 +71,7 @@ function getItemMetaLabel(item: GameItem) {
   return categoryLabels[item.category as keyof typeof categoryLabels] ?? item.category;
 }
 
-function getItemImageClassName(item: GameItem) {
+function getItemImageClassName(item: GameItem, isOneSlotItem: boolean) {
   const weaponClass = getWeaponClassFromTags(item.tags);
 
   if (weaponClass?.id === "pistol") {
@@ -84,6 +84,10 @@ function getItemImageClassName(item: GameItem) {
 
   if (weaponClass?.id === "dmr") {
     return "h-[250%] w-[250%] max-h-none max-w-none object-contain opacity-95";
+  }
+
+  if (isOneSlotItem) {
+    return "h-[135%] w-[135%] max-h-none max-w-none object-contain opacity-95";
   }
 
   return "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95";
@@ -166,8 +170,8 @@ export function MarketWeaponGrid({
 
             <div
               className={[
-                "absolute inset-x-2 flex items-center justify-center overflow-hidden",
-                shouldHideTextOverlays ? "bottom-2 top-2" : "bottom-3 top-4",
+                "absolute flex items-center justify-center overflow-hidden",
+                shouldHideTextOverlays ? "inset-0" : "inset-x-2 bottom-3 top-4",
               ].join(" ")}
             >
               {item.image ? (
@@ -175,7 +179,7 @@ export function MarketWeaponGrid({
                   src={item.image}
                   alt={item.name}
                   draggable={false}
-                  className={getItemImageClassName(item)}
+                  className={getItemImageClassName(item, isOneSlotItem)}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-sm font-black uppercase text-zinc-500">
