@@ -75,15 +75,15 @@ function getItemImageClassName(item: GameItem, isOneSlotItem: boolean) {
   const weaponClass = getWeaponClassFromTags(item.tags);
 
   if (weaponClass?.id === "pistol") {
-    return "h-[120%] w-auto max-w-[120%] object-contain opacity-95";
+    return "h-[125%] w-auto max-w-[125%] object-contain opacity-95";
   }
 
   if (weaponClass?.id === "assault_rifle") {
-    return "h-[200%] w-[200%] max-h-none max-w-none object-contain opacity-95";
+    return "h-[205%] w-[205%] max-h-none max-w-none object-contain opacity-95";
   }
 
   if (weaponClass?.id === "dmr") {
-    return "h-[250%] w-[250%] max-h-none max-w-none object-contain opacity-95";
+    return "h-[255%] w-[255%] max-h-none max-w-none object-contain opacity-95";
   }
 
   if (item.id === "tool_toolbox") {
