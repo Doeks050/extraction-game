@@ -38,4 +38,27 @@ export const marketTraders: MarketTrader[] = [
     stockSize: 6,
     refreshSeconds: 300,
   },
+  {
+    id: "gear_trader",
+    name: "Gear Trader",
+    role: "Armor · Rigs · Packs",
+    kind: "gear",
+    status: "available",
+    reputationLevel: 1,
+    categoryFilters: ["chest_gear", "helmet", "backpack"],
+    description:
+      "Rotating defensive gear, chest rigs, helmets and backpacks.",
+    stockItemIds: [
+      "rig_scav_vest",
+      "rig_light_carrier",
+      "armor_defender_iv",
+      "backpack_daypack",
+      "backpack_patrol_pack",
+      "helmet_ssh_68",
+      "helmet_fast_mt",
+    ],
+    minStockSize: 2,
+    stockSize: 5,
+    refreshSeconds: 300,
+  },
 ];
