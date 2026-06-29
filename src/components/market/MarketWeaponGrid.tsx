@@ -11,14 +11,12 @@ import {
   STASH_GRID_COLUMNS,
 } from "../../lib/stashGrid";
 import type { GameItem, InventorySlot } from "../../types/items";
-import type { MarketTraderKind } from "../../types/market";
 
 // Shared trader stock grid. It intentionally keeps the old component name
 // because the first implementation only handled weapons.
 type MarketWeaponGridProps = {
   items: GameItem[];
   soldItemIds: Set<string>;
-  traderKind: MarketTraderKind;
   onSelectItem: (itemId: string) => void;
 };
 
@@ -94,7 +92,6 @@ function getItemImageClassName(item: GameItem) {
 export function MarketWeaponGrid({
   items,
   soldItemIds,
-  traderKind,
   onSelectItem,
 }: MarketWeaponGridProps) {
   const positionedOffers = useMemo(() => {
