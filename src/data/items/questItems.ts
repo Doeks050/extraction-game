@@ -10,6 +10,7 @@ export const questItems: GameItem[] = [
     value: 15600,
     maxStack: 1,
     gridSize: { width: 1, height: 1 },
+    image: "/items/loot/keys/warehouse-2a-key.svg",
     description: "Unlocks a restricted warehouse loot room.",
     tags: ["key", "warehouse"],
   },
