@@ -73,7 +73,7 @@ function getItemMetaLabel(item: GameItem) {
   return categoryLabels[item.category as keyof typeof categoryLabels] ?? item.category;
 }
 
-function getItemImageClassName(item: GameItem, hideTextOverlays: boolean) {
+function getItemImageClassName(item: GameItem) {
   const weaponClass = getWeaponClassFromTags(item.tags);
 
   if (weaponClass?.id === "pistol") {
@@ -88,9 +88,7 @@ function getItemImageClassName(item: GameItem, hideTextOverlays: boolean) {
     return "h-[250%] w-[250%] max-h-none max-w-none object-contain opacity-95";
   }
 
-  return hideTextOverlays
-    ? "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95"
-    : "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95";
+  return "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95";
 }
 
 export function MarketWeaponGrid({
@@ -99,7 +97,6 @@ export function MarketWeaponGrid({
   traderKind,
   onSelectItem,
 }: MarketWeaponGridProps) {
-  const hideTextOverlays = traderKind === "loot";
   const positionedOffers = useMemo(() => {
     const offerSlots: InventorySlot[] = items.map((item) => ({
       slotId: `market_offer_${item.id}`,
@@ -146,6 +143,8 @@ export function MarketWeaponGrid({
         }
 
         const size = getSlotGridSize(slot, item);
+        const isOneSlotItem = size.width === 1 && size.height === 1;
+        const shouldHideTextOverlays = isOneSlotItem;
         const isSold = soldItemIds.has(item.id);
         const price = getMarketItemValue(item);
         const metaLabel = getItemMetaLabel(item);
@@ -171,7 +170,7 @@ export function MarketWeaponGrid({
             <div
               className={[
                 "absolute inset-x-2 flex items-center justify-center overflow-hidden",
-                hideTextOverlays ? "bottom-2 top-2" : "bottom-3 top-4",
+                shouldHideTextOverlays ? "bottom-2 top-2" : "bottom-3 top-4",
               ].join(" ")}
             >
               {item.image ? (
@@ -179,7 +178,7 @@ export function MarketWeaponGrid({
                   src={item.image}
                   alt={item.name}
                   draggable={false}
-                  className={getItemImageClassName(item, hideTextOverlays)}
+                  className={getItemImageClassName(item)}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-sm font-black uppercase text-zinc-500">
@@ -188,7 +187,7 @@ export function MarketWeaponGrid({
               )}
             </div>
 
-            {!hideTextOverlays ? (
+            {!shouldHideTextOverlays ? (
               <>
                 <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
                   <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
@@ -209,7 +208,7 @@ export function MarketWeaponGrid({
 
             {isSold ? (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30">
-                {!hideTextOverlays ? (
+                {!shouldHideTextOverlays ? (
                   <span className="rotate-[-10deg] border border-red-500/70 bg-black/85 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-red-400">
                     Sold
                   </span>
