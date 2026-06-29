@@ -64,6 +64,22 @@ function StatBar({ label, value, displayValue }: StatBarProps) {
   );
 }
 
+function getOfferTypeLabel(trader: MarketTrader) {
+  if (trader.kind === "weapon") {
+    return "Weapon Offer";
+  }
+
+  if (trader.kind === "gear") {
+    return "Gear Offer";
+  }
+
+  if (trader.kind === "loot") {
+    return "Loot Offer";
+  }
+
+  return "Market Offer";
+}
+
 function getItemClassLabel(item: GameItem) {
   const weaponClass = getWeaponClassFromTags(item.tags);
   return weaponClass?.label ?? categoryLabels[item.category];
@@ -82,6 +98,14 @@ function getThirdStatLabel(item: GameItem) {
     return "Capacity";
   }
 
+  if (item.filamentPrintCapacity) {
+    return "Prints";
+  }
+
+  if (item.containerGridSize) {
+    return "Storage";
+  }
+
   return "Type";
 }
 
@@ -98,11 +122,31 @@ function getThirdStatValue(item: GameItem) {
     return `${item.stats.capacity} slots`;
   }
 
+  if (item.filamentPrintCapacity) {
+    return `${item.filamentPrintCapacity} prints`;
+  }
+
+  if (item.containerGridSize) {
+    return `${item.containerGridSize.width}x${item.containerGridSize.height}`;
+  }
+
   return categoryLabels[item.category];
 }
 
 function getMarketStatTitle(item: GameItem) {
-  return item.category === "weapon" ? "Weapon Stats" : "Gear Stats";
+  if (item.category === "weapon") {
+    return "Weapon Stats";
+  }
+
+  if (
+    item.category === "chest_gear" ||
+    item.category === "helmet" ||
+    item.category === "backpack"
+  ) {
+    return "Gear Stats";
+  }
+
+  return "Item Info";
 }
 
 function getMarketStats(item: GameItem) {
@@ -118,10 +162,10 @@ function getMarketStats(item: GameItem) {
     ];
   }
 
-  const gearStats = [];
+  const itemStats = [];
 
   if (stats.armorClass) {
-    gearStats.push({
+    itemStats.push({
       label: "Armor Class",
       value: stats.armorClass * 20,
       displayValue: `Class ${stats.armorClass}`,
@@ -129,22 +173,41 @@ function getMarketStats(item: GameItem) {
   }
 
   if (stats.capacity) {
-    gearStats.push({
+    itemStats.push({
       label: "Storage Capacity",
       value: Math.min(100, stats.capacity * 4),
       displayValue: `${stats.capacity} slots`,
     });
   }
 
-  if (gearStats.length === 0) {
-    gearStats.push({
-      label: "Utility",
+  if (item.filamentPrintCapacity) {
+    itemStats.push({
+      label: "Print Capacity",
+      value: Math.min(100, item.filamentPrintCapacity * 8),
+      displayValue: `${item.filamentPrintCapacity} prints`,
+    });
+  }
+
+  if (item.containerGridSize) {
+    itemStats.push({
+      label: "Internal Grid",
+      value: Math.min(
+        100,
+        item.containerGridSize.width * item.containerGridSize.height * 10,
+      ),
+      displayValue: `${item.containerGridSize.width}x${item.containerGridSize.height}`,
+    });
+  }
+
+  if (itemStats.length === 0) {
+    itemStats.push({
+      label: "Category",
       value: 50,
       displayValue: categoryLabels[item.category],
     });
   }
 
-  return gearStats;
+  return itemStats;
 }
 
 function getItemImageClassName(item: GameItem) {
@@ -179,7 +242,7 @@ export function MarketWeaponDetailPanel({
       <div className="flex h-8 items-center justify-between gap-2">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
-            {item.category === "weapon" ? "Weapon Offer" : "Gear Offer"}
+            {getOfferTypeLabel(trader)}
           </p>
           <p className="text-[7px] font-black uppercase text-zinc-600">
             {trader.name}
