@@ -20,13 +20,31 @@ type MarketWeaponDetailPanelProps = {
 type StatBarProps = {
   label: string;
   value: number;
+  displayValue?: string;
+};
+
+const categoryLabels = {
+  weapon: "Weapon",
+  ammo: "Ammo",
+  magazine: "Magazine",
+  attachment: "Attachment",
+  chest_gear: "Chest Gear",
+  helmet: "Helmet",
+  backpack: "Backpack",
+  medical: "Medical",
+  valuable: "Valuable",
+  hideout_material: "Material",
+  data: "Data",
+  container: "Container",
+  quest: "Quest",
+  key: "Key",
 };
 
 function clampStat(value: number) {
   return Math.max(0, Math.min(100, value));
 }
 
-function StatBar({ label, value }: StatBarProps) {
+function StatBar({ label, value, displayValue }: StatBarProps) {
   const safeValue = clampStat(value);
 
   return (
@@ -36,7 +54,7 @@ function StatBar({ label, value }: StatBarProps) {
           {label}
         </p>
         <p className="text-[8px] font-black uppercase text-orange-400">
-          {safeValue}
+          {displayValue ?? safeValue}
         </p>
       </div>
       <div className="h-1.5 overflow-hidden bg-zinc-900">
@@ -46,14 +64,101 @@ function StatBar({ label, value }: StatBarProps) {
   );
 }
 
-function getWeaponImageClassName(item: GameItem) {
+function getItemClassLabel(item: GameItem) {
+  const weaponClass = getWeaponClassFromTags(item.tags);
+  return weaponClass?.label ?? categoryLabels[item.category];
+}
+
+function getThirdStatLabel(item: GameItem) {
+  if (item.category === "weapon") {
+    return "Ammo";
+  }
+
+  if (item.stats?.armorClass) {
+    return "Armor";
+  }
+
+  if (item.stats?.capacity) {
+    return "Capacity";
+  }
+
+  return "Type";
+}
+
+function getThirdStatValue(item: GameItem) {
+  if (item.category === "weapon") {
+    return getWeaponCaliberFromTags(item.tags);
+  }
+
+  if (item.stats?.armorClass) {
+    return `Class ${item.stats.armorClass}`;
+  }
+
+  if (item.stats?.capacity) {
+    return `${item.stats.capacity} slots`;
+  }
+
+  return categoryLabels[item.category];
+}
+
+function getMarketStatTitle(item: GameItem) {
+  return item.category === "weapon" ? "Weapon Stats" : "Gear Stats";
+}
+
+function getMarketStats(item: GameItem) {
+  const stats = item.stats ?? {};
+
+  if (item.category === "weapon") {
+    return [
+      { label: "Accuracy", value: stats.accuracy ?? 0 },
+      { label: "Handling", value: stats.handling ?? stats.ergonomics ?? 0 },
+      { label: "Recoil Control", value: stats.recoilControl ?? 0 },
+      { label: "Fire Rate", value: stats.fireRate ?? 0 },
+      { label: "Effective Range", value: stats.effectiveRange ?? 0 },
+    ];
+  }
+
+  const gearStats = [];
+
+  if (stats.armorClass) {
+    gearStats.push({
+      label: "Armor Class",
+      value: stats.armorClass * 20,
+      displayValue: `Class ${stats.armorClass}`,
+    });
+  }
+
+  if (stats.capacity) {
+    gearStats.push({
+      label: "Storage Capacity",
+      value: Math.min(100, stats.capacity * 4),
+      displayValue: `${stats.capacity} slots`,
+    });
+  }
+
+  if (gearStats.length === 0) {
+    gearStats.push({
+      label: "Utility",
+      value: 50,
+      displayValue: categoryLabels[item.category],
+    });
+  }
+
+  return gearStats;
+}
+
+function getItemImageClassName(item: GameItem) {
   const weaponClass = getWeaponClassFromTags(item.tags);
 
   if (weaponClass?.id === "pistol") {
     return "h-[120%] w-auto max-w-[120%] object-contain opacity-95";
   }
 
-  return "h-auto w-full max-w-none object-contain opacity-95";
+  if (item.category === "weapon") {
+    return "h-auto w-full max-w-none object-contain opacity-95";
+  }
+
+  return "h-full w-full max-h-full max-w-full object-contain p-3 opacity-95";
 }
 
 export function MarketWeaponDetailPanel({
@@ -67,22 +172,14 @@ export function MarketWeaponDetailPanel({
 }: MarketWeaponDetailPanelProps) {
   const price = getMarketItemValue(item);
   const canAfford = credits >= price;
-  const stats = item.stats ?? {};
-  const weaponClass = getWeaponClassFromTags(item.tags);
-  const weaponStats = [
-    { label: "Accuracy", value: stats.accuracy ?? 0 },
-    { label: "Handling", value: stats.handling ?? stats.ergonomics ?? 0 },
-    { label: "Recoil Control", value: stats.recoilControl ?? 0 },
-    { label: "Fire Rate", value: stats.fireRate ?? 0 },
-    { label: "Effective Range", value: stats.effectiveRange ?? 0 },
-  ];
+  const marketStats = getMarketStats(item);
 
   return (
     <div className="grid h-full min-h-0 grid-rows-[auto_1.15fr_auto_auto_1fr_auto] gap-1.5 overflow-y-auto">
       <div className="flex h-8 items-center justify-between gap-2">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
-            Weapon Offer
+            {item.category === "weapon" ? "Weapon Offer" : "Gear Offer"}
           </p>
           <p className="text-[7px] font-black uppercase text-zinc-600">
             {trader.name}
@@ -107,7 +204,7 @@ export function MarketWeaponDetailPanel({
               src={item.image}
               alt={item.name}
               draggable={false}
-              className={getWeaponImageClassName(item)}
+              className={getItemImageClassName(item)}
             />
           </div>
         ) : (
@@ -124,7 +221,7 @@ export function MarketWeaponDetailPanel({
 
         <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-2 bg-black/80 px-2 py-1">
           <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-500">
-            {weaponClass?.label ?? "Weapon"}
+            {getItemClassLabel(item)}
           </p>
           <p className="text-[10px] font-black uppercase text-orange-400">
             {formatCredits(price)} CR
@@ -151,10 +248,10 @@ export function MarketWeaponDetailPanel({
         </div>
         <div className="border border-zinc-800 bg-black/55 px-2 py-1">
           <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
-            Ammo
+            {getThirdStatLabel(item)}
           </p>
           <p className="truncate text-[10px] font-black uppercase leading-3 text-zinc-100">
-            {getWeaponCaliberFromTags(item.tags)}
+            {getThirdStatValue(item)}
           </p>
         </div>
       </div>
@@ -170,10 +267,15 @@ export function MarketWeaponDetailPanel({
 
       <div className="grid content-start gap-2 border border-zinc-800 bg-black/45 p-2">
         <p className="text-[8px] font-black uppercase tracking-[0.16em] text-orange-300">
-          Weapon Stats
+          {getMarketStatTitle(item)}
         </p>
-        {weaponStats.map((stat) => (
-          <StatBar key={stat.label} label={stat.label} value={stat.value} />
+        {marketStats.map((stat) => (
+          <StatBar
+            key={stat.label}
+            label={stat.label}
+            value={stat.value}
+            displayValue={stat.displayValue}
+          />
         ))}
       </div>
 
