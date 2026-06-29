@@ -86,6 +86,10 @@ function getItemImageClassName(item: GameItem, isOneSlotItem: boolean) {
     return "h-[250%] w-[250%] max-h-none max-w-none object-contain opacity-95";
   }
 
+  if (item.id === "tool_toolbox") {
+    return "h-[82%] w-[82%] max-h-none max-w-none object-contain object-center opacity-95";
+  }
+
   if (isOneSlotItem) {
     return "h-[110%] w-[110%] max-h-none max-w-none object-contain opacity-95";
   }
