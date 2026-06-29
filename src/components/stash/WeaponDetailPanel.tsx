@@ -5,7 +5,7 @@ import { getWeaponCaliberFromTags } from "../../data/weapons/calibers";
 import { getWeaponClassFromTags } from "../../data/weapons/weaponClasses";
 import { defaultWeaponAttachmentSlots, getWeaponAttachmentSlotsByIds } from "../../data/weapons/attachmentSlots";
 import type { HydratedInventorySlot } from "../../lib/items";
-import { formatCredits, formatWeight } from "../../lib/items";
+import { formatWeight } from "../../lib/items";
 
 type WeaponDetailPanelProps = {
   slot: HydratedInventorySlot;
@@ -143,10 +143,10 @@ export function WeaponDetailPanel({ slot, onBack }: WeaponDetailPanelProps) {
       <div className="grid grid-cols-3 gap-1">
         <div className="border border-zinc-800 bg-black/55 px-2 py-1">
           <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
-            Value
+            Class
           </p>
-          <p className="text-[10px] font-black uppercase leading-3 text-orange-400">
-            {formatCredits(slot.item.value)}
+          <p className="truncate text-[10px] font-black uppercase leading-3 text-orange-400">
+            {weaponClass?.label ?? "Weapon"}
           </p>
         </div>
         <div className="border border-zinc-800 bg-black/55 px-2 py-1">
