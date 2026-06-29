@@ -34,6 +34,7 @@ export const marketTraders: MarketTrader[] = [
       "wpn_aks_74u",
       "wpn_ak_74n",
     ],
+    minStockSize: 2,
     stockSize: 6,
     refreshSeconds: 300,
   },
