@@ -33,6 +33,10 @@ function getTraderInspectHint(trader: MarketTrader) {
     return "Tap gear to inspect the offer";
   }
 
+  if (trader.kind === "loot") {
+    return "Tap loot to inspect the offer";
+  }
+
   return "Tap an item to inspect the offer";
 }
 
@@ -43,6 +47,10 @@ function getTraderEmptyText(trader: MarketTrader) {
 
   if (trader.kind === "gear") {
     return "No gear available";
+  }
+
+  if (trader.kind === "loot") {
+    return "No loot available";
   }
 
   return "No items available";
