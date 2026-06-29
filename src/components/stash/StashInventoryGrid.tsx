@@ -71,15 +71,15 @@ function getWeaponImageClassName(slot: HydratedInventorySlot) {
   const rotationClass = slot.isRotated ? "rotate-90" : "";
 
   if (weaponClass?.id === "pistol") {
-    return `h-[120%] w-auto max-w-[120%] object-contain opacity-95 ${rotationClass}`;
+    return `h-[125%] w-auto max-w-[125%] object-contain opacity-95 ${rotationClass}`;
   }
 
   if (weaponClass?.id === "assault_rifle") {
-    return `h-[200%] w-[200%] max-h-none max-w-none object-contain opacity-95 ${rotationClass}`;
+    return `h-[205%] w-[205%] max-h-none max-w-none object-contain opacity-95 ${rotationClass}`;
   }
 
   if (weaponClass?.id === "dmr") {
-    return `h-[250%] w-[250%] max-h-none max-w-none object-contain opacity-95 ${rotationClass}`;
+    return `h-[255%] w-[255%] max-h-none max-w-none object-contain opacity-95 ${rotationClass}`;
   }
 
   return `h-full w-full max-h-full max-w-full object-contain opacity-95 ${rotationClass}`;
