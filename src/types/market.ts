@@ -4,7 +4,12 @@ export type MarketMode = "buy" | "sell";
 
 export type TraderStatus = "available" | "locked";
 
-export type MarketTraderKind = "weapon" | "gear" | "black_market" | "general";
+export type MarketTraderKind =
+  | "weapon"
+  | "gear"
+  | "loot"
+  | "black_market"
+  | "general";
 
 export type MarketTrader = {
   id: string;
