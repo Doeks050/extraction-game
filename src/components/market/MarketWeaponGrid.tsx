@@ -11,12 +11,14 @@ import {
   STASH_GRID_COLUMNS,
 } from "../../lib/stashGrid";
 import type { GameItem, InventorySlot } from "../../types/items";
+import type { MarketTraderKind } from "../../types/market";
 
 // Shared trader stock grid. It intentionally keeps the old component name
 // because the first implementation only handled weapons.
 type MarketWeaponGridProps = {
   items: GameItem[];
   soldItemIds: Set<string>;
+  traderKind: MarketTraderKind;
   onSelectItem: (itemId: string) => void;
 };
 
@@ -71,7 +73,7 @@ function getItemMetaLabel(item: GameItem) {
   return categoryLabels[item.category as keyof typeof categoryLabels] ?? item.category;
 }
 
-function getItemImageClassName(item: GameItem) {
+function getItemImageClassName(item: GameItem, hideTextOverlays: boolean) {
   const weaponClass = getWeaponClassFromTags(item.tags);
 
   if (weaponClass?.id === "pistol") {
@@ -86,14 +88,18 @@ function getItemImageClassName(item: GameItem) {
     return "h-[250%] w-[250%] max-h-none max-w-none object-contain opacity-95";
   }
 
-  return "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95";
+  return hideTextOverlays
+    ? "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95"
+    : "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95";
 }
 
 export function MarketWeaponGrid({
   items,
   soldItemIds,
+  traderKind,
   onSelectItem,
 }: MarketWeaponGridProps) {
+  const hideTextOverlays = traderKind === "loot";
   const positionedOffers = useMemo(() => {
     const offerSlots: InventorySlot[] = items.map((item) => ({
       slotId: `market_offer_${item.id}`,
@@ -162,13 +168,18 @@ export function MarketWeaponGrid({
           >
             <div className="absolute inset-1 border border-zinc-900/80 bg-zinc-950/70" />
 
-            <div className="absolute inset-x-2 bottom-3 top-4 flex items-center justify-center overflow-hidden">
+            <div
+              className={[
+                "absolute inset-x-2 flex items-center justify-center overflow-hidden",
+                hideTextOverlays ? "bottom-2 top-2" : "bottom-3 top-4",
+              ].join(" ")}
+            >
               {item.image ? (
                 <img
                   src={item.image}
                   alt={item.name}
                   draggable={false}
-                  className={getItemImageClassName(item)}
+                  className={getItemImageClassName(item, hideTextOverlays)}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-sm font-black uppercase text-zinc-500">
@@ -177,26 +188,32 @@ export function MarketWeaponGrid({
               )}
             </div>
 
-            <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
-              <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
-                {item.name}
-              </p>
-            </div>
+            {!hideTextOverlays ? (
+              <>
+                <div className="absolute left-1.5 top-1.5 max-w-[70%] bg-black/70 px-1.5 py-0.5 text-left">
+                  <p className="truncate text-[9px] font-black uppercase leading-3 text-zinc-100">
+                    {item.name}
+                  </p>
+                </div>
 
-            <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
-              <span className="truncate bg-black/75 px-1 text-orange-400">
-                {`${formatCredits(price)} CR`}
-              </span>
-              <span className="truncate bg-black/75 px-1 text-cyan-300">
-                {metaLabel}
-              </span>
-            </div>
+                <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
+                  <span className="truncate bg-black/75 px-1 text-orange-400">
+                    {`${formatCredits(price)} CR`}
+                  </span>
+                  <span className="truncate bg-black/75 px-1 text-cyan-300">
+                    {metaLabel}
+                  </span>
+                </div>
+              </>
+            ) : null}
 
             {isSold ? (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30">
-                <span className="rotate-[-10deg] border border-red-500/70 bg-black/85 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-red-400">
-                  Sold
-                </span>
+                {!hideTextOverlays ? (
+                  <span className="rotate-[-10deg] border border-red-500/70 bg-black/85 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-red-400">
+                    Sold
+                  </span>
+                ) : null}
               </div>
             ) : null}
           </button>
