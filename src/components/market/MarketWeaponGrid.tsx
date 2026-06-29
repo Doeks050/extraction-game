@@ -87,7 +87,7 @@ function getItemImageClassName(item: GameItem, isOneSlotItem: boolean) {
   }
 
   if (isOneSlotItem) {
-    return "h-[135%] w-[135%] max-h-none max-w-none object-contain opacity-95";
+    return "h-[115%] w-[115%] max-h-none max-w-none object-contain opacity-95";
   }
 
   return "h-full w-full max-h-full max-w-full object-contain p-1 opacity-95";
