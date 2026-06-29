@@ -135,6 +135,7 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
     );
   }
 
+  const isAmmo = slot.item.category === "ammo";
   const fuelPercentage = getInventoryFuelPercentage(
     slot.itemId,
     slot.fuelRemainingSeconds,
@@ -157,7 +158,9 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
         ? "Prints"
         : containerCapacity !== null
           ? "USB Slots"
-          : "Stack";
+          : isAmmo
+            ? "Stack"
+            : "Type";
   const resourceValue =
     fuelPercentage !== null
       ? `${fuelPercentage}%`
@@ -165,7 +168,9 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
         ? `${filamentState.filamentPrintsRemaining}/${filamentState.filamentPrintCapacity}`
         : containerCapacity !== null
           ? `${containerUsed}/${containerCapacity}`
-          : `${slot.quantity}/${slot.item.maxStack}`;
+          : isAmmo
+            ? `${slot.quantity}/${slot.item.maxStack}`
+            : getCategoryLabel(slot);
   const progressPercentage =
     fuelPercentage !== null
       ? fuelPercentage
@@ -228,7 +233,7 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
             {getCategoryLabel(slot)}
           </p>
           <p className="text-[10px] font-black uppercase text-orange-400">
-            x{slot.quantity}
+            {isAmmo ? `x${slot.quantity}` : slot.item.rarity}
           </p>
         </div>
       </div>
@@ -236,10 +241,10 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
       <div className="grid grid-cols-3 gap-1">
         <div className="border border-zinc-800 bg-black/55 px-2 py-1">
           <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
-            Quantity
+            {isAmmo ? "Quantity" : "Rarity"}
           </p>
           <p className="text-[10px] font-black uppercase leading-3 text-orange-400">
-            x{slot.quantity}
+            {isAmmo ? `x${slot.quantity}` : slot.item.rarity}
           </p>
         </div>
         <div className="border border-zinc-800 bg-black/55 px-2 py-1">
