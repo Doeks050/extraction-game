@@ -1,6 +1,6 @@
 import { getInventoryFuelPercentage } from "../../lib/generatorStation";
 import type { HydratedInventorySlot } from "../../lib/items";
-import { formatWeight } from "../../lib/items";
+import { formatWeight, getItemById } from "../../lib/items";
 import { getInventoryFilamentState } from "../../lib/threeDPrinterSupplies";
 import { Panel } from "../ui/Panel";
 
@@ -48,6 +48,10 @@ function getGridSizeLabel(slot: HydratedInventorySlot) {
   return size ? `${size.width}x${size.height}` : "1x1";
 }
 
+function getCompatibleAmmoNames(ammoIds: string[]) {
+  return ammoIds.map((ammoId) => getItemById(ammoId)?.name ?? ammoId).join(" · ");
+}
+
 function getDetailInfo(slot: HydratedInventorySlot): DetailInfo[] {
   const stats = slot.item.stats ?? {};
   const details: DetailInfo[] = [];
@@ -61,8 +65,22 @@ function getDetailInfo(slot: HydratedInventorySlot): DetailInfo[] {
 
   if (stats.capacity) {
     details.push({
-      label: "Storage Capacity",
-      value: `${stats.capacity} slots`,
+      label: slot.item.category === "magazine" ? "Magazine Capacity" : "Storage Capacity",
+      value: slot.item.category === "magazine" ? `${stats.capacity} rounds` : `${stats.capacity} slots`,
+    });
+  }
+
+  if (slot.item.compatibleAmmoCaliber) {
+    details.push({
+      label: "Ammo Caliber",
+      value: slot.item.compatibleAmmoCaliber,
+    });
+  }
+
+  if (slot.item.compatibleAmmoIds?.length) {
+    details.push({
+      label: "Accepts Ammo",
+      value: getCompatibleAmmoNames(slot.item.compatibleAmmoIds),
     });
   }
 
