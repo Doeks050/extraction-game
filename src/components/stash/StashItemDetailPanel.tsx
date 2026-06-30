@@ -9,13 +9,10 @@ type StashItemDetailPanelProps = {
   onBack?: () => void;
 };
 
-type DetailStat = {
+type DetailInfo = {
   label: string;
-  value: number;
-  displayValue?: string;
+  value: string;
 };
-
-type StatBarProps = DetailStat;
 
 const categoryLabels = {
   ammo: "Ammo",
@@ -34,37 +31,9 @@ const categoryLabels = {
   weapon: "Weapon",
 };
 
-function clampStat(value: number) {
-  return Math.max(0, Math.min(100, value));
-}
-
-function StatBar({ label, value, displayValue }: StatBarProps) {
-  const safeValue = clampStat(value);
-
-  return (
-    <div className="grid gap-1">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-zinc-400">
-          {label}
-        </p>
-        <p className="text-[8px] font-black uppercase text-orange-400">
-          {displayValue ?? safeValue}
-        </p>
-      </div>
-      <div className="h-1.5 overflow-hidden bg-zinc-900">
-        <div className="h-full bg-orange-400" style={{ width: `${safeValue}%` }} />
-      </div>
-    </div>
-  );
-}
-
 function getItemImageClassName(slot: HydratedInventorySlot) {
   if (slot.item.id === "tool_toolbox") {
     return "h-[82%] w-[82%] max-h-none max-w-none object-contain object-center opacity-95";
-  }
-
-  if (slot.item.gridSize?.width === 1 && slot.item.gridSize?.height === 1) {
-    return "h-[88%] w-[88%] max-h-none max-w-none object-contain object-center opacity-95";
   }
 
   return "h-[88%] w-[88%] max-h-none max-w-none object-contain object-center opacity-95";
@@ -74,54 +43,57 @@ function getCategoryLabel(slot: HydratedInventorySlot) {
   return categoryLabels[slot.item.category] ?? slot.item.category.replace("_", " ");
 }
 
-function getStats(slot: HydratedInventorySlot): DetailStat[] {
+function getGridSizeLabel(slot: HydratedInventorySlot) {
+  const size = slot.item.gridSize;
+  return size ? `${size.width}x${size.height}` : "1x1";
+}
+
+function getDetailInfo(slot: HydratedInventorySlot): DetailInfo[] {
   const stats = slot.item.stats ?? {};
-  const details: DetailStat[] = [];
+  const details: DetailInfo[] = [];
 
   if (stats.armorClass) {
     details.push({
       label: "Armor Class",
-      value: stats.armorClass * 20,
-      displayValue: `Class ${stats.armorClass}`,
+      value: `Class ${stats.armorClass}`,
     });
   }
 
   if (stats.capacity) {
     details.push({
       label: "Storage Capacity",
-      value: Math.min(100, stats.capacity * 4),
-      displayValue: `${stats.capacity} slots`,
+      value: `${stats.capacity} slots`,
     });
   }
 
   if (slot.item.filamentPrintCapacity) {
     details.push({
       label: "Print Capacity",
-      value: Math.min(100, slot.item.filamentPrintCapacity * 8),
-      displayValue: `${slot.item.filamentPrintCapacity} prints`,
+      value: `${slot.item.filamentPrintCapacity} prints`,
     });
   }
 
   if (slot.item.containerGridSize) {
     details.push({
       label: "Internal Grid",
-      value: Math.min(
-        100,
-        slot.item.containerGridSize.width * slot.item.containerGridSize.height * 10,
-      ),
-      displayValue: `${slot.item.containerGridSize.width}x${slot.item.containerGridSize.height}`,
-    });
-  }
-
-  if (details.length === 0) {
-    details.push({
-      label: "Category",
-      value: 50,
-      displayValue: getCategoryLabel(slot),
+      value: `${slot.item.containerGridSize.width}x${slot.item.containerGridSize.height}`,
     });
   }
 
   return details;
+}
+
+function DetailInfoRow({ label, value }: DetailInfo) {
+  return (
+    <div className="flex items-center justify-between gap-2 border border-zinc-900 bg-black/45 px-2 py-1.5">
+      <p className="text-[8px] font-black uppercase tracking-[0.14em] text-zinc-500">
+        {label}
+      </p>
+      <p className="text-right text-[9px] font-black uppercase text-orange-300">
+        {value}
+      </p>
+    </div>
+  );
 }
 
 export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps) {
@@ -149,7 +121,9 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
     ? slot.item.containerGridSize.width * slot.item.containerGridSize.height
     : null;
   const containerUsed = slot.containedSlots?.length ?? 0;
-  const detailStats = getStats(slot);
+  const detailInfo = getDetailInfo(slot);
+  const hasSpecialResource =
+    fuelPercentage !== null || filamentState !== null || containerCapacity !== null;
 
   const resourceLabel =
     fuelPercentage !== null
@@ -160,7 +134,7 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
           ? "USB Slots"
           : isAmmo
             ? "Stack"
-            : "Type";
+            : "Size";
   const resourceValue =
     fuelPercentage !== null
       ? `${fuelPercentage}%`
@@ -170,7 +144,7 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
           ? `${containerUsed}/${containerCapacity}`
           : isAmmo
             ? `${slot.quantity}/${slot.item.maxStack}`
-            : getCategoryLabel(slot);
+            : getGridSizeLabel(slot);
   const progressPercentage =
     fuelPercentage !== null
       ? fuelPercentage
@@ -183,7 +157,7 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
           : null;
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_1.15fr_auto_auto_1fr] gap-1.5 overflow-y-auto">
+    <div className="grid h-full min-h-0 content-start gap-1.5 overflow-y-auto">
       <div className="flex h-8 items-center justify-between gap-2">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
@@ -230,10 +204,10 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
 
         <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-2 bg-black/80 px-2 py-1">
           <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-500">
-            {getCategoryLabel(slot)}
+            {slot.item.rarity}
           </p>
           <p className="text-[10px] font-black uppercase text-orange-400">
-            {isAmmo ? `x${slot.quantity}` : slot.item.rarity}
+            {isAmmo ? `x${slot.quantity}` : getGridSizeLabel(slot)}
           </p>
         </div>
       </div>
@@ -265,7 +239,7 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
         </div>
       </div>
 
-      {progressPercentage !== null ? (
+      {progressPercentage !== null && hasSpecialResource ? (
         <div className="h-2 border border-zinc-800 bg-black">
           <div
             className="h-full bg-orange-500"
@@ -283,19 +257,16 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
         </p>
       </div>
 
-      <div className="grid content-start gap-2 border border-zinc-800 bg-black/45 p-2">
-        <p className="text-[8px] font-black uppercase tracking-[0.16em] text-orange-300">
-          Item Info
-        </p>
-        {detailStats.map((stat) => (
-          <StatBar
-            key={stat.label}
-            label={stat.label}
-            value={stat.value}
-            displayValue={stat.displayValue}
-          />
-        ))}
-      </div>
+      {detailInfo.length > 0 ? (
+        <div className="grid content-start gap-1.5 border border-zinc-800 bg-black/45 p-2">
+          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-orange-300">
+            Item Info
+          </p>
+          {detailInfo.map((info) => (
+            <DetailInfoRow key={info.label} label={info.label} value={info.value} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
