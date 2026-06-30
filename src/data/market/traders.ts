@@ -8,9 +8,9 @@ export const marketTraders: MarketTrader[] = [
     kind: "weapon",
     status: "available",
     reputationLevel: 1,
-    categoryFilters: ["weapon"],
+    categoryFilters: ["weapon", "magazine"],
     description:
-      "A rotating selection of affordable pistols, carbines and service rifles.",
+      "A rotating selection of affordable pistols, carbines, service rifles and basic magazines.",
     stockItemIds: [
       "wpn_makarov_pm",
       "wpn_tokarev_tt33",
@@ -33,6 +33,7 @@ export const marketTraders: MarketTrader[] = [
       "wpn_ak_74",
       "wpn_aks_74u",
       "wpn_ak_74n",
+      "mag_stanag_20",
     ],
     minStockSize: 2,
     stockSize: 6,
