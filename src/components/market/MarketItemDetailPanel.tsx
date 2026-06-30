@@ -33,6 +33,20 @@ function getCompatibilityText(item: GameItem) {
   return `Fits: ${weaponNames}`;
 }
 
+function getAmmoCompatibilityText(item: GameItem) {
+  if (!item.compatibleAmmoCaliber && !item.compatibleAmmoIds?.length) {
+    return null;
+  }
+
+  const ammoNames = item.compatibleAmmoIds?.length
+    ? item.compatibleAmmoIds
+        .map((ammoId) => getItemById(ammoId)?.name ?? ammoId)
+        .join(" · ")
+    : item.compatibleAmmoCaliber;
+
+  return `Ammo: ${item.compatibleAmmoCaliber ?? "Any"} · ${ammoNames}`;
+}
+
 export function MarketItemDetailPanel({
   item,
   mode,
@@ -50,6 +64,7 @@ export function MarketItemDetailPanel({
 
   const value = getMarketItemValue(item, mode);
   const compatibilityText = getCompatibilityText(item);
+  const ammoCompatibilityText = getAmmoCompatibilityText(item);
 
   return (
     <Panel title="Trader Detail" className="p-2">
@@ -107,6 +122,12 @@ export function MarketItemDetailPanel({
       <p className="mt-2 truncate text-[9px] font-bold uppercase text-zinc-600">
         {getPrimaryStatText(item)}
       </p>
+
+      {ammoCompatibilityText ? (
+        <p className="mt-1 truncate text-[9px] font-bold uppercase text-orange-300">
+          {ammoCompatibilityText}
+        </p>
+      ) : null}
 
       {compatibilityText ? (
         <p className="mt-1 truncate text-[9px] font-bold uppercase text-zinc-500">
