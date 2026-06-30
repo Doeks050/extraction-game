@@ -1,4 +1,4 @@
-import type { GameItem } from "../../types/items";
+import type { GameItem, ItemGridSize } from "../../types/items";
 
 const stanagCompatible556WeaponIds = [
   "wpn_m4a1",
@@ -17,6 +17,26 @@ const stanagCompatible556WeaponIds = [
   "wpn_sr15",
 ];
 
+function getMagazineGridSize(capacity: number): ItemGridSize {
+  if (capacity <= 20) {
+    return { width: 1, height: 2 };
+  }
+
+  if (capacity <= 30) {
+    return { width: 1, height: 3 };
+  }
+
+  if (capacity <= 42) {
+    return { width: 1, height: 4 };
+  }
+
+  if (capacity <= 60) {
+    return { width: 2, height: 2 };
+  }
+
+  return { width: 3, height: 3 };
+}
+
 export const magazines: GameItem[] = [
   {
     id: "mag_stanag_20",
@@ -26,7 +46,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.09,
     value: 1300,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(20),
     description: "Empty compact 20-round STANAG magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "empty"],
     stats: { capacity: 20 },
@@ -40,7 +60,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.12,
     value: 1800,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(30),
     description: "Empty standard 30-round STANAG magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "empty"],
     stats: { capacity: 30 },
@@ -54,7 +74,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.13,
     value: 2300,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(30),
     description: "Empty 30-round windowed STANAG magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "windowed", "empty"],
     stats: { capacity: 30 },
@@ -68,7 +88,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.11,
     value: 2400,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(30),
     description: "Empty 30-round polymer STANAG magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "polymer", "empty"],
     stats: { capacity: 30 },
@@ -82,7 +102,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.11,
     value: 2600,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(30),
     description: "Empty lightweight Colt aluminum 30-round magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "aluminum", "empty"],
     stats: { capacity: 30 },
@@ -96,7 +116,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.18,
     value: 3600,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(30),
     description: "Empty durable HK steel 30-round STANAG magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "steel", "empty"],
     stats: { capacity: 30 },
@@ -110,7 +130,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.12,
     value: 2900,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(30),
     description: "Empty 30-round PMAG polymer magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "pmag", "polymer", "empty"],
     stats: { capacity: 30 },
@@ -124,7 +144,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.13,
     value: 3900,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(30),
     description: "Empty 30-round windowed PMAG for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "pmag", "windowed", "empty"],
     stats: { capacity: 30 },
@@ -138,7 +158,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.18,
     value: 5200,
     maxStack: 1,
-    gridSize: { width: 1, height: 2 },
+    gridSize: getMagazineGridSize(40),
     description: "Empty extended 40-round PMAG for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "pmag", "extended", "empty"],
     stats: { capacity: 40 },
@@ -152,7 +172,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.32,
     value: 9200,
     maxStack: 1,
-    gridSize: { width: 1, height: 2 },
+    gridSize: getMagazineGridSize(60),
     description: "Empty 60-round quad-stack magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "quad_stack", "extended", "empty"],
     stats: { capacity: 60 },
@@ -166,7 +186,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.57,
     value: 11500,
     maxStack: 1,
-    gridSize: { width: 2, height: 2 },
+    gridSize: getMagazineGridSize(60),
     description: "Empty 60-round drum magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "drum", "empty"],
     stats: { capacity: 60 },
@@ -180,7 +200,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.63,
     value: 16500,
     maxStack: 1,
-    gridSize: { width: 1, height: 3 },
+    gridSize: getMagazineGridSize(100),
     description: "Empty 100-round quad-stack magazine for compatible 5.56 rifles. Very high capacity with heavy handling cost.",
     tags: ["magazine", "5.56x45", "stanag", "quad_stack", "extended", "empty"],
     stats: { capacity: 100 },
@@ -194,7 +214,7 @@ export const magazines: GameItem[] = [
     weightKg: 1.0,
     value: 18000,
     maxStack: 1,
-    gridSize: { width: 2, height: 2 },
+    gridSize: getMagazineGridSize(100),
     description: "Empty 100-round twin-drum magazine for compatible 5.56 rifles.",
     tags: ["magazine", "5.56x45", "stanag", "drum", "empty"],
     stats: { capacity: 100 },
@@ -208,7 +228,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.13,
     value: 2300,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(30),
     description: "Empty 30-round G36 polymer magazine. Only fits the HK G36C.",
     tags: ["magazine", "5.56x45", "g36", "empty"],
     stats: { capacity: 30 },
@@ -222,7 +242,7 @@ export const magazines: GameItem[] = [
     weightKg: 1.35,
     value: 18500,
     maxStack: 1,
-    gridSize: { width: 2, height: 2 },
+    gridSize: getMagazineGridSize(100),
     description: "Empty 100-round G36 C-Mag drum. Heavy, rare and only fits the HK G36C.",
     tags: ["magazine", "5.56x45", "g36", "drum", "empty"],
     stats: { capacity: 100 },
@@ -236,7 +256,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.14,
     value: 2400,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(30),
     description: "Empty 30-round translucent AUG magazine. Only fits the Steyr AUG A3 M2.",
     tags: ["magazine", "5.56x45", "aug", "empty"],
     stats: { capacity: 30 },
@@ -250,7 +270,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.19,
     value: 4200,
     maxStack: 1,
-    gridSize: { width: 1, height: 2 },
+    gridSize: getMagazineGridSize(42),
     description: "Empty extended 42-round AUG magazine. Only fits the Steyr AUG A3 M2.",
     tags: ["magazine", "5.56x45", "aug", "extended", "empty"],
     stats: { capacity: 42 },
@@ -264,7 +284,7 @@ export const magazines: GameItem[] = [
     weightKg: 0.12,
     value: 2100,
     maxStack: 1,
-    gridSize: { width: 1, height: 1 },
+    gridSize: getMagazineGridSize(25),
     description: "Empty 25-round FAMAS F1 magazine. Only fits the FAMAS F1.",
     tags: ["magazine", "5.56x45", "famas", "empty"],
     stats: { capacity: 25 },
