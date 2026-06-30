@@ -1,4 +1,4 @@
-import { formatCredits, formatWeight } from "../../lib/items";
+import { formatCredits, formatWeight, getItemById } from "../../lib/items";
 import { getMarketItemValue } from "../../lib/market";
 import type { GameItem } from "../../types/items";
 import type { MarketMode, MarketTrader } from "../../types/market";
@@ -21,6 +21,18 @@ function getPrimaryStatText(item: GameItem) {
     .join(" · ");
 }
 
+function getCompatibilityText(item: GameItem) {
+  if (!item.compatibleWeaponIds?.length) {
+    return null;
+  }
+
+  const weaponNames = item.compatibleWeaponIds
+    .map((weaponId) => getItemById(weaponId)?.name ?? weaponId)
+    .join(" · ");
+
+  return `Fits: ${weaponNames}`;
+}
+
 export function MarketItemDetailPanel({
   item,
   mode,
@@ -37,6 +49,7 @@ export function MarketItemDetailPanel({
   }
 
   const value = getMarketItemValue(item, mode);
+  const compatibilityText = getCompatibilityText(item);
 
   return (
     <Panel title="Trader Detail" className="p-2">
@@ -94,6 +107,12 @@ export function MarketItemDetailPanel({
       <p className="mt-2 truncate text-[9px] font-bold uppercase text-zinc-600">
         {getPrimaryStatText(item)}
       </p>
+
+      {compatibilityText ? (
+        <p className="mt-1 truncate text-[9px] font-bold uppercase text-zinc-500">
+          {compatibilityText}
+        </p>
+      ) : null}
     </Panel>
   );
 }
