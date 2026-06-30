@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { getWeaponCaliberFromTags } from "../../data/weapons/calibers";
 import { getWeaponClassFromTags } from "../../data/weapons/weaponClasses";
-import { formatCredits } from "../../lib/items";
 import type { HydratedInventorySlot } from "../../lib/items";
 import {
   canPlaceStashSlotWithRotation,
@@ -83,6 +82,11 @@ function getWeaponImageClassName(slot: HydratedInventorySlot) {
   }
 
   return `h-full w-full max-h-full max-w-full object-contain opacity-95 ${rotationClass}`;
+}
+
+function getMagazineAmmoLabel(slot: HydratedInventorySlot) {
+  const capacity = slot.item.stats?.capacity ?? 0;
+  return `0/${capacity}`;
 }
 
 export function StashInventoryGrid({
@@ -402,6 +406,13 @@ export function StashInventoryGrid({
         const size = getSlotGridSize(displaySlot, displaySlot.item);
         const isSingleSlot = size.width === 1 && size.height === 1;
         const isWeapon = slot.item.category === "weapon";
+        const isMagazine = slot.item.category === "magazine";
+        const quantityLabel = slot.quantity > 1 ? `x${slot.quantity}` : "";
+        const statusLabel = isWeapon
+          ? getWeaponCaliberFromTags(slot.item.tags)
+          : isMagazine
+            ? getMagazineAmmoLabel(slot)
+            : "";
         const translateX = isDragging ? dragState.currentX - dragState.startX : 0;
         const translateY = isDragging ? dragState.currentY - dragState.startY : 0;
 
@@ -484,21 +495,27 @@ export function StashInventoryGrid({
             ) : null}
 
             {isSingleSlot ? (
-              slot.quantity > 1 ? (
+              statusLabel || quantityLabel ? (
                 <span className="absolute bottom-1 right-1 bg-black/85 px-1 text-[8px] font-black text-orange-400">
-                  x{slot.quantity}
+                  {statusLabel || quantityLabel}
                 </span>
               ) : null
-            ) : (
+            ) : statusLabel || quantityLabel ? (
               <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-1 text-[7px] font-black uppercase leading-3">
-                <span className="bg-black/70 px-1 text-orange-400">
-                  {slot.quantity > 1 ? `x${slot.quantity}` : ""}
-                </span>
-                <span className="truncate bg-black/70 px-1 text-zinc-500">
-                  {isWeapon ? getWeaponCaliberFromTags(slot.item.tags) : formatCredits(slot.totalValue)}
-                </span>
+                {quantityLabel ? (
+                  <span className="bg-black/70 px-1 text-orange-400">
+                    {quantityLabel}
+                  </span>
+                ) : (
+                  <span />
+                )}
+                {statusLabel ? (
+                  <span className="truncate bg-black/70 px-1 text-zinc-500">
+                    {statusLabel}
+                  </span>
+                ) : null}
               </div>
-            )}
+            ) : null}
           </button>
         );
       })}
