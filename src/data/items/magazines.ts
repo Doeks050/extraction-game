@@ -18,16 +18,12 @@ const stanagCompatible556WeaponIds = [
 ];
 
 function getMagazineGridSize(capacity: number): ItemGridSize {
-  if (capacity <= 20) {
+  if (capacity <= 30) {
     return { width: 1, height: 2 };
   }
 
-  if (capacity <= 30) {
-    return { width: 1, height: 3 };
-  }
-
   if (capacity <= 42) {
-    return { width: 1, height: 4 };
+    return { width: 1, height: 3 };
   }
 
   if (capacity <= 60) {
