@@ -48,6 +48,11 @@ function getGridSizeLabel(slot: HydratedInventorySlot) {
   return size ? `${size.width}x${size.height}` : "1x1";
 }
 
+function getMagazineAmmoLabel(slot: HydratedInventorySlot) {
+  const capacity = slot.item.stats?.capacity ?? 0;
+  return `0/${capacity}`;
+}
+
 function getCompatibleAmmoNames(ammoIds: string[]) {
   return ammoIds.map((ammoId) => getItemById(ammoId)?.name ?? ammoId).join(" · ");
 }
@@ -63,10 +68,10 @@ function getDetailInfo(slot: HydratedInventorySlot): DetailInfo[] {
     });
   }
 
-  if (stats.capacity) {
+  if (stats.capacity && slot.item.category !== "magazine") {
     details.push({
-      label: slot.item.category === "magazine" ? "Magazine Capacity" : "Storage Capacity",
-      value: slot.item.category === "magazine" ? `${stats.capacity} rounds` : `${stats.capacity} slots`,
+      label: "Storage Capacity",
+      value: `${stats.capacity} slots`,
     });
   }
 
@@ -126,6 +131,7 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
   }
 
   const isAmmo = slot.item.category === "ammo";
+  const isMagazine = slot.item.category === "magazine";
   const fuelPercentage = getInventoryFuelPercentage(
     slot.itemId,
     slot.fuelRemainingSeconds,
@@ -152,7 +158,9 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
           ? "USB Slots"
           : isAmmo
             ? "Stack"
-            : "Size";
+            : isMagazine
+              ? "Ammo"
+              : "Size";
   const resourceValue =
     fuelPercentage !== null
       ? `${fuelPercentage}%`
@@ -162,7 +170,9 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
           ? `${containerUsed}/${containerCapacity}`
           : isAmmo
             ? `${slot.quantity}/${slot.item.maxStack}`
-            : getGridSizeLabel(slot);
+            : isMagazine
+              ? getMagazineAmmoLabel(slot)
+              : getGridSizeLabel(slot);
   const progressPercentage =
     fuelPercentage !== null
       ? fuelPercentage
@@ -225,7 +235,11 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
             {slot.item.rarity}
           </p>
           <p className="text-[10px] font-black uppercase text-orange-400">
-            {isAmmo ? `x${slot.quantity}` : getGridSizeLabel(slot)}
+            {isAmmo
+              ? `x${slot.quantity}`
+              : isMagazine
+                ? getMagazineAmmoLabel(slot)
+                : getGridSizeLabel(slot)}
           </p>
         </div>
       </div>
