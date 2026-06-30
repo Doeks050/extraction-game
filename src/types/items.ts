@@ -49,6 +49,8 @@ export type GameItem = {
   image?: string;
   stats?: ItemStatBlock;
   compatibleWeaponIds?: string[];
+  compatibleAmmoCaliber?: string;
+  compatibleAmmoIds?: string[];
   fuelCapacitySeconds?: number;
   filamentPrintCapacity?: number;
   filamentCapacityUnits?: number;
