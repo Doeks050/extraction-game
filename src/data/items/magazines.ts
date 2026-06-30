@@ -17,6 +17,11 @@ const stanagCompatible556WeaponIds = [
   "wpn_sr15",
 ];
 
+const magazine556AmmoCompatibility = {
+  compatibleAmmoCaliber: "5.56x45",
+  compatibleAmmoIds: ["ammo_556_m855a1"],
+};
+
 function getMagazineGridSize(capacity: number): ItemGridSize {
   if (capacity <= 30) {
     return { width: 1, height: 2 };
@@ -327,4 +332,11 @@ export const magazines: GameItem[] = [
     tags: ["magazine", "9x19", "empty"],
     stats: { capacity: 17 },
   },
-];
+].map((magazine) =>
+  magazine.tags.includes("5.56x45")
+    ? {
+        ...magazine,
+        ...magazine556AmmoCompatibility,
+      }
+    : magazine,
+);
