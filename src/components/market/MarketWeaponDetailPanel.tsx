@@ -84,7 +84,7 @@ function getOfferTypeLabel(trader: MarketTrader) {
 
 function getItemClassLabel(item: GameItem) {
   const weaponClass = getWeaponClassFromTags(item.tags);
-  return weaponClass?.label ?? categoryLabels[item.category];
+  return weaponClass?.label ?? item.rarity;
 }
 
 function getThirdStatLabel(item: GameItem) {
@@ -108,7 +108,7 @@ function getThirdStatLabel(item: GameItem) {
     return "Storage";
   }
 
-  return "Type";
+  return "Rarity";
 }
 
 function getThirdStatValue(item: GameItem) {
@@ -132,7 +132,7 @@ function getThirdStatValue(item: GameItem) {
     return `${item.containerGridSize.width}x${item.containerGridSize.height}`;
   }
 
-  return categoryLabels[item.category];
+  return item.rarity;
 }
 
 function getMarketStatTitle(item: GameItem) {
@@ -201,14 +201,6 @@ function getMarketStats(item: GameItem): MarketStat[] {
     });
   }
 
-  if (itemStats.length === 0) {
-    itemStats.push({
-      label: "Category",
-      value: 50,
-      displayValue: categoryLabels[item.category],
-    });
-  }
-
   return itemStats;
 }
 
@@ -244,7 +236,7 @@ export function MarketWeaponDetailPanel({
   const marketStats = getMarketStats(item);
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_1.15fr_auto_auto_1fr_auto] gap-1.5 overflow-y-auto">
+    <div className="grid h-full min-h-0 content-start gap-1.5 overflow-y-auto">
       <div className="flex h-8 items-center justify-between gap-2">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
@@ -334,19 +326,21 @@ export function MarketWeaponDetailPanel({
         </p>
       </div>
 
-      <div className="grid content-start gap-2 border border-zinc-800 bg-black/45 p-2">
-        <p className="text-[8px] font-black uppercase tracking-[0.16em] text-orange-300">
-          {getMarketStatTitle(item)}
-        </p>
-        {marketStats.map((stat) => (
-          <StatBar
-            key={stat.label}
-            label={stat.label}
-            value={stat.value}
-            displayValue={stat.displayValue}
-          />
-        ))}
-      </div>
+      {marketStats.length > 0 ? (
+        <div className="grid content-start gap-2 border border-zinc-800 bg-black/45 p-2">
+          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-orange-300">
+            {getMarketStatTitle(item)}
+          </p>
+          {marketStats.map((stat) => (
+            <StatBar
+              key={stat.label}
+              label={stat.label}
+              value={stat.value}
+              displayValue={stat.displayValue}
+            />
+          ))}
+        </div>
+      ) : null}
 
       <div className="grid gap-1.5">
         <div className="flex items-center justify-between border border-zinc-800 bg-black/55 px-2 py-1.5">
