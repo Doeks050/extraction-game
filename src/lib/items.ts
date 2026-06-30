@@ -11,6 +11,18 @@ export function getItemById(itemId: string) {
   return gameItems.find((item) => item.id === itemId);
 }
 
+export function getCompatibleMagazinesForWeapon(weaponId: string) {
+  return gameItems.filter(
+    (item) => item.category === "magazine" && item.compatibleWeaponIds?.includes(weaponId),
+  );
+}
+
+export function isMagazineCompatibleWithWeapon(magazineId: string, weaponId: string) {
+  const magazine = getItemById(magazineId);
+
+  return magazine?.category === "magazine" && magazine.compatibleWeaponIds?.includes(weaponId) === true;
+}
+
 export function hydrateInventory(slots: InventorySlot[]): HydratedInventorySlot[] {
   return slots.flatMap((slot) => {
     const item = getItemById(slot.itemId);
