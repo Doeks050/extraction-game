@@ -14,33 +14,12 @@ type DetailInfo = {
   value: string;
 };
 
-const categoryLabels = {
-  ammo: "Ammo",
-  magazine: "Magazine",
-  attachment: "Attachment",
-  chest_gear: "Chest Gear",
-  helmet: "Helmet",
-  backpack: "Backpack",
-  medical: "Medical",
-  valuable: "Valuable",
-  hideout_material: "Material",
-  data: "Data",
-  container: "Container",
-  quest: "Quest",
-  key: "Key",
-  weapon: "Weapon",
-};
-
 function getItemImageClassName(slot: HydratedInventorySlot) {
   if (slot.item.id === "tool_toolbox") {
     return "h-[82%] w-[82%] max-h-none max-w-none object-contain object-center opacity-95";
   }
 
   return "h-[88%] w-[88%] max-h-none max-w-none object-contain object-center opacity-95";
-}
-
-function getCategoryLabel(slot: HydratedInventorySlot) {
-  return categoryLabels[slot.item.category] ?? slot.item.category.replace("_", " ");
 }
 
 function getGridSizeLabel(slot: HydratedInventorySlot) {
@@ -187,14 +166,9 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
   return (
     <div className="grid h-full min-h-0 content-start gap-1.5 overflow-y-auto">
       <div className="flex h-8 items-center justify-between gap-2">
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
-            Item Detail
-          </p>
-          <p className="text-[7px] font-black uppercase text-zinc-600">
-            Stash Inventory
-          </p>
-        </div>
+        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-400">
+          Item Detail
+        </p>
         {onBack ? (
           <button
             type="button"
@@ -230,10 +204,7 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
           </p>
         </div>
 
-        <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-2 bg-black/80 px-2 py-1">
-          <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-500">
-            {slot.item.rarity}
-          </p>
+        <div className="absolute bottom-1.5 right-1.5 bg-black/80 px-2 py-1">
           <p className="text-[10px] font-black uppercase text-orange-400">
             {isAmmo
               ? `x${slot.quantity}`
@@ -244,15 +215,18 @@ export function StashItemDetailPanel({ slot, onBack }: StashItemDetailPanelProps
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-1">
-        <div className="border border-zinc-800 bg-black/55 px-2 py-1">
-          <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
-            {isAmmo ? "Quantity" : "Rarity"}
-          </p>
-          <p className="text-[10px] font-black uppercase leading-3 text-orange-400">
-            {isAmmo ? `x${slot.quantity}` : slot.item.rarity}
-          </p>
-        </div>
+      <div className={isAmmo ? "grid grid-cols-3 gap-1" : "grid grid-cols-2 gap-1"}>
+        {isAmmo ? (
+          <div className="border border-zinc-800 bg-black/55 px-2 py-1">
+            <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
+              Quantity
+            </p>
+            <p className="text-[10px] font-black uppercase leading-3 text-orange-400">
+              x{slot.quantity}
+            </p>
+          </div>
+        ) : null}
+
         <div className="border border-zinc-800 bg-black/55 px-2 py-1">
           <p className="text-[7px] font-black uppercase tracking-[0.14em] text-zinc-600">
             Weight
