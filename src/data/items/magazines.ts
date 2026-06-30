@@ -22,7 +22,7 @@ function getMagazineGridSize(capacity: number): ItemGridSize {
     return { width: 1, height: 2 };
   }
 
-  if (capacity <= 42) {
+  if (capacity <= 45) {
     return { width: 1, height: 3 };
   }
 
@@ -215,6 +215,34 @@ export const magazines: GameItem[] = [
     tags: ["magazine", "5.56x45", "stanag", "drum", "empty"],
     stats: { capacity: 100 },
     compatibleWeaponIds: stanagCompatible556WeaponIds,
+  },
+  {
+    id: "mag_ak19_polymer_30",
+    name: "AK-19 Polymer 30-Round Magazine",
+    category: "magazine",
+    rarity: "common",
+    weightKg: 0.15,
+    value: 2600,
+    maxStack: 1,
+    gridSize: getMagazineGridSize(30),
+    description: "Empty 30-round polymer AK-19 magazine. Only fits the AK-19.",
+    tags: ["magazine", "5.56x45", "ak19", "polymer", "empty"],
+    stats: { capacity: 30 },
+    compatibleWeaponIds: ["wpn_ak19"],
+  },
+  {
+    id: "mag_ak19_extended_45",
+    name: "AK-19 Extended 45-Round Magazine",
+    category: "magazine",
+    rarity: "uncommon",
+    weightKg: 0.24,
+    value: 4800,
+    maxStack: 1,
+    gridSize: getMagazineGridSize(45),
+    description: "Empty extended 45-round AK-19 magazine. Only fits the AK-19.",
+    tags: ["magazine", "5.56x45", "ak19", "extended", "empty"],
+    stats: { capacity: 45 },
+    compatibleWeaponIds: ["wpn_ak19"],
   },
   {
     id: "mag_g36_polymer_30",
